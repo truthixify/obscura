@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "module": "CommonJS",
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "target": "ES2020",
+        "moduleResolution": "node",
+        "outDir": "./dist",
+        "baseUrl": "./",
+        "paths": {
+            "*": ["node_modules/*", "src/types/*"]
+        }
+    },
+    "include": ["scripts-ts/**/*.ts", "tests/test.ts"]
+}
