@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import MerkleTree from 'fixed-merkle-tree'
 import { toFixedHex, poseidonHash2, getExtDataHash, FIELD_SIZE, shuffle } from './utils'
 import Utxo from './utxo'
@@ -16,7 +15,6 @@ export async function buildMerkleTree({
     provider: RpcProvider
 }): Promise<MerkleTree> {
     const parsedEvents = await parseNewCommitEvent(obscura, provider)
-
     const leaves = parsedEvents.map((e: any) => e.commitment.toString())
 
     return new MerkleTree(MERKLE_TREE_HEIGHT, leaves, { hashFunction: poseidonHash2 })
@@ -43,6 +41,8 @@ export async function getProof({
 }: GetProofParams): Promise<{ args: any; extData: any }> {
     inputs = shuffle(inputs)
     outputs = shuffle(outputs)
+    console.log("Reached before tree log");
+    console.log(tree)
 
     const inputMerklePathIndices: number[] = []
     const inputMerklePathElements: any[] = []
@@ -166,9 +166,9 @@ export async function transaction({
         ...rest
     })
 
-    const receipt = await obscura.transact(args, extData)
+    const tx = await obscura.transact(args, extData)
 
-    return receipt
+    return tx
 }
 
 export async function registerAndTransact({
@@ -187,7 +187,7 @@ export async function registerAndTransact({
         ...rest
     })
 
-    const receipt = await obscura.register_and_transact(account, args, extData)
+    const tx = await obscura.register_and_transact(account, args, extData)
 
-    return receipt
+    return tx
 }

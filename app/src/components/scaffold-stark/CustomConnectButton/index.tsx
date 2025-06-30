@@ -3,12 +3,22 @@
 import { WrongNetworkDropdown } from './WrongNetworkDropdown'
 import { useAutoConnect } from '../../../hooks/scaffold-stark'
 import { useTargetNetwork } from '../../../hooks/scaffold-stark/useTargetNetwork'
-import { useAccount, useConnect, useDisconnect } from '@starknet-react/core'
+import { useAccount, useConnect, useDisconnect, useProvider } from '@starknet-react/core'
 import { useEffect, useState } from 'react'
 import ConnectModal from './ConnectModal'
 import { Button } from '../../ui/button'
-import { LogOut } from 'lucide-react'
+import { LogOut, X, Copy, Check, Download, Loader2 } from 'lucide-react'
 import { useBalanceStore } from '../../../stores/balance-store'
+import { useAccountStore } from '../../../stores/account-store'
+import { toast } from '../../ui/use-toast'
+import { useKeypairStore } from '../../../stores/keypair-store'
+import { downloadPrivateKeyFile } from '../../../lib/download-private-key-file'
+import { useScaffoldContract } from '../../../hooks/scaffold-stark/useScaffoldContract'
+import GenericModal from './GenericModal'
+import { Card, CardContent, CardHeader } from '../../ui/card'
+import { useTheme } from 'next-themes'
+import { Checkbox } from '../../ui/checkbox'
+import { createAccount } from '../../../lib/api'
 
 interface CustomConnectButtonProps {
     controlStyles: {
@@ -22,27 +32,33 @@ interface CustomConnectButtonProps {
         secondaryText: string
         secondaryHover: string
     }
-    handleRegister: () => void
-    isRegistering: boolean
-    isRegistered: boolean
 }
 
 /**
  * Custom Connect Button (watch balance + custom design)
  */
-export const CustomConnectButton = ({
-    controlStyles,
-    handleRegister,
-    isRegistering,
-    isRegistered
-}: CustomConnectButtonProps) => {
+export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps) => {
     useAutoConnect()
     const { connector } = useConnect()
     const { disconnect } = useDisconnect()
     const { targetNetwork } = useTargetNetwork()
     const { account, status, address: accountAddress } = useAccount()
-    const { balance } = useBalanceStore()
+    const { balance, isLoadingBalance } = useBalanceStore()
     const [accountChainId, setAccountChainId] = useState<bigint>(0n)
+    const { isRegistered, setIsRegistered, setOwner, setAddress } = useAccountStore()
+    const { address } = useAccount()
+    const { keypair } = useKeypairStore()
+    const { data: obscura } = useScaffoldContract({
+        contractName: 'Obscura'
+    })
+    const [showModal, setShowModal] = useState(false)
+    const [copied, setCopied] = useState(false)
+    const [checkboxChecked, setCheckboxChecked] = useState(false)
+    const [isRegistering, setIsRegistering] = useState(false)
+    const { theme } = useTheme()
+    const { provider } = useProvider()
+
+    const isDarkMode = theme == 'dark' ? true : false
 
     // effect to get chain id and address from account
     useEffect(() => {
@@ -69,6 +85,87 @@ export const CustomConnectButton = ({
         }
     }, [connector])
 
+    const closeModal = () => {
+        setCheckboxChecked(false)
+        setShowModal(false)
+    }
+
+    const handleCopy = async () => {
+        try {
+            await navigator.clipboard.writeText(keypair.privkey)
+            setCopied(true)
+            setTimeout(() => setCopied(false), 1500)
+        } catch (error) {
+            console.error('Clipboard copy failed:', error)
+            toast({
+                title: 'Copy failed',
+                description: 'Failed to copy private key. Try again.',
+                variant: 'destructive'
+            })
+        }
+    }
+
+    const handleDownload = async () => {
+        const filename = `obscura-key-file-${address.slice(0, 8)}`
+        const content = keypair.privkey
+
+        await downloadPrivateKeyFile(filename, content)
+    }
+
+    const handleRegister = async () => {
+        setIsRegistering(true)
+
+        try {
+            const userAccount = {
+                owner: address,
+                public_key: keypair.address()
+            }
+
+            const tx = await obscura.register(userAccount)
+            const txReceipt = await provider.waitForTransaction(tx.transaction_hash)
+            const blockNumber = (txReceipt as any).block_number
+
+            if (blockNumber) {
+                const account = await createAccount({
+                    blockNumber,
+                    address: keypair.address(),
+                    owner: address
+                })
+
+                setOwner(account.owner)
+                setAddress(account.address)
+            }
+            setIsRegistered(true)
+        } catch (error) {
+            console.log(error)
+            setIsRegistering(false)
+        } finally {
+            setIsRegistering(false)
+            setShowModal(false)
+            setCheckboxChecked(false)
+            closeModal()
+
+            toast({
+                title: 'Registration successful',
+                description: "You've successfully registered",
+                variant: 'success'
+            })
+        }
+    }
+
+    const handleSetup = async () => {
+        if (!address) {
+            toast({
+                title: 'Wallet Not Connected',
+                description: 'Please connect your wallet before setting up and account.',
+                variant: 'destructive'
+            })
+            return
+        }
+
+        setShowModal(true)
+    }
+
     if (status === 'disconnected' || accountChainId === 0n)
         return <ConnectModal controlStyles={controlStyles} />
 
@@ -79,16 +176,25 @@ export const CustomConnectButton = ({
     return (
         <>
             <div className="flex gap-2">
-                <Button
-                    className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 ${controlStyles.buttonBg} ${controlStyles.buttonText} border ${controlStyles.border} ${controlStyles.buttonHover} transition-all duration-200`}
-                    onClick={() => handleRegister()}
-                >
-                    {isRegistered
-                        ? `Balance: ${balance} STRK`
-                        : isRegistering
-                          ? 'Setting up account...'
-                          : 'Set up account'}
-                </Button>
+                {!isRegistered ? (
+                    <Button
+                        className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 ${controlStyles.buttonBg} ${controlStyles.buttonText} border ${controlStyles.border} ${controlStyles.buttonHover} transition-all duration-200`}
+                        onClick={handleSetup}
+                    >
+                        {isRegistering ? 'Setting up account...' : 'Set up account'}
+                    </Button>
+                ) : (
+                    <Button
+                        className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 ${controlStyles.buttonBg} ${controlStyles.buttonText} border ${controlStyles.border} ${controlStyles.buttonHover} transition-all duration-200`}
+                        onClick={handleSetup}
+                    >
+                        {isLoadingBalance ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <span>Shielded Balance: ${balance} STRK</span>
+                        )}
+                    </Button>
+                )}
                 <Button
                     className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 ${controlStyles.buttonBg} ${controlStyles.buttonText} border ${controlStyles.border} ${controlStyles.buttonHover} transition-all duration-200`}
                     onClick={() => disconnect()}
@@ -96,12 +202,82 @@ export const CustomConnectButton = ({
                     <LogOut className="h-4 w-4" />
                 </Button>
             </div>
-            {/* <AddressInfoDropdown
-                address={accountAddress as Address}
-                displayName={''}
-                ensAvatar={''}
-                blockExplorerAddressLink={blockExplorerAddressLink}
-            /> */}
+            {showModal && (
+                <GenericModal onClose={closeModal}>
+                    <Card
+                        className={`w-full max-w-2xl border border-black/20 shadow-2xl transition-all duration-300 ${
+                            isDarkMode
+                                ? 'bg-black/30 border-white/20 shadow-black/50'
+                                : 'bg-white/30 border-black/20 shadow-black/20'
+                        }`}
+                    >
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <h3
+                                className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-black'}`}
+                            >
+                                Shielded Key
+                            </h3>
+                            <button
+                                onClick={() => {
+                                    setShowModal(false)
+                                    closeModal()
+                                }}
+                                className={`p-2 flex items-center justify-center ${isDarkMode ? 'text-white' : 'text-black'}`}
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </CardHeader>
+                        <CardContent>
+                            <span>
+                                Please back up your shielded key to access your account in the
+                                future. DO NOT share your key with anyone
+                            </span>
+
+                            <div className="w-full flex justify-between items-center gap-2">
+                                <Button
+                                    className={`w-full mt-4 p-2 flex items-center justify-center ${isDarkMode ? 'bg-white text-black' : 'bg-black text-white'}`}
+                                    onClick={handleDownload}
+                                >
+                                    <Download className="h-4 w-4" />
+                                    Download
+                                </Button>
+                                <Button
+                                    className={`w-full mt-4 p-2 flex items-center justify-center gap-2 ${isDarkMode ? 'bg-white text-black' : 'bg-black text-white'}`}
+                                    onClick={handleCopy}
+                                >
+                                    {copied ? (
+                                        <Check className="h-4 w-4" />
+                                    ) : (
+                                        <Copy className="h-4 w-4" />
+                                    )}
+                                    {copied ? 'Copied!' : 'Copy'}
+                                </Button>
+                            </div>
+                            <div className="mt-4 flex items-center space-x-2">
+                                <Checkbox
+                                    id="backup-confirm"
+                                    checked={checkboxChecked}
+                                    onCheckedChange={checked => setCheckboxChecked(!!checked)}
+                                />
+                                <label
+                                    htmlFor="backup-confirm"
+                                    className={`text-xs leading-5 ${isDarkMode ? 'text-white' : 'text-black'}`}
+                                >
+                                    I have backed up my shielded key.
+                                </label>
+                            </div>
+
+                            <Button
+                                className={`w-full mt-4 p-2 flex items-center justify-center ${isDarkMode ? 'bg-white text-black' : 'bg-black text-white'}`}
+                                disabled={!checkboxChecked}
+                                onClick={handleRegister}
+                            >
+                                {isRegistering ? 'Registering...' : 'Register'}
+                            </Button>
+                        </CardContent>
+                    </Card>
+                </GenericModal>
+            )}
         </>
     )
 }

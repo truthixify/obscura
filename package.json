@@ -21,7 +21,7 @@
         "vercel": "yarn workspace @obscura/app vercel",
         "vercel:yolo": "yarn workspace @obscura/app vercel:yolo",
         "test:app": "yarn workspace @obscura/app test",
-        "format": "yarn workspace @obscura/app format && yarn workspace @obscura/contracts format && yarn workspace @obscura/server format",
+        "format": "yarn workspace @obscura/app format && yarn workspace @obscura/contracts format",
         "format:check": "yarn workspace @obscura/app format:check && yarn workspace @obscura/contracts format:check",
         "prepare": "husky",
         "verify": "yarn workspace @obscura/contracts verify"

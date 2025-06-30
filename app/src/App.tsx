@@ -44,7 +44,7 @@ function App() {
 
         initGaraga()
         initWasm()
-        loadVk()
+        // loadVk()
     }, [])
 
     return <Obscura />

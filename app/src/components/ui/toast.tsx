@@ -39,13 +39,13 @@ const toastVariants = cva(
         variants: {
             variant: {
                 default:
-                    'bg-white/85 dark:bg-zinc-900/90 text-black dark:text-white border border-black/10 dark:border-white/10 border-l-4 border-l-blue-300 dark:border-l-blue-500',
+                    'bg-blue-100/85 text-blue-900 border border-blue-300 dark:bg-blue-400/20 dark:text-blue-100 dark:border-blue-500 border-l-4 border-l-blue-400 dark:border-l-blue-400',
                 destructive:
-                    'bg-red-400/80 text-white border border-red-400/30 dark:bg-red-800/80 dark:text-white border-l-4 border-l-red-400 dark:border-l-red-600',
+                    'bg-red-100/85 text-red-900 border border-red-300 dark:bg-red-400/20 dark:text-red-100 dark:border-red-400 border-l-4 border-l-red-400 dark:border-l-red-400',
                 success:
-                    'bg-green-300/80 text-black border border-green-300/30 dark:bg-green-700/80 dark:text-white border-l-4 border-l-green-400 dark:border-l-green-500',
+                    'bg-green-100/85 text-green-900 border border-green-300 dark:bg-green-400/20 dark:text-green-100 dark:border-green-400 border-l-4 border-l-green-400 dark:border-l-green-400',
                 warning:
-                    'bg-yellow-300/80 text-black border border-yellow-300/40 dark:bg-yellow-600/80 dark:text-black border-l-4 border-l-yellow-400 dark:border-l-yellow-500'
+                    'bg-amber-100/85 text-amber-900 border border-amber-300 dark:bg-amber-400/20 dark:text-amber-100 dark:border-amber-400 border-l-4 border-l-amber-400 dark:border-l-amber-400'
             }
         },
         defaultVariants: {

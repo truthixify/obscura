@@ -84,38 +84,39 @@ describe('Obscura Test', () => {
         expect(parsedEvent.key).toEqual(bobAccount.public_key)
     })
 
-    // it('should register and deposit', async function () {
-    //     // Alice deposits into obscura
-    //     const aliceDepositAmount = 1e7
-    //     const aliceDepositUtxo = new Utxo({ amount: aliceDepositAmount })
+    it('should register and deposit', async function () {
+        // Alice deposits into obscura
+        const aliceDepositAmount = 1e7
+        const aliceDepositUtxo = new Utxo({ amount: aliceDepositAmount })
 
-    //     obscura.connect(alice)
-    //     strkToken.connect(alice)
+        obscura.connect(alice)
+        strkToken.connect(alice)
 
-    //     strkToken.approve(obscura.address, aliceDepositAmount)
+        strkToken.approve(obscura.address, aliceDepositAmount)
 
-    //     await registerAndTransact({
-    //         obscura,
-    //         provider,
-    //         outputs: [aliceDepositUtxo],
-    //         account: {
-    //             owner: alice.address,
-    //             public_key: aliceDepositUtxo.keypair.address()
-    //         }
-    //     })
+        await registerAndTransact({
+            obscura,
+            provider,
+            outputs: [aliceDepositUtxo],
+            account: {
+                owner: alice.address,
+                public_key: aliceDepositUtxo.keypair.address()
+            }
+        })
 
-    //     const [parsedEvent] = (await parsePublicKeyEvent(obscura, provider, [alice.address])).slice(
-    //         -1
-    //     )
+        const [parsedEvent] = (await parsePublicKeyEvent(obscura, provider, [alice.address])).slice(
+            -1
+        )
 
-    //     expect(addAddressPadding(num.toHex(parsedEvent.owner))).toEqual(alice.address)
-    //     expect(parsedEvent.key).toEqual(aliceDepositUtxo.keypair.address())
-    // })
+        expect(addAddressPadding(num.toHex(parsedEvent.owner))).toEqual(alice.address)
+        expect(parsedEvent.key).toEqual(aliceDepositUtxo.keypair.address())
+    })
 
     it('should deposit, transact and withdraw', async function () {
         // Alice deposits into obscura pool
-        const aliceDepositAmount = 1e7
-        const aliceDepositUtxo = new Utxo({ amount: aliceDepositAmount })
+        const aliceKeypair = new Keypair()
+        const aliceDepositAmount = BigInt(1e18)
+        const aliceDepositUtxo = new Utxo({ amount: aliceDepositAmount, keypair: aliceKeypair })
 
         obscura.connect(alice)
         strkToken.connect(alice)
@@ -128,14 +129,14 @@ describe('Obscura Test', () => {
         const bobAddress = bobKeypair.address()
 
         // Alice sends some funds to Bob
-        const bobSendAmount = 6e6
+        const bobSendAmount = BigInt(6e17)
         const bobSendUtxo = new Utxo({
             amount: bobSendAmount,
             keypair: Keypair.fromString(bobAddress)
         })
         const aliceChangeUtxo = new Utxo({
             amount: aliceDepositAmount - bobSendAmount,
-            keypair: aliceDepositUtxo.keypair
+            keypair: aliceKeypair
         })
 
         await transaction({
@@ -172,7 +173,7 @@ describe('Obscura Test', () => {
         obscura.connect(bob)
 
         // Bob withdraws a part of his funds from the shielded pool
-        const bobWithdrawalAmount = 5e6
+        const bobWithdrawalAmount = BigInt(5e17)
         const bobWithdrawalStrkAddress = stark.randomAddress()
         const bobBalanceBefore = await strkToken.balanceOf(bobWithdrawalStrkAddress)
         const bobChangeUtxo = new Utxo({

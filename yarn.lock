@@ -2308,6 +2308,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@obscura/server@workspace:server"
   dependencies:
+    cors: ^2.8.5
     dotenv: ^17.0.0
   languageName: unknown
   linkType: soft

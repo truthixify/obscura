@@ -29,9 +29,6 @@ export async function downloadPrivateKeyFile(filename: string, content: string):
             document.body.appendChild(a)
             a.click()
 
-            // Wait a moment to ensure the click is processed
-            await new Promise(resolve => setTimeout(resolve, 1000))
-
             document.body.removeChild(a)
             URL.revokeObjectURL(url)
         }

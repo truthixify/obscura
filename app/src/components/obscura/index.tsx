@@ -16,23 +16,27 @@ import {
     ChevronDown,
     ChevronUp,
     Sun,
-    Moon
+    Moon,
+    X,
+    Plus,
+    Settings
 } from 'lucide-react'
 import { useToast } from '../../hooks/use-toast'
 import { Header } from '../header'
 import { useTheme } from 'next-themes'
 import { registerAndTransact, transaction } from '../../utils/index'
 import Utxo from '../../utils/utxo'
-import { parsePublicKeyEvent, parseNewCommitEvent } from '../../utils/events_parsing'
+import { parseNewCommitEvent } from '../../utils/events_parsing'
 import { useScaffoldContract } from '../../hooks/scaffold-stark/useScaffoldContract'
 import { useAccount, useProvider } from '@starknet-react/core'
-import { Account, addAddressPadding, RpcProvider } from 'starknet'
-import { feltToHex } from '../../utils/scaffold-stark/common'
-import { Keypair } from '../../utils/keypair'
-import { downloadPrivateKeyFile } from '../../lib/download-private-key-file'
+import { Account, RpcProvider } from 'starknet'
 import { useBalanceStore } from '../../stores/balance-store'
 import { useKeypairStore } from '../../stores/keypair-store'
 import { generateKeypairFromSignature } from '../../utils/utils'
+import { getAccount } from '../../lib/api'
+import { useAccountStore } from '../../stores/account-store'
+import { Keypair } from '../../utils/keypair'
+import SettingsModal from './settings'
 
 const Index = () => {
     const { data: obscura } = useScaffoldContract({
@@ -50,15 +54,21 @@ const Index = () => {
     const [currentPattern, setCurrentPattern] = useState(0)
     const [isArtControlOpen, setIsArtControlOpen] = useState(false)
 
+    // Settings modal state
+    const [isSettinngsOpen, setIsSettingsOpen] = useState(false)
+    const closeSettingsModal = () => setIsSettingsOpen(false)
+
+    // Utxos state
+    const [utxos, setUtxos] = useState<Utxo[] | null>(null)
+
     // Balance state
-    const { balance, setBalance } = useBalanceStore()
+    const { balance, setBalance, setIsLoadingBalance } = useBalanceStore()
 
     // Keypair state
     const { keypair, setKeypair } = useKeypairStore()
 
     // Register state
-    const [isRegistered, setIsRegistered] = useState(false)
-    const [isRegistering, setIsRegistering] = useState(false)
+    const { isRegistered, setIsRegistered } = useAccountStore()
 
     // Fund tab state
     const [fundAmount, setFundAmount] = useState(0)
@@ -68,12 +78,15 @@ const Index = () => {
     const [isApproving, setIsApproving] = useState(false)
 
     // Transfer tab state
-    const [transferAmount, setTransferAmount] = useState('')
+    const [transferAmount, setTransferAmount] = useState(0)
     const [transferAddress, setTransferAddress] = useState('')
+    const [isTransfering, setIsTransfering] = useState(false)
 
     // Withdraw tab state
-    const [withdrawAmount, setWithdrawAmount] = useState('')
+    const [withdrawAmount, setWithdrawAmount] = useState(0)
     const [withdrawAddress, setWithdrawAddress] = useState('')
+    const [clickedAmount, setClickedAmount] = useState<number | null>(null)
+    const [isWithdrawing, setIsWithdrawing] = useState(false)
 
     const predefinedAmounts = [10, 100, 1000, 10000]
 
@@ -177,123 +190,78 @@ const Index = () => {
     }, [isAnimated, patterns.length])
 
     useEffect(() => {
+        if (!address || !account) return
+
         setFundAddress(address)
 
-        const lol = async () => {
-            if (address) {
-                const kp = await generateKeypairFromSignature(account as Account)
-            }
-        }
-
-        lol()
-
-        const loadRegisterEvent = async () => {
-            // if (!address || !keypair) return
+        const loadKeypair = async () => {
+            const keypair = await generateKeypairFromSignature(account as Account)
+            console.log('Keypair generated and address is: ', keypair.address())
+            setKeypair(keypair)
 
             try {
-                const registerEvents = await parsePublicKeyEvent(obscura, provider as RpcProvider, [
-                    address
-                ])
-                const [lastUserRegisterEvent] = registerEvents ?? registerEvents.slice(-1)
-                console.log(lastUserRegisterEvent.public_key == keypair.address())
+                const account = await getAccount({ address: keypair.address() })
 
-                if (
-                    lastUserRegisterEvent &&
-                    (addAddressPadding(feltToHex(lastUserRegisterEvent.owner)) == address ||
-                        lastUserRegisterEvent.public_key == keypair.address())
-                )
-                    setIsRegistered(true)
+                if (account) setIsRegistered(true)
             } catch (error) {
+                setIsRegistered(false)
                 console.log(error)
             }
         }
 
         const checkUserBalance = async () => {
-            if (!address) return
+            const parsedNewCommitEvents = await parseNewCommitEvent(
+                obscura,
+                provider as RpcProvider
+            )
 
-            try {
-                const parsedNewCommitEvents = await parseNewCommitEvent(
-                    obscura,
-                    provider as RpcProvider
-                )
+            if (!parsedNewCommitEvents) return
 
-                for (let i = 0; i < parsedNewCommitEvents.length; i += 2) {
-                    let balance: bigint = 0n
-                    let utxo: Utxo
+            let balance: bigint = 0n
+
+            const tryDecryptUtxo = (i: number): Utxo | undefined => {
+                try {
+                    return Utxo.decrypt(
+                        keypair,
+                        parsedNewCommitEvents[i].encrypted_output,
+                        parsedNewCommitEvents[i].index
+                    )
+                } catch {
                     try {
-                        utxo = Utxo.decrypt(
+                        return Utxo.decrypt(
                             keypair,
-                            parsedNewCommitEvents[i].encrypted_output,
+                            parsedNewCommitEvents[i + 1].encrypted_output,
                             parsedNewCommitEvents[i + 1].index
                         )
-                    } catch (error) {
-                        utxo = Utxo.decrypt(
-                            keypair,
-                            parsedNewCommitEvents[i].encrypted_output,
-                            parsedNewCommitEvents[i + 1].index
-                        )
+                    } catch {
+                        return undefined
                     }
-
-                    const nullifier = utxo.getNullifier()
-                    const isSpent = obscura.is_spent(nullifier)
-
-                    if (!isSpent) balance += BigInt(utxo ? utxo.amount : 0)
                 }
-                console.log(balance)
-                setBalance(balance)
-            } catch (error) {
-                console.log(error)
-            }
-        }
-
-        // checkUserBalance()
-        // loadRegisterEvent()
-    }, [address, keypair, setKeypair])
-
-    const handleRegister = async () => {
-        if (!address) {
-            toast({
-                title: 'Wallet Not Connected',
-                description: 'Please connect your wallet before setting up and account.',
-                variant: 'warning'
-            })
-            return
-        }
-
-        setIsRegistering(true)
-
-        try {
-            const keypair = new Keypair()
-            const userAccount = {
-                owner: address,
-                public_key: keypair.address()
             }
 
-            setKeypair(keypair)
-            const filename = `obscura-key-file-${keypair.address().slice(2, 10)}`
-            const content = keypair.privkey
+            const utxos: Utxo[] = []
+            for (let i = 0; i < parsedNewCommitEvents.length; i += 2) {
+                const utxo = tryDecryptUtxo(i)
+                if (!utxo) continue
 
-            await downloadPrivateKeyFile(filename, content)
+                utxos.push(utxo)
 
-            // toast({
-            //     title: 'Setting up account',
-            //     description: 'Please wait while we set up your account.',
-            //     variant: 'default'
-            // })
+                const nullifier = utxo.getNullifier()
+                const isSpent = await obscura.is_spent(nullifier)
 
-            await obscura.register(userAccount)
-        } catch (error) {
-            setIsRegistering(false)
-        } finally {
-            setIsRegistering(false)
-            toast({
-                title: 'Private key saved',
-                description:
-                    'Please keep this file safe. You’ll need it to transfer/withdraw your funds.',
-                variant: 'warning'
-            })
+                if (!isSpent) {
+                    balance += BigInt(utxo.amount)
+                }
+            }
+
+            setUtxos(utxos)
+            setBalance(Number(balance / BigInt(1e18)))
+            setIsLoadingBalance(false)
         }
-    }
+
+        loadKeypair()
+        checkUserBalance()
+    }, [address, account])
 
     const handleFund = async () => {
         if (!fundAmount || !fundAddress) {
@@ -313,7 +281,7 @@ const Index = () => {
                 description: `Funding ${fundAmount} STRK to ${fundAddress.slice(0, 10)}...`
             })
 
-            const newUtxo = new Utxo({ amount: fundAmount, keypair })
+            const newUtxo = new Utxo({ amount: BigInt(fundAmount * 1e18), keypair })
             const tx = await transaction({
                 obscura,
                 provider,
@@ -325,7 +293,11 @@ const Index = () => {
             })
 
             if (tx) {
-                console.log('Fund initiated:', { amount: fundAmount, address: fundAddress })
+                toast({
+                    title: 'Fund successful',
+                    description: 'Your deposit is successful.',
+                    variant: 'success'
+                })
             }
         } catch (error) {
             console.log(error)
@@ -382,7 +354,7 @@ const Index = () => {
                 description: `Funding ${fundAmount} STRK to ${fundAddress.slice(0, 10)}...`
             })
 
-            const newUtxo = new Utxo({ amount: fundAmount })
+            const newUtxo = new Utxo({ amount: fundAmount, keypair })
             const tx = await registerAndTransact({
                 obscura,
                 provider,
@@ -404,7 +376,7 @@ const Index = () => {
         }
     }
 
-    const handleTransfer = () => {
+    const handleTransfer = async () => {
         if (!transferAmount || !transferAddress) {
             toast({
                 title: 'Missing Information',
@@ -413,14 +385,94 @@ const Index = () => {
             })
             return
         }
-        toast({
-            title: 'Transfer Initiated',
-            description: `Transferring ${transferAmount} to ${transferAddress.slice(0, 10)}...`
-        })
-        console.log('Transfer initiated:', { amount: transferAmount, address: transferAddress })
+        setIsTransfering(true)
+
+        try {
+            toast({
+                title: 'Transfer Initiated',
+                description: `Transferring ${transferAmount} STRK to ${transferAddress.slice(0, 10)}...`
+            })
+
+            const requiredAmount = BigInt(transferAmount * 1e18)
+            const availableUtxos = utxos || []
+
+            // Sort smallest UTXOs first
+            const sortedUtxos = availableUtxos.sort((a, b) =>
+                Number(BigInt(a.amount) / BigInt(1e18) - BigInt(b.amount) / BigInt(1e18))
+            )
+
+            let selectedUtxos: Utxo[] = []
+            let totalSelected = 0n
+
+            for (const utxo of sortedUtxos) {
+                selectedUtxos.push(utxo)
+                totalSelected += BigInt(utxo.amount)
+                if (totalSelected >= requiredAmount) break
+            }
+
+            if (totalSelected < requiredAmount) {
+                toast({
+                    title: 'Insufficient Funds',
+                    description: 'Your available UTXOs cannot cover the transfer amount.',
+                    variant: 'destructive'
+                })
+                return
+            }
+
+            const receiverKeypair = Keypair.fromString(transferAddress)
+            const receiverNewUtxo = new Utxo({
+                amount: requiredAmount,
+                keypair: receiverKeypair
+            })
+
+            const outputs = [receiverNewUtxo]
+
+            const change = totalSelected - requiredAmount
+            if (change > 0n) {
+                const senderChangeUtxo = new Utxo({
+                    amount: change,
+                    keypair
+                })
+                outputs.push(senderChangeUtxo)
+            }
+
+            const account = await getAccount({ address: receiverKeypair.address() })
+
+            if (!account) {
+                toast({
+                    title: 'Invalid address',
+                    description: 'Could not find account for recipient.',
+                    variant: 'destructive'
+                })
+                return
+            }
+
+            await transaction({
+                obscura,
+                provider,
+                inputs: selectedUtxos,
+                outputs
+            })
+
+            toast({
+                title: 'Transfer successful',
+                description: `${transferAmount} STRK withdrawn to ${transferAddress.slice(0, 10)}...`,
+                variant: 'success'
+            })
+        } catch (error) {
+            setIsTransfering(false)
+            console.error('Transfer failed:', error)
+            toast({
+                title: 'Transfer failed',
+                description: error instanceof Error ? error.message : 'Something went wrong',
+                variant: 'destructive'
+            })
+        } finally {
+            setIsTransfering(false)
+        }
     }
 
-    const handleWithdraw = () => {
+    const handleWithdraw = async () => {
         if (!withdrawAmount || !withdrawAddress) {
             toast({
                 title: 'Missing Information',
@@ -429,15 +481,134 @@ const Index = () => {
             })
             return
         }
-        toast({
-            title: 'Withdrawal Initiated',
-            description: `Withdrawing ${withdrawAmount} to ${withdrawAddress.slice(0, 10)}...`
-        })
-        console.log('Withdrawal initiated:', { amount: withdrawAmount, address: withdrawAddress })
+
+        setIsWithdrawing(true)
+
+        try {
+            toast({
+                title: 'Withdrawal Initiated',
+                description: `Withdrawing ${withdrawAmount} STRK to ${withdrawAddress.slice(0, 10)}...`
+            })
+
+            const requiredAmount = BigInt(withdrawAmount * 1e18)
+            const availableUtxos = utxos || []
+
+            // Sort smallest UTXOs first
+            const sortedUtxos = availableUtxos.sort((a, b) =>
+                Number(BigInt(a.amount) / BigInt(1e18) - BigInt(b.amount) / BigInt(1e18))
+            )
+
+            let selectedUtxos: Utxo[] = []
+            let totalSelected = 0n
+
+            for (const utxo of sortedUtxos) {
+                selectedUtxos.push(utxo)
+                totalSelected += BigInt(utxo.amount)
+                if (totalSelected >= requiredAmount) break
+            }
+
+            if (totalSelected < requiredAmount) {
+                toast({
+                    title: 'Insufficient Funds',
+                    description: 'Your available UTXOs cannot cover the withdrawal amount.',
+                    variant: 'destructive'
+                })
+                return
+            }
+
+            const outputs: Utxo[] = []
+
+            const change = totalSelected - requiredAmount
+            if (change > 0n) {
+                const changeUtxo = new Utxo({
+                    amount: change,
+                    keypair
+                })
+                outputs.push(changeUtxo)
+            }
+
+            await transaction({
+                obscura,
+                provider,
+                inputs: selectedUtxos,
+                outputs,
+                recipient: withdrawAddress
+            })
+
+            toast({
+                title: 'Withdrawal successful',
+                description: `${withdrawAmount} STRK withdrawn to ${withdrawAddress.slice(0, 10)}...`,
+                variant: 'success'
+            })
+
+            setWithdrawAmount(0)
+            setWithdrawAddress('')
+        } catch (error) {
+            setIsWithdrawing(false)
+            console.error('Withdrawal failed:', error)
+            toast({
+                title: 'Withdrawal failed',
+                description: error instanceof Error ? error.message : 'Something went wrong',
+                variant: 'destructive'
+            })
+        } finally {
+            setIsWithdrawing(false)
+        }
+    }
+
+    const handleMaxFund = async () => {
+        if (!address)
+            toast({
+                title: 'Wallet Not Connected',
+                description: 'Please connect your wallet.',
+                variant: 'destructive'
+            })
+        const userBalance = await strk.balance_of(address)
+        if (userBalance <= 0n || !userBalance)
+            toast({
+                title: 'Invalid Balance',
+                description: 'Your balance is too low.',
+                variant: 'destructive'
+            })
+        else setFundAmount(Number(userBalance / BigInt(1e18)))
+    }
+
+    const handleMaxTransfer = async () => {
+        if (!address)
+            toast({
+                title: 'Wallet Not Connected',
+                description: 'Please connect your wallet.',
+                variant: 'destructive'
+            })
+
+        if (balance <= 0n || !balance)
+            toast({
+                title: 'Invalid Shielded Balance',
+                description: 'Your shielded balance is too low.',
+                variant: 'destructive'
+            })
+        else setTransferAmount(balance)
+    }
+
+    const handleMaxWithdrawal = async () => {
+        if (!address)
+            toast({
+                title: 'Wallet Not Connected',
+                description: 'Please connect your wallet.',
+                variant: 'destructive'
+            })
+
+        if (balance <= 0n || !balance)
+            toast({
+                title: 'Invalid Shielded Balance',
+                description: 'Your shielded balance is too low.',
+                variant: 'destructive'
+            })
+        else setWithdrawAmount(balance)
     }
 
     const setPredefinedAmount = (amount: number) => {
-        setWithdrawAmount(amount.toString())
+        setWithdrawAmount(amount)
     }
 
     return (
@@ -606,28 +777,31 @@ const Index = () => {
             </div>
 
             {/* Header with Obscura on the left */}
-            <Header
-                currentPattern={currentPattern}
-                controlStyles={controlStyles}
-                handleRegister={handleRegister}
-                isRegistering={isRegistering}
-                isRegistered={isRegistered}
-            />
+            <Header currentPattern={currentPattern} controlStyles={controlStyles} />
 
-            {/* Adaptive Art Control Panel */}
             <div className="absolute bottom-6 left-6 z-50">
                 <Button
                     onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                     variant="outline"
-                    className={`${controlStyles.bg} ${controlStyles.buttonText} border ${controlStyles.border} ${controlStyles.buttonHover} transition-all duration-200 mb-2`}
+                    className={`${controlStyles.bg} ${controlStyles.buttonText} border ${controlStyles.border} ${controlStyles.secondaryHover} transition-all duration-200 mb-2 mr-2`}
                 >
                     {theme === 'dark' ? (
-                        <Sun className={`h-4 w-4 ${controlStyles.text}`} />
+                        <Sun className={`w-5 h-5 ${controlStyles.text}`} />
                     ) : (
-                        <Moon className={`h-4 w-4 ${controlStyles.text}`} />
+                        <Moon className={`w-5 h-5 ${controlStyles.text}`} />
                     )}
                     {/* <span className={`${controlStyles.text} font-semibold text-sm`}>Toggle theme</span> */}
                 </Button>
+                {isRegistered && (
+                    <Button
+                        onClick={() => setIsSettingsOpen(true)}
+                        variant="outline"
+                        className={`${controlStyles.bg} ${controlStyles.buttonText} border ${controlStyles.border} ${controlStyles.secondaryHover} transition-all duration-200 mb-2 ${isDarkMode ? 'text-white' : 'text-black'}`}
+                    >
+                        <Settings className={`w-5 h-5 ${controlStyles.text}`} />
+                    </Button>
+                )}
+                {/* Adaptive Art Control Panel */}
                 <div
                     className={`${controlStyles.bg} backdrop-blur-sm border ${controlStyles.border} rounded-lg shadow-lg overflow-hidden transition-all duration-500`}
                 >
@@ -652,7 +826,7 @@ const Index = () => {
                     {/* Collapsible Content */}
                     {isArtControlOpen && (
                         <div className={`px-4 pb-4 space-y-3 border-t ${controlStyles.border}`}>
-                            <div className="flex gap-2 pt-3">
+                            <div className="flex flex-wrap gap-2 pt-3">
                                 <button
                                     onClick={() => setIsAnimated(!isAnimated)}
                                     className={`flex items-center gap-2 px-3 py-2 ${controlStyles.buttonBg} ${controlStyles.buttonText} rounded-lg ${controlStyles.buttonHover} transition-colors text-xs`}
@@ -743,19 +917,27 @@ const Index = () => {
                                     }`}
                                 >
                                     <div className="space-y-2">
-                                        <Label
-                                            htmlFor="fund-amount"
-                                            className={`font-medium ${
-                                                isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                                            }`}
-                                        >
-                                            Amount
-                                        </Label>
+                                        <div className="flex justify-between items-center">
+                                            <Label
+                                                htmlFor="fund-amount"
+                                                className={`font-medium ${
+                                                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                                                }`}
+                                            >
+                                                Amount
+                                            </Label>
+                                            <span
+                                                className="cursor-pointer"
+                                                onClick={handleMaxFund}
+                                            >
+                                                Max
+                                            </span>
+                                        </div>
                                         <Input
                                             id="fund-amount"
                                             type="number"
                                             placeholder="Enter amount..."
-                                            value={fundAmount}
+                                            value={fundAmount == 0 ? '' : fundAmount}
                                             onChange={e => setFundAmount(Number(e.target.value))}
                                             className={`backdrop-blur-sm border transition-colors duration-200 ${
                                                 isDarkMode
@@ -795,7 +977,7 @@ const Index = () => {
                                                     ? 'bg-white/20 hover:bg-white/30 text-white border border-white/20'
                                                     : 'bg-black/15 hover:bg-black/25 text-black border border-black/20'
                                             }`}
-                                            disabled={isApproving || isApproved}
+                                            disabled={isApproving || isApproved || !isRegistered}
                                         >
                                             <ArrowDownLeft className="w-4 h-4 mr-2" />
                                             {isApproving ? 'Approving...' : 'Approve'}
@@ -803,16 +985,14 @@ const Index = () => {
                                     ) : (
                                         <Button
                                             onClick={() =>
-                                                isApproved
-                                                    ? handleRegisterAndFund()
-                                                    : handleApproveStrk()
+                                                isApproved ? handleFund() : handleApproveStrk()
                                             }
                                             className={`w-full font-semibold py-3 transition-all duration-200 transform hover:scale-105 ${
                                                 isDarkMode
                                                     ? 'bg-white/20 hover:bg-white/30 text-white border border-white/20'
                                                     : 'bg-black/15 hover:bg-black/25 text-black border border-black/20'
                                             }`}
-                                            disabled={isFunding}
+                                            disabled={isFunding || !isRegistered}
                                         >
                                             <ArrowDownLeft className="w-4 h-4 mr-2" />
                                             {isFunding ? 'Initiating Fund...' : 'Initiate Fund'}
@@ -830,20 +1010,30 @@ const Index = () => {
                                     }`}
                                 >
                                     <div className="space-y-2">
-                                        <Label
-                                            htmlFor="transfer-amount"
-                                            className={`font-medium ${
-                                                isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                                            }`}
-                                        >
-                                            Amount
-                                        </Label>
+                                        <div className="flex justify-between items-center">
+                                            <Label
+                                                htmlFor="fund-amount"
+                                                className={`font-medium ${
+                                                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                                                }`}
+                                            >
+                                                Amount
+                                            </Label>
+                                            <span
+                                                className="cursor-pointer"
+                                                onClick={handleMaxTransfer}
+                                            >
+                                                Max
+                                            </span>
+                                        </div>
                                         <Input
                                             id="transfer-amount"
                                             type="number"
                                             placeholder="Enter amount..."
-                                            value={transferAmount}
-                                            onChange={e => setTransferAmount(e.target.value)}
+                                            value={transferAmount == 0 ? '' : transferAmount}
+                                            onChange={e =>
+                                                setTransferAmount(Number(e.target.value))
+                                            }
                                             className={`backdrop-blur-sm border transition-colors duration-200 ${
                                                 isDarkMode
                                                     ? 'bg-black/20 border-white/20 text-white placeholder:text-gray-400 focus:ring-white/30 focus:border-white/40'
@@ -863,7 +1053,7 @@ const Index = () => {
                                         </Label>
                                         <Input
                                             id="transfer-address"
-                                            placeholder="Enter wallet address..."
+                                            placeholder="Enter shielded address..."
                                             value={transferAddress}
                                             onChange={e => setTransferAddress(e.target.value)}
                                             className={`backdrop-blur-sm border transition-colors duration-200 ${
@@ -881,9 +1071,10 @@ const Index = () => {
                                                 ? 'bg-white/20 hover:bg-white/30 text-white border border-white/20'
                                                 : 'bg-black/15 hover:bg-black/25 text-black border border-black/20'
                                         }`}
+                                        disabled={isTransfering || !isRegistered}
                                     >
                                         <Send className="w-4 h-4 mr-2" />
-                                        Initiate Transfer
+                                        {isTransfering ? 'Transfering...' : 'Initiate Transfer'}
                                     </Button>
                                 </div>
                             </TabsContent>
@@ -905,38 +1096,58 @@ const Index = () => {
                                             Quick Select
                                         </Label>
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                            {predefinedAmounts.map(amount => (
-                                                <Button
-                                                    key={amount}
-                                                    variant="outline"
-                                                    onClick={() => setPredefinedAmount(amount)}
-                                                    className={`backdrop-blur-sm border transition-all duration-200 ${
-                                                        isDarkMode
-                                                            ? 'bg-black/20 border-white/20 text-white hover:bg-white/20 hover:border-white/30'
-                                                            : 'bg-white/20 border-black/20 text-black hover:bg-black/20 hover:border-black/30'
-                                                    }`}
-                                                >
-                                                    {amount} STRK
-                                                </Button>
-                                            ))}
+                                            {predefinedAmounts.map(amount => {
+                                                const isSelected = amount === clickedAmount
+                                                return (
+                                                    <Button
+                                                        key={amount}
+                                                        variant="outline"
+                                                        onClick={() => {
+                                                            setPredefinedAmount(amount)
+                                                            setClickedAmount(amount)
+                                                        }}
+                                                        className={`backdrop-blur-sm border transition-all duration-200 ${
+                                                            isDarkMode
+                                                                ? isSelected
+                                                                    ? 'bg-white/20 border-white/30 text-white'
+                                                                    : 'bg-black/20 border-white/20 text-white hover:bg-white/20 hover:border-white/30'
+                                                                : isSelected
+                                                                  ? 'bg-black/20 border-black/30 text-black'
+                                                                  : 'bg-white/20 border-black/20 text-black hover:bg-black/20 hover:border-black/30'
+                                                        }`}
+                                                    >
+                                                        {amount} STRK
+                                                    </Button>
+                                                )
+                                            })}
                                         </div>
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label
-                                            htmlFor="withdraw-amount"
-                                            className={`font-medium ${
-                                                isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                                            }`}
-                                        >
-                                            Amount
-                                        </Label>
+                                        <div className="flex justify-between items-center">
+                                            <Label
+                                                htmlFor="fund-amount"
+                                                className={`font-medium ${
+                                                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                                                }`}
+                                            >
+                                                Amount
+                                            </Label>
+                                            <span
+                                                className="cursor-pointer"
+                                                onClick={handleMaxWithdrawal}
+                                            >
+                                                Max
+                                            </span>
+                                        </div>
                                         <Input
                                             id="withdraw-amount"
                                             type="number"
                                             placeholder="Enter amount..."
-                                            value={withdrawAmount}
-                                            onChange={e => setWithdrawAmount(e.target.value)}
+                                            value={withdrawAmount == 0 ? '' : withdrawAmount}
+                                            onChange={e =>
+                                                setWithdrawAmount(Number(e.target.value))
+                                            }
                                             className={`backdrop-blur-sm border transition-colors duration-200 ${
                                                 isDarkMode
                                                     ? 'bg-black/20 border-white/20 text-white placeholder:text-gray-400 focus:ring-white/30 focus:border-white/40'
@@ -956,7 +1167,7 @@ const Index = () => {
                                         </Label>
                                         <Input
                                             id="withdraw-address"
-                                            placeholder="Enter wallet address..."
+                                            placeholder="Enter shielded address..."
                                             value={withdrawAddress}
                                             onChange={e => setWithdrawAddress(e.target.value)}
                                             className={`backdrop-blur-sm border transition-colors duration-200 ${
@@ -974,6 +1185,7 @@ const Index = () => {
                                                 ? 'bg-white/20 hover:bg-white/30 text-white border border-white/20'
                                                 : 'bg-black/15 hover:bg-black/25 text-black border border-black/20'
                                         }`}
+                                        disabled={!isRegistered || isWithdrawing}
                                     >
                                         <ArrowUpRight className="w-4 h-4 mr-2" />
                                         Initiate Withdrawal
@@ -984,6 +1196,7 @@ const Index = () => {
                     </CardContent>
                 </Card>
             </div>
+            <SettingsModal isOpen={isSettinngsOpen} onClose={closeSettingsModal} />
         </div>
     )
 }

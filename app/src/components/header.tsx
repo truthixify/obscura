@@ -23,18 +23,9 @@ interface HeaderProps {
         secondaryText: string
         secondaryHover: string
     }
-    handleRegister: () => void
-    isRegistering: boolean
-    isRegistered: boolean
 }
 
-export function Header({
-    currentPattern,
-    controlStyles,
-    handleRegister,
-    isRegistering,
-    isRegistered
-}: HeaderProps) {
+export function Header({ currentPattern, controlStyles }: HeaderProps) {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false)
     const burgerMenuRef = useRef<HTMLDivElement>(null)
 
@@ -78,7 +69,7 @@ export function Header({
             className={`absolute top-0 left-0 right-0 w-full py-4 px-4 flex justify-between items-center z-50 ${controlStyles.bg} backdrop-blur-[1px] border-b rounded-bl-lg rounded-br-lg ${controlStyles.border}`}
         >
             <div className="flex items-center space-between">
-                <h1 className={`text-4xl font-bold  ${controlStyles.text}`}>Obscura</h1>
+                {/* <h1 className={`text-4xl font-bold  ${controlStyles.text}`}>Obscura</h1> */}
             </div>
 
             <div className="flex items-center gap-2 md:gap-4">
@@ -86,12 +77,7 @@ export function Header({
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <div>
-                                <CustomConnectButton
-                                    controlStyles={controlStyles}
-                                    handleRegister={handleRegister}
-                                    isRegistering={isRegistering}
-                                    isRegistered={isRegistered}
-                                />
+                                <CustomConnectButton controlStyles={controlStyles} />
                             </div>
                         </TooltipTrigger>
                         {status === 'connected' && !isDeployed ? (

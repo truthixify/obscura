@@ -3,12 +3,14 @@ const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const Account = require('./models/Account')
 const dotenv = require('dotenv')
+const cors = require('cors')
 
 dotenv.config()
 
 const app = express()
 const port = process.env.PORT || 3000
 
+app.use(cors())
 app.use(bodyParser.json())
 
 // Connect to MongoDB
@@ -39,11 +41,11 @@ app.post('/account', async (req, res) => {
 // GET endpoint to fetch a single data document by ID
 app.get('/account/:id', async (req, res) => {
     try {
-        const data = await Account.findById(req.params.id)
-        if (!data) {
+        const account = await Account.findById(req.params.id)
+        if (!account) {
             return res.status(404).json({ error: 'Account not found' })
         }
-        res.json(data)
+        res.json(account)
     } catch (err) {
         res.status(500).json({ error: err.message })
     }
