@@ -1,19 +1,14 @@
 import { getHonkCallData } from 'garaga'
-import { bytecode, abi } from '../contracts/assets/circuit.json'
+import { bytecode, abi } from '../assets/circuit.json'
 import { flattenFieldsAsArray } from './helper'
 import { UltraHonkBackend } from '@aztec/bb.js'
 import { Noir } from '@noir-lang/noir_js'
 import fs from 'fs'
 
-export async function prove(input: any, keyBasePath: any, env: 'web' | 'node' = 'web') {
-    let vKeyNode: any
-
+export async function prove(input: any, keyBasePath: any) {
     // Load verifying key
-    if (env == 'web') {
-    } else {
-        const vkData = fs.readFileSync(keyBasePath)
-        vKeyNode = new Uint8Array(vkData)
-    }
+    const vkData = fs.readFileSync(keyBasePath)
+    const vKey = new Uint8Array(vkData)
 
     // Generate Witness
     const noir = new Noir({ bytecode, abi: abi as any })
@@ -32,7 +27,7 @@ export async function prove(input: any, keyBasePath: any, env: 'web' | 'node' = 
     const callData = getHonkCallData(
         proof.proof,
         flattenFieldsAsArray(proof.publicInputs),
-        vKeyNode,
+        vKey,
         1 // HonkFlavor.STARKNET
     )
     // console.log('Calldata Prepared:', callData)

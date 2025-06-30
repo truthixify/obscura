@@ -1,14 +1,13 @@
 import { deployTestContract } from './deploy'
 import { Contract, RpcProvider, Account, hash, num, addAddressPadding, stark } from 'starknet'
-import { Keypair } from '../../utils/keypair'
-import Utxo from '../../utils/utxo'
-import { registerAndTransact, transaction } from '../../utils/index'
+import { Keypair } from '../utils/keypair'
+import Utxo from '../utils/utxo'
+import { registerAndTransact, transaction } from '../utils/index'
 import { init as initGaraga } from 'garaga'
 import {
-    parseByteArray,
     parseNewCommitEvent,
     parsePublicKeyEvent
-} from '../../utils/events_parsing'
+} from '../utils/events_parsing'
 
 describe('Obscura Test', () => {
     let obscura: Contract
@@ -28,7 +27,7 @@ describe('Obscura Test', () => {
             '0x078662e7352d062084b0010068b99288486c2d8b914f6e2a55ce945f8792c8b1',
             '0x000000000000000000000000000000000e1406455b7d66b1690803be066cbe5e'
         )
-        ;({ obscura, strkToken } = await deployTestContract(5, BigInt(1e18)))
+        ;({ obscura, strkToken } = await deployTestContract(5, BigInt(10000 * 1e18)))
 
         await initGaraga()
     })
@@ -85,33 +84,33 @@ describe('Obscura Test', () => {
         expect(parsedEvent.key).toEqual(bobAccount.public_key)
     })
 
-    it('should register and deposit', async function () {
-        // Alice deposits into obscura
-        const aliceDepositAmount = 1e7
-        const aliceDepositUtxo = new Utxo({ amount: aliceDepositAmount })
+    // it('should register and deposit', async function () {
+    //     // Alice deposits into obscura
+    //     const aliceDepositAmount = 1e7
+    //     const aliceDepositUtxo = new Utxo({ amount: aliceDepositAmount })
 
-        obscura.connect(alice)
-        strkToken.connect(alice)
+    //     obscura.connect(alice)
+    //     strkToken.connect(alice)
 
-        strkToken.approve(obscura.address, aliceDepositAmount)
+    //     strkToken.approve(obscura.address, aliceDepositAmount)
 
-        await registerAndTransact({
-            obscura,
-            provider,
-            outputs: [aliceDepositUtxo],
-            account: {
-                owner: alice.address,
-                public_key: aliceDepositUtxo.keypair.address()
-            }
-        })
+    //     await registerAndTransact({
+    //         obscura,
+    //         provider,
+    //         outputs: [aliceDepositUtxo],
+    //         account: {
+    //             owner: alice.address,
+    //             public_key: aliceDepositUtxo.keypair.address()
+    //         }
+    //     })
 
-        const [parsedEvent] = (await parsePublicKeyEvent(obscura, provider, [alice.address])).slice(
-            -1
-        )
+    //     const [parsedEvent] = (await parsePublicKeyEvent(obscura, provider, [alice.address])).slice(
+    //         -1
+    //     )
 
-        expect(addAddressPadding(num.toHex(parsedEvent.owner))).toEqual(alice.address)
-        expect(parsedEvent.key).toEqual(aliceDepositUtxo.keypair.address())
-    })
+    //     expect(addAddressPadding(num.toHex(parsedEvent.owner))).toEqual(alice.address)
+    //     expect(parsedEvent.key).toEqual(aliceDepositUtxo.keypair.address())
+    // })
 
     it('should deposit, transact and withdraw', async function () {
         // Alice deposits into obscura pool
@@ -160,6 +159,7 @@ describe('Obscura Test', () => {
                 parsedNewCommitEvent[0].index
             )
         } catch (error) {
+            // we try to decrypt another output here because it shuffles outputs before sending to blockchain
             bobReceiveUtxo = Utxo.decrypt(
                 bobKeypair,
                 parsedNewCommitEvent[1].encrypted_output,

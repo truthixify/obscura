@@ -1,25 +1,48 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import serveStatic from 'vite-plugin-serve-static'
 import mkcert from 'vite-plugin-mkcert'
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
+import { viteStaticCopy } from 'vite-plugin-static-copy'
 
 // https://vite.dev/config/
 export default defineConfig({
-    server: {
-        proxy: {}
-    },
     plugins: [
         react(),
         mkcert(),
-        {
-            // Workaround for https://github.com/keep-starknet-strange/scaffold-garaga/issues/5
-            ...serveStatic([
+
+        nodePolyfills({
+            globals: {
+                Buffer: true,
+                global: true,
+                process: true
+            },
+            protocolImports: true
+        }),
+
+        viteStaticCopy({
+            targets: [
                 {
-                    pattern: /main.worker.js/,
-                    resolve: 'node_modules/@aztec/bb.js/dest/browser/main.worker.js'
+                    src: 'node_modules/@aztec/bb.js/dest/browser/main.worker.js',
+                    dest: '.'
                 }
-            ]),
-            apply: 'serve' // Only apply in dev mode
-        }
-    ]
+            ]
+        })
+    ],
+
+    optimizeDeps: {
+        esbuildOptions: {
+            define: {
+                global: 'globalThis'
+            }
+        },
+        exclude: ['@aztec/bb.js']
+    },
+
+    build: {
+        rollupOptions: {}
+    },
+
+    server: {
+        proxy: {}
+    }
 })

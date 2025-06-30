@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react'
 import ConnectModal from './ConnectModal'
 import { Button } from '../../ui/button'
 import { LogOut } from 'lucide-react'
+import { useBalanceStore } from '../../../stores/balance-store'
 
 interface CustomConnectButtonProps {
     controlStyles: {
@@ -21,17 +22,26 @@ interface CustomConnectButtonProps {
         secondaryText: string
         secondaryHover: string
     }
+    handleRegister: () => void
+    isRegistering: boolean
+    isRegistered: boolean
 }
 
 /**
  * Custom Connect Button (watch balance + custom design)
  */
-export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps) => {
+export const CustomConnectButton = ({
+    controlStyles,
+    handleRegister,
+    isRegistering,
+    isRegistered
+}: CustomConnectButtonProps) => {
     useAutoConnect()
     const { connector } = useConnect()
     const { disconnect } = useDisconnect()
     const { targetNetwork } = useTargetNetwork()
     const { account, status, address: accountAddress } = useAccount()
+    const { balance } = useBalanceStore()
     const [accountChainId, setAccountChainId] = useState<bigint>(0n)
 
     // effect to get chain id and address from account
@@ -71,9 +81,13 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
             <div className="flex gap-2">
                 <Button
                     className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 ${controlStyles.buttonBg} ${controlStyles.buttonText} border ${controlStyles.border} ${controlStyles.buttonHover} transition-all duration-200`}
-                    // onClick={() => disconnect()}
+                    onClick={() => handleRegister()}
                 >
-                    Set up account
+                    {isRegistered
+                        ? `Balance: ${balance} STRK`
+                        : isRegistering
+                          ? 'Setting up account...'
+                          : 'Set up account'}
                 </Button>
                 <Button
                     className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 ${controlStyles.buttonBg} ${controlStyles.buttonText} border ${controlStyles.border} ${controlStyles.buttonHover} transition-all duration-200`}

@@ -11,6 +11,8 @@ import { X, KeySquare } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { Card, CardHeader, CardContent } from '../../ui/card'
 import { Input } from '../../ui/input'
+import { Keypair } from '../../../utils/keypair'
+import { useKeypairStore } from '../../../stores/keypair-store'
 
 const loader = ({ src }: { src: string }) => {
     return src
@@ -31,6 +33,7 @@ interface CustomModalProps {
 }
 
 const ConnectModal = ({ controlStyles }: CustomModalProps) => {
+    const { setKeypair } = useKeypairStore()
     const [showModal, setShowModal] = useState(false)
     // const modalRef = useRef<HTMLInputElement>(null)
     const [isBurnerWallet, setIsBurnerWallet] = useState(false)
@@ -224,6 +227,16 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
                                         : 'bg-white/20 border-black/20 text-black placeholder:text-gray-600 focus:ring-black/30 focus:border-black/40'
                                 }`}
                             />
+                            <Button
+                                className={`w-full mt-4 p-2 flex items-center justify-center ${isDarkMode ? 'bg-white text-black' : 'bg-black text-white'}`}
+                                onClick={() => {
+                                    setKeypair(new Keypair(privateKey))
+                                    setShowPrivateKeyModal(false)
+                                    closeModal()
+                                }}
+                            >
+                                Login
+                            </Button>
                         </CardContent>
                     </Card>
                 </GenericModal>

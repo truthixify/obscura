@@ -1,8 +1,7 @@
 /* global network */
 
-import crypto from 'crypto'
 import { poseidonHashBN254 } from 'garaga'
-import { BigNumberish, hash, byteArray, cairo } from 'starknet'
+import { BigNumberish, hash, byteArray, cairo, stark } from 'starknet'
 import { I256 } from './custom_type'
 
 export const FIELD_SIZE = BigInt(
@@ -11,7 +10,7 @@ export const FIELD_SIZE = BigInt(
 
 /** Generate random number of specified byte length */
 export const randomBN = (nbytes: number = 31): BigNumberish =>
-    BigInt('0x' + crypto.randomBytes(nbytes).toString('hex')) % FIELD_SIZE
+    BigInt(stark.randomAddress().slice(0, nbytes)) % FIELD_SIZE
 
 export const bigintToUint8Array = (bigInt: bigint): Uint8Array => {
     // Take the modulus of bigInt with respect to the field size
@@ -29,6 +28,7 @@ export const bigintToUint8Array = (bigInt: bigint): Uint8Array => {
 
     return new Uint8Array(buffer)
 }
+
 export const uint8ArrayToBigInt = (uint8Array: Uint8Array): BigInt => {
     // Convert Uint8Array to a hex string and then to BigInt
     let hexString = Buffer.from(uint8Array).toString('hex')
@@ -146,25 +146,4 @@ export function shuffle<T>(array: T[]): T[] {
     }
 
     return array
-}
-
-// export async function getSignerFromAddress(address: string) {
-//   await network.provider.request({
-//     method: 'hardhat_impersonateAccount',
-//     params: [address],
-//   })
-
-//   return await ethers.provider.getSigner(address)
-// }
-
-module.exports = {
-    FIELD_SIZE,
-    randomBN,
-    toFixedHex,
-    toBuffer,
-    poseidonHash,
-    poseidonHash2,
-    getExtDataHash,
-    shuffle
-    //   getSignerFromAddress,
 }

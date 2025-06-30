@@ -21,17 +21,51 @@ import {
 import { useToast } from '../../hooks/use-toast'
 import { Header } from '../header'
 import { useTheme } from 'next-themes'
+import { registerAndTransact, transaction } from '../../utils/index'
+import Utxo from '../../utils/utxo'
+import { parsePublicKeyEvent, parseNewCommitEvent } from '../../utils/events_parsing'
+import { useScaffoldContract } from '../../hooks/scaffold-stark/useScaffoldContract'
+import { useAccount, useProvider } from '@starknet-react/core'
+import { Account, addAddressPadding, RpcProvider } from 'starknet'
+import { feltToHex } from '../../utils/scaffold-stark/common'
+import { Keypair } from '../../utils/keypair'
+import { downloadPrivateKeyFile } from '../../lib/download-private-key-file'
+import { useBalanceStore } from '../../stores/balance-store'
+import { useKeypairStore } from '../../stores/keypair-store'
+import { generateKeypairFromSignature } from '../../utils/utils'
 
 const Index = () => {
+    const { data: obscura } = useScaffoldContract({
+        contractName: 'Obscura'
+    })
+    const { data: strk } = useScaffoldContract({
+        contractName: 'Strk'
+    })
+    const { provider } = useProvider()
+    const { address, account } = useAccount()
+
     const { toast } = useToast()
     const { theme, setTheme } = useTheme()
     const [isAnimated, setIsAnimated] = useState(true)
     const [currentPattern, setCurrentPattern] = useState(0)
     const [isArtControlOpen, setIsArtControlOpen] = useState(false)
 
+    // Balance state
+    const { balance, setBalance } = useBalanceStore()
+
+    // Keypair state
+    const { keypair, setKeypair } = useKeypairStore()
+
+    // Register state
+    const [isRegistered, setIsRegistered] = useState(false)
+    const [isRegistering, setIsRegistering] = useState(false)
+
     // Fund tab state
-    const [fundAmount, setFundAmount] = useState('')
+    const [fundAmount, setFundAmount] = useState(0)
     const [fundAddress, setFundAddress] = useState('')
+    const [isFunding, setIsFunding] = useState(false)
+    const [isApproved, setIsApproved] = useState(false)
+    const [isApproving, setIsApproving] = useState(false)
 
     // Transfer tab state
     const [transferAmount, setTransferAmount] = useState('')
@@ -142,20 +176,232 @@ const Index = () => {
         }
     }, [isAnimated, patterns.length])
 
-    const handleFund = () => {
+    useEffect(() => {
+        setFundAddress(address)
+
+        const lol = async () => {
+            if (address) {
+                const kp = await generateKeypairFromSignature(account as Account)
+            }
+        }
+
+        lol()
+
+        const loadRegisterEvent = async () => {
+            // if (!address || !keypair) return
+
+            try {
+                const registerEvents = await parsePublicKeyEvent(obscura, provider as RpcProvider, [
+                    address
+                ])
+                const [lastUserRegisterEvent] = registerEvents ?? registerEvents.slice(-1)
+                console.log(lastUserRegisterEvent.public_key == keypair.address())
+
+                if (
+                    lastUserRegisterEvent &&
+                    (addAddressPadding(feltToHex(lastUserRegisterEvent.owner)) == address ||
+                        lastUserRegisterEvent.public_key == keypair.address())
+                )
+                    setIsRegistered(true)
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+        const checkUserBalance = async () => {
+            if (!address) return
+
+            try {
+                const parsedNewCommitEvents = await parseNewCommitEvent(
+                    obscura,
+                    provider as RpcProvider
+                )
+
+                for (let i = 0; i < parsedNewCommitEvents.length; i += 2) {
+                    let balance: bigint = 0n
+                    let utxo: Utxo
+                    try {
+                        utxo = Utxo.decrypt(
+                            keypair,
+                            parsedNewCommitEvents[i].encrypted_output,
+                            parsedNewCommitEvents[i + 1].index
+                        )
+                    } catch (error) {
+                        utxo = Utxo.decrypt(
+                            keypair,
+                            parsedNewCommitEvents[i].encrypted_output,
+                            parsedNewCommitEvents[i + 1].index
+                        )
+                    }
+
+                    const nullifier = utxo.getNullifier()
+                    const isSpent = obscura.is_spent(nullifier)
+
+                    if (!isSpent) balance += BigInt(utxo ? utxo.amount : 0)
+                }
+                console.log(balance)
+                setBalance(balance)
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+        // checkUserBalance()
+        // loadRegisterEvent()
+    }, [address, keypair, setKeypair])
+
+    const handleRegister = async () => {
+        if (!address) {
+            toast({
+                title: 'Wallet Not Connected',
+                description: 'Please connect your wallet before setting up and account.',
+                variant: 'warning'
+            })
+            return
+        }
+
+        setIsRegistering(true)
+
+        try {
+            const keypair = new Keypair()
+            const userAccount = {
+                owner: address,
+                public_key: keypair.address()
+            }
+
+            setKeypair(keypair)
+            const filename = `obscura-key-file-${keypair.address().slice(2, 10)}`
+            const content = keypair.privkey
+
+            await downloadPrivateKeyFile(filename, content)
+
+            // toast({
+            //     title: 'Setting up account',
+            //     description: 'Please wait while we set up your account.',
+            //     variant: 'default'
+            // })
+
+            await obscura.register(userAccount)
+        } catch (error) {
+            setIsRegistering(false)
+        } finally {
+            setIsRegistering(false)
+            toast({
+                title: 'Private key saved',
+                description:
+                    'Please keep this file safe. You’ll need it to transfer/withdraw your funds.',
+                variant: 'warning'
+            })
+        }
+    }
+
+    const handleFund = async () => {
         if (!fundAmount || !fundAddress) {
             toast({
                 title: 'Missing Information',
                 description: 'Please fill in all fields before funding.',
-                variant: 'success'
+                variant: 'destructive'
             })
             return
         }
-        toast({
-            title: 'Fund Initiated',
-            description: `Funding ${fundAmount} to ${fundAddress.slice(0, 10)}...`
-        })
-        console.log('Fund initiated:', { amount: fundAmount, address: fundAddress })
+
+        setIsFunding(true)
+
+        try {
+            toast({
+                title: 'Fund Initiated',
+                description: `Funding ${fundAmount} STRK to ${fundAddress.slice(0, 10)}...`
+            })
+
+            const newUtxo = new Utxo({ amount: fundAmount, keypair })
+            const tx = await transaction({
+                obscura,
+                provider,
+                outputs: [newUtxo],
+                account: {
+                    owner: address,
+                    public_key: newUtxo.keypair.address()
+                }
+            })
+
+            if (tx) {
+                console.log('Fund initiated:', { amount: fundAmount, address: fundAddress })
+            }
+        } catch (error) {
+            console.log(error)
+            setIsFunding(false)
+        } finally {
+            setIsFunding(false)
+        }
+    }
+
+    const handleApproveStrk = async () => {
+        if (!fundAmount || !fundAddress) {
+            toast({
+                title: 'Missing Information',
+                description: 'Please fill in all fields before funding.',
+                variant: 'destructive'
+            })
+            return
+        }
+
+        setIsApproving(true)
+
+        try {
+            const tx = await strk.approve(obscura.address, BigInt(fundAmount * 1e18))
+            console.log(tx)
+        } catch (error) {
+            setIsApproved(false)
+            setIsApproving(false)
+            toast({
+                title: 'Approval Failed',
+                description: error instanceof Error ? error.message : error,
+                variant: 'destructive'
+            })
+        } finally {
+            setIsApproved(true)
+            setIsApproving(false)
+        }
+    }
+
+    const handleRegisterAndFund = async () => {
+        if (!fundAmount || !fundAddress) {
+            toast({
+                title: 'Missing Information',
+                description: 'Please fill in all fields before funding.',
+                variant: 'destructive'
+            })
+            return
+        }
+
+        setIsFunding(true)
+
+        try {
+            toast({
+                title: 'Fund Initiated',
+                description: `Funding ${fundAmount} STRK to ${fundAddress.slice(0, 10)}...`
+            })
+
+            const newUtxo = new Utxo({ amount: fundAmount })
+            const tx = await registerAndTransact({
+                obscura,
+                provider,
+                outputs: [newUtxo],
+                account: {
+                    owner: address,
+                    public_key: newUtxo.keypair.address()
+                }
+            })
+
+            if (tx) {
+                console.log('Fund initiated:', { amount: fundAmount, address: fundAddress })
+            }
+        } catch (error) {
+            console.log(error)
+            setIsFunding(false)
+        } finally {
+            setIsFunding(false)
+        }
     }
 
     const handleTransfer = () => {
@@ -360,7 +606,13 @@ const Index = () => {
             </div>
 
             {/* Header with Obscura on the left */}
-            <Header currentPattern={currentPattern} controlStyles={controlStyles} />
+            <Header
+                currentPattern={currentPattern}
+                controlStyles={controlStyles}
+                handleRegister={handleRegister}
+                isRegistering={isRegistering}
+                isRegistered={isRegistered}
+            />
 
             {/* Adaptive Art Control Panel */}
             <div className="absolute bottom-6 left-6 z-50">
@@ -374,7 +626,7 @@ const Index = () => {
                     ) : (
                         <Moon className={`h-4 w-4 ${controlStyles.text}`} />
                     )}
-                    <span className="sr-only">Toggle theme</span>
+                    {/* <span className={`${controlStyles.text} font-semibold text-sm`}>Toggle theme</span> */}
                 </Button>
                 <div
                     className={`${controlStyles.bg} backdrop-blur-sm border ${controlStyles.border} rounded-lg shadow-lg overflow-hidden transition-all duration-500`}
@@ -504,7 +756,7 @@ const Index = () => {
                                             type="number"
                                             placeholder="Enter amount..."
                                             value={fundAmount}
-                                            onChange={e => setFundAmount(e.target.value)}
+                                            onChange={e => setFundAmount(Number(e.target.value))}
                                             className={`backdrop-blur-sm border transition-colors duration-200 ${
                                                 isDarkMode
                                                     ? 'bg-black/20 border-white/20 text-white placeholder:text-gray-400 focus:ring-white/30 focus:border-white/40'
@@ -535,17 +787,37 @@ const Index = () => {
                                         />
                                     </div>
 
-                                    <Button
-                                        onClick={handleFund}
-                                        className={`w-full font-semibold py-3 transition-all duration-200 transform hover:scale-105 ${
-                                            isDarkMode
-                                                ? 'bg-white/20 hover:bg-white/30 text-white border border-white/20'
-                                                : 'bg-black/15 hover:bg-black/25 text-black border border-black/20'
-                                        }`}
-                                    >
-                                        <ArrowDownLeft className="w-4 h-4 mr-2" />
-                                        Initiate Fund
-                                    </Button>
+                                    {!isApproved ? (
+                                        <Button
+                                            onClick={handleApproveStrk}
+                                            className={`w-full font-semibold py-3 transition-all duration-200 transform hover:scale-105 ${
+                                                isDarkMode
+                                                    ? 'bg-white/20 hover:bg-white/30 text-white border border-white/20'
+                                                    : 'bg-black/15 hover:bg-black/25 text-black border border-black/20'
+                                            }`}
+                                            disabled={isApproving || isApproved}
+                                        >
+                                            <ArrowDownLeft className="w-4 h-4 mr-2" />
+                                            {isApproving ? 'Approving...' : 'Approve'}
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            onClick={() =>
+                                                isApproved
+                                                    ? handleRegisterAndFund()
+                                                    : handleApproveStrk()
+                                            }
+                                            className={`w-full font-semibold py-3 transition-all duration-200 transform hover:scale-105 ${
+                                                isDarkMode
+                                                    ? 'bg-white/20 hover:bg-white/30 text-white border border-white/20'
+                                                    : 'bg-black/15 hover:bg-black/25 text-black border border-black/20'
+                                            }`}
+                                            disabled={isFunding}
+                                        >
+                                            <ArrowDownLeft className="w-4 h-4 mr-2" />
+                                            {isFunding ? 'Initiating Fund...' : 'Initiate Fund'}
+                                        </Button>
+                                    )}
                                 </div>
                             </TabsContent>
 

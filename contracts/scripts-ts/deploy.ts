@@ -40,9 +40,8 @@ const deployScript = async (): Promise<void> => {
     await deployContract({
         contract: 'Obscura',
         constructorArgs: {
-            // owner: "0x064b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
-            levels: 16,
-            maximum_deposit_amount: 100000000000
+            levels: 5,
+            maximum_deposit_amount: BigInt(10000 * 1e18)
         }
     })
 }

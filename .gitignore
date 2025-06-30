@@ -7,3 +7,4 @@ accounts.json
 garaga-venv
 .yarn
 **.env
+_app

@@ -1,4 +1,4 @@
-import { encrypt, decrypt, getEncryptionPublicKey } from 'eth-sig-util'
+import { encrypt, decrypt, getEncryptionPublicKey } from '@metamask/eth-sig-util'
 import { ethers } from 'ethers'
 import { toFixedHex, poseidonHash2, FIELD_SIZE } from './utils'
 import { BigNumberish } from 'starknet'
@@ -96,9 +96,11 @@ export class Keypair {
     encrypt(bytes: Buffer): string {
         return packEncryptedMessage(
             encrypt(
-                this.encryptionKey,
-                { data: bytes.toString('base64') },
-                'x25519-xsalsa20-poly1305'
+                {
+                    publicKey: this.encryptionKey,
+                    data: bytes.toString('base64'),
+                    version: 'x25519-xsalsa20-poly1305'
+                }
             )
         )
     }
@@ -108,13 +110,10 @@ export class Keypair {
             throw new Error('Cannot decrypt without private key')
         }
         const unpacked = unpackEncryptedMessage(data)
-        const decryptedBase64 = decrypt(unpacked, this.privkey.slice(2))
+        const decryptedBase64 = decrypt({
+            encryptedData: unpacked, 
+            privateKey: this.privkey.slice(2)
+        })
         return Buffer.from(decryptedBase64, 'base64')
     }
-}
-
-module.exports = {
-    Keypair,
-    packEncryptedMessage,
-    unpackEncryptedMessage
 }

@@ -6,7 +6,7 @@
 const deployedContracts = {
     devnet: {
         Obscura: {
-            address: '0x38cefca2f1e14162e037adcd19975f03377bac687ae334999fff2875e7ec068',
+            address: '0x3ef7e52eb979af280b9f46c067418e08d7d3ed6751f944e98ce27453b32b9b',
             abi: [
                 {
                     type: 'impl',
@@ -507,7 +507,513 @@ const deployedContracts = {
                     ]
                 }
             ],
-            classHash: '0x330604fe39cb854465c9c7aa103b87dd3a750fa4547cb709f8641b3f36c1a06'
+            classHash: '0x21adaa88a205833f90ca9912f188db939f7656727a21de90e5b435df7af447a'
+        }
+    },
+    sepolia: {
+        Obscura: {
+            address: '0x233066e1b99be0e1edc942d762789d75989a04364d91cf3cdbb494012a746d',
+            abi: [
+                {
+                    type: 'impl',
+                    name: 'ObscuraImpl',
+                    interface_name: 'obscura::interface::IObscura'
+                },
+                {
+                    type: 'struct',
+                    name: 'core::byte_array::ByteArray',
+                    members: [
+                        {
+                            name: 'data',
+                            type: 'core::array::Array::<core::bytes_31::bytes31>'
+                        },
+                        {
+                            name: 'pending_word',
+                            type: 'core::felt252'
+                        },
+                        {
+                            name: 'pending_word_len',
+                            type: 'core::integer::u32'
+                        }
+                    ]
+                },
+                {
+                    type: 'struct',
+                    name: 'obscura::structs::Account',
+                    members: [
+                        {
+                            name: 'owner',
+                            type: 'core::starknet::contract_address::ContractAddress'
+                        },
+                        {
+                            name: 'public_key',
+                            type: 'core::byte_array::ByteArray'
+                        }
+                    ]
+                },
+                {
+                    type: 'struct',
+                    name: 'core::array::Span::<core::felt252>',
+                    members: [
+                        {
+                            name: 'snapshot',
+                            type: '@core::array::Array::<core::felt252>'
+                        }
+                    ]
+                },
+                {
+                    type: 'struct',
+                    name: 'core::integer::u256',
+                    members: [
+                        {
+                            name: 'low',
+                            type: 'core::integer::u128'
+                        },
+                        {
+                            name: 'high',
+                            type: 'core::integer::u128'
+                        }
+                    ]
+                },
+                {
+                    type: 'struct',
+                    name: 'obscura::structs::Proof',
+                    members: [
+                        {
+                            name: 'proof',
+                            type: 'core::array::Span::<core::felt252>'
+                        },
+                        {
+                            name: 'root',
+                            type: 'core::integer::u256'
+                        },
+                        {
+                            name: 'input_nullifiers',
+                            type: 'core::array::Array::<core::integer::u256>'
+                        },
+                        {
+                            name: 'output_commitments',
+                            type: 'core::array::Array::<core::integer::u256>'
+                        },
+                        {
+                            name: 'public_amount',
+                            type: 'core::integer::u256'
+                        },
+                        {
+                            name: 'ext_data_hash',
+                            type: 'core::integer::u256'
+                        }
+                    ]
+                },
+                {
+                    type: 'enum',
+                    name: 'core::bool',
+                    variants: [
+                        {
+                            name: 'False',
+                            type: '()'
+                        },
+                        {
+                            name: 'True',
+                            type: '()'
+                        }
+                    ]
+                },
+                {
+                    type: 'struct',
+                    name: 'obscura::custom_type::i256::I256',
+                    members: [
+                        {
+                            name: 'value',
+                            type: 'core::integer::u256'
+                        },
+                        {
+                            name: 'is_negative',
+                            type: 'core::bool'
+                        }
+                    ]
+                },
+                {
+                    type: 'struct',
+                    name: 'obscura::structs::ExtData',
+                    members: [
+                        {
+                            name: 'recipient',
+                            type: 'core::starknet::contract_address::ContractAddress'
+                        },
+                        {
+                            name: 'ext_amount',
+                            type: 'obscura::custom_type::i256::I256'
+                        },
+                        {
+                            name: 'relayer',
+                            type: 'core::starknet::contract_address::ContractAddress'
+                        },
+                        {
+                            name: 'fee',
+                            type: 'core::integer::u256'
+                        },
+                        {
+                            name: 'encrypted_output1',
+                            type: 'core::byte_array::ByteArray'
+                        },
+                        {
+                            name: 'encrypted_output2',
+                            type: 'core::byte_array::ByteArray'
+                        }
+                    ]
+                },
+                {
+                    type: 'interface',
+                    name: 'obscura::interface::IObscura',
+                    items: [
+                        {
+                            type: 'function',
+                            name: 'register',
+                            inputs: [
+                                {
+                                    name: 'account',
+                                    type: 'obscura::structs::Account'
+                                }
+                            ],
+                            outputs: [],
+                            state_mutability: 'external'
+                        },
+                        {
+                            type: 'function',
+                            name: 'transact',
+                            inputs: [
+                                {
+                                    name: 'args',
+                                    type: 'obscura::structs::Proof'
+                                },
+                                {
+                                    name: 'ext_data',
+                                    type: 'obscura::structs::ExtData'
+                                }
+                            ],
+                            outputs: [],
+                            state_mutability: 'external'
+                        },
+                        {
+                            type: 'function',
+                            name: 'register_and_transact',
+                            inputs: [
+                                {
+                                    name: 'account',
+                                    type: 'obscura::structs::Account'
+                                },
+                                {
+                                    name: 'args',
+                                    type: 'obscura::structs::Proof'
+                                },
+                                {
+                                    name: 'ext_data',
+                                    type: 'obscura::structs::ExtData'
+                                }
+                            ],
+                            outputs: [],
+                            state_mutability: 'external'
+                        },
+                        {
+                            type: 'function',
+                            name: 'configure_limits',
+                            inputs: [
+                                {
+                                    name: 'maximum_deposit_amount',
+                                    type: 'core::integer::u256'
+                                }
+                            ],
+                            outputs: [],
+                            state_mutability: 'external'
+                        },
+                        {
+                            type: 'function',
+                            name: 'calculate_public_amount',
+                            inputs: [
+                                {
+                                    name: 'ext_amount',
+                                    type: 'obscura::custom_type::i256::I256'
+                                },
+                                {
+                                    name: 'fee',
+                                    type: 'core::integer::u256'
+                                }
+                            ],
+                            outputs: [
+                                {
+                                    type: 'core::integer::u256'
+                                }
+                            ],
+                            state_mutability: 'external'
+                        },
+                        {
+                            type: 'function',
+                            name: 'is_spent',
+                            inputs: [
+                                {
+                                    name: 'nullifier_hash',
+                                    type: 'core::integer::u256'
+                                }
+                            ],
+                            outputs: [
+                                {
+                                    type: 'core::bool'
+                                }
+                            ],
+                            state_mutability: 'view'
+                        },
+                        {
+                            type: 'function',
+                            name: 'field_size',
+                            inputs: [],
+                            outputs: [
+                                {
+                                    type: 'core::integer::u256'
+                                }
+                            ],
+                            state_mutability: 'view'
+                        },
+                        {
+                            type: 'function',
+                            name: 'max_ext_amount',
+                            inputs: [],
+                            outputs: [
+                                {
+                                    type: 'core::integer::u256'
+                                }
+                            ],
+                            state_mutability: 'view'
+                        },
+                        {
+                            type: 'function',
+                            name: 'min_ext_amount',
+                            inputs: [],
+                            outputs: [
+                                {
+                                    type: 'core::integer::u256'
+                                }
+                            ],
+                            state_mutability: 'view'
+                        },
+                        {
+                            type: 'function',
+                            name: 'max_fee',
+                            inputs: [],
+                            outputs: [
+                                {
+                                    type: 'core::integer::u256'
+                                }
+                            ],
+                            state_mutability: 'view'
+                        }
+                    ]
+                },
+                {
+                    type: 'impl',
+                    name: 'OwnableMixinImpl',
+                    interface_name: 'openzeppelin_access::ownable::interface::OwnableABI'
+                },
+                {
+                    type: 'interface',
+                    name: 'openzeppelin_access::ownable::interface::OwnableABI',
+                    items: [
+                        {
+                            type: 'function',
+                            name: 'owner',
+                            inputs: [],
+                            outputs: [
+                                {
+                                    type: 'core::starknet::contract_address::ContractAddress'
+                                }
+                            ],
+                            state_mutability: 'view'
+                        },
+                        {
+                            type: 'function',
+                            name: 'transfer_ownership',
+                            inputs: [
+                                {
+                                    name: 'new_owner',
+                                    type: 'core::starknet::contract_address::ContractAddress'
+                                }
+                            ],
+                            outputs: [],
+                            state_mutability: 'external'
+                        },
+                        {
+                            type: 'function',
+                            name: 'renounce_ownership',
+                            inputs: [],
+                            outputs: [],
+                            state_mutability: 'external'
+                        },
+                        {
+                            type: 'function',
+                            name: 'transferOwnership',
+                            inputs: [
+                                {
+                                    name: 'newOwner',
+                                    type: 'core::starknet::contract_address::ContractAddress'
+                                }
+                            ],
+                            outputs: [],
+                            state_mutability: 'external'
+                        },
+                        {
+                            type: 'function',
+                            name: 'renounceOwnership',
+                            inputs: [],
+                            outputs: [],
+                            state_mutability: 'external'
+                        }
+                    ]
+                },
+                {
+                    type: 'constructor',
+                    name: 'constructor',
+                    inputs: [
+                        {
+                            name: 'levels',
+                            type: 'core::integer::u32'
+                        },
+                        {
+                            name: 'maximum_deposit_amount',
+                            type: 'core::integer::u256'
+                        }
+                    ]
+                },
+                {
+                    type: 'event',
+                    name: 'obscura::events::NewCommitment',
+                    kind: 'struct',
+                    members: [
+                        {
+                            name: 'commitment',
+                            type: 'core::integer::u256',
+                            kind: 'data'
+                        },
+                        {
+                            name: 'index',
+                            type: 'core::integer::u32',
+                            kind: 'data'
+                        },
+                        {
+                            name: 'encrypted_output',
+                            type: 'core::byte_array::ByteArray',
+                            kind: 'data'
+                        }
+                    ]
+                },
+                {
+                    type: 'event',
+                    name: 'obscura::events::NewNullifier',
+                    kind: 'struct',
+                    members: [
+                        {
+                            name: 'nullifier',
+                            type: 'core::integer::u256',
+                            kind: 'data'
+                        }
+                    ]
+                },
+                {
+                    type: 'event',
+                    name: 'obscura::events::PublicKey',
+                    kind: 'struct',
+                    members: [
+                        {
+                            name: 'owner',
+                            type: 'core::starknet::contract_address::ContractAddress',
+                            kind: 'key'
+                        },
+                        {
+                            name: 'key',
+                            type: 'core::byte_array::ByteArray',
+                            kind: 'data'
+                        }
+                    ]
+                },
+                {
+                    type: 'event',
+                    name: 'openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred',
+                    kind: 'struct',
+                    members: [
+                        {
+                            name: 'previous_owner',
+                            type: 'core::starknet::contract_address::ContractAddress',
+                            kind: 'key'
+                        },
+                        {
+                            name: 'new_owner',
+                            type: 'core::starknet::contract_address::ContractAddress',
+                            kind: 'key'
+                        }
+                    ]
+                },
+                {
+                    type: 'event',
+                    name: 'openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted',
+                    kind: 'struct',
+                    members: [
+                        {
+                            name: 'previous_owner',
+                            type: 'core::starknet::contract_address::ContractAddress',
+                            kind: 'key'
+                        },
+                        {
+                            name: 'new_owner',
+                            type: 'core::starknet::contract_address::ContractAddress',
+                            kind: 'key'
+                        }
+                    ]
+                },
+                {
+                    type: 'event',
+                    name: 'openzeppelin_access::ownable::ownable::OwnableComponent::Event',
+                    kind: 'enum',
+                    variants: [
+                        {
+                            name: 'OwnershipTransferred',
+                            type: 'openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred',
+                            kind: 'nested'
+                        },
+                        {
+                            name: 'OwnershipTransferStarted',
+                            type: 'openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted',
+                            kind: 'nested'
+                        }
+                    ]
+                },
+                {
+                    type: 'event',
+                    name: 'obscura::obscura::Obscura::Event',
+                    kind: 'enum',
+                    variants: [
+                        {
+                            name: 'NewCommitment',
+                            type: 'obscura::events::NewCommitment',
+                            kind: 'nested'
+                        },
+                        {
+                            name: 'NewNullifier',
+                            type: 'obscura::events::NewNullifier',
+                            kind: 'nested'
+                        },
+                        {
+                            name: 'PublicKey',
+                            type: 'obscura::events::PublicKey',
+                            kind: 'nested'
+                        },
+                        {
+                            name: 'OwnableEvent',
+                            type: 'openzeppelin_access::ownable::ownable::OwnableComponent::Event',
+                            kind: 'flat'
+                        }
+                    ]
+                }
+            ],
+            classHash: '0x21adaa88a205833f90ca9912f188db939f7656727a21de90e5b435df7af447a'
         }
     }
 } as const

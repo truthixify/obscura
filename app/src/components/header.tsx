@@ -23,9 +23,18 @@ interface HeaderProps {
         secondaryText: string
         secondaryHover: string
     }
+    handleRegister: () => void
+    isRegistering: boolean
+    isRegistered: boolean
 }
 
-export function Header({ currentPattern, controlStyles }: HeaderProps) {
+export function Header({
+    currentPattern,
+    controlStyles,
+    handleRegister,
+    isRegistering,
+    isRegistered
+}: HeaderProps) {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false)
     const burgerMenuRef = useRef<HTMLDivElement>(null)
 
@@ -77,7 +86,12 @@ export function Header({ currentPattern, controlStyles }: HeaderProps) {
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <div>
-                                <CustomConnectButton controlStyles={controlStyles} />
+                                <CustomConnectButton
+                                    controlStyles={controlStyles}
+                                    handleRegister={handleRegister}
+                                    isRegistering={isRegistering}
+                                    isRegistered={isRegistered}
+                                />
                             </div>
                         </TooltipTrigger>
                         {status === 'connected' && !isDeployed ? (

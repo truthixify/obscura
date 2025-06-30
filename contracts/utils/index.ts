@@ -91,7 +91,7 @@ export async function getProof({
         out_pubkey: outputs.map(x => x.keypair.pubkey.toString())
     }
 
-    const { callData } = await prove(input, '../contracts/assets/vk.bin', 'node')
+    const { callData } = await prove(input, '../contracts/assets/vk.bin')
 
     const args = {
         proof: callData,
@@ -180,7 +180,7 @@ export async function registerAndTransact({
     obscura: any
     account: any
     [key: string]: any
-}): Promise<void> {
+}): Promise<any> {
     const { args, extData } = await prepareTransaction({
         obscura,
         provider,
