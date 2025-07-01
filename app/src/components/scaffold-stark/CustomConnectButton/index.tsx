@@ -45,7 +45,13 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
     const { account, status, address } = useAccount()
     const { balance, isLoadingBalance, reset: resetBalanceStore } = useBalanceStore()
     const [accountChainId, setAccountChainId] = useState<bigint>(0n)
-    const { isRegistered, setIsRegistered, setOwner, setAddress, reset: resetAccountStore } = useAccountStore()
+    const {
+        isRegistered,
+        setIsRegistered,
+        setOwner,
+        setAddress,
+        reset: resetAccountStore
+    } = useAccountStore()
     const { keypair, reset: resetKeyStore } = useKeypairStore()
     const { data: obscura } = useScaffoldContract({
         contractName: 'Obscura'
@@ -175,7 +181,7 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
     if ((status === 'disconnected' || accountChainId === 0n) && !keypair)
         return <ConnectModal controlStyles={controlStyles} />
 
-    if ((accountChainId !== targetNetwork.id) && !keypair) {
+    if (accountChainId !== targetNetwork.id && !keypair) {
         return <WrongNetworkDropdown />
     }
 

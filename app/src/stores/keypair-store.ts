@@ -17,6 +17,6 @@ export const useKeypairStore = create<KeypairState>(set => ({
 
     reset: () =>
         set({
-            keypair: null,
+            keypair: null
         })
 }))

@@ -102,8 +102,8 @@ export const AddressInfoDropdown = ({
                     </div>
                     <span className="ml-2 mr-2 text-sm font-bold">
                         {isENS(displayName)
-                              ? displayName
-                              : profile?.name || address?.slice(0, 6) + '...' + address?.slice(-4)}
+                            ? displayName
+                            : profile?.name || address?.slice(0, 6) + '...' + address?.slice(-4)}
                     </span>
                     <ChevronDown className="h-4 w-4 ml-1" />
                 </summary>

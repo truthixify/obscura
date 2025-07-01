@@ -20,6 +20,6 @@ export const useBalanceStore = create<BalanceState>(set => ({
     reset: () =>
         set({
             balance: 0,
-            isLoadingBalance: false,
+            isLoadingBalance: false
         })
 }))

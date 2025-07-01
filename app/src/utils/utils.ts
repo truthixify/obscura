@@ -11,7 +11,7 @@ import {
     TypedData,
     WeierstrassSignatureType,
     num,
-    addAddressPadding,
+    addAddressPadding
 } from 'starknet'
 import { I256 } from './custom_type'
 import { ethers } from 'ethers'

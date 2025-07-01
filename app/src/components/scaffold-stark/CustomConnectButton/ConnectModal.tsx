@@ -70,9 +70,7 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
     // Replace `handleCloseModal` usage:
     const handleCloseModal = closeModal
 
-    function handleConnectWallet(
-        connector: Connector
-    ): void {
+    function handleConnectWallet(connector: Connector): void {
         if (connector.id === 'burner-wallet') {
             setIsBurnerWallet(true)
             return
@@ -266,7 +264,7 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
                                 className={`w-full mt-4 p-2 flex items-center justify-center ${isDarkMode ? 'bg-white text-black' : 'bg-black text-white'}`}
                                 onClick={handleLoginWithPrivateKey}
                             >
-                                {isLoggingIn ? 'Logging in...': 'Login'}
+                                {isLoggingIn ? 'Logging in...' : 'Login'}
                             </Button>
                         </CardContent>
                     </Card>
