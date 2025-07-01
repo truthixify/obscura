@@ -159,6 +159,7 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
     }
 
     const handleSetup = async () => {
+        console.log(address)
         if (!address) {
             toast({
                 title: 'Wallet Not Connected',

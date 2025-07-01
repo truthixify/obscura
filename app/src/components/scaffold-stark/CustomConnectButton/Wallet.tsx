@@ -1,7 +1,6 @@
 // @ts-nocheck
 import React, { useEffect, useMemo, useState } from 'react'
 import { Connector } from '@starknet-react/core'
-// import Image from "next/image";
 import { useTheme } from 'next-themes'
 import { motion } from 'framer-motion'
 
@@ -12,7 +11,7 @@ const Wallet = ({
 }: {
     connector: Connector
     loader: ({ src }: { src: string }) => string
-    handleConnectWallet: (connector: Connector) => void
+    handleConnectWallet: (e: React.MouseEvent<HTMLButtonElement>, connector: Connector) => void
 }) => {
     const [clicked, setClicked] = useState(false)
     const [isMounted, setIsMounted] = useState(false)
@@ -32,7 +31,7 @@ const Wallet = ({
     }, [])
 
     return isMounted ? (
-        <button
+        <motion.button
             className="retro-button retro-button-outline w-full py-3 px-4 flex items-center gap-3 justify-start"
             onClick={e => {
                 setClicked(true)
@@ -50,7 +49,7 @@ const Wallet = ({
                 />
             </div>
             <span className=" text-start m-0">{connector.name}</span>
-        </button>
+        </motion.button>
     ) : null
 }
 

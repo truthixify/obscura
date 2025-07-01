@@ -9,7 +9,7 @@ import { LAST_CONNECTED_TIME_LOCALSTORAGE_KEY } from '../../../utils/Constants'
 import { Button } from '../../ui/button'
 import { X, KeySquare } from 'lucide-react'
 import { useTheme } from 'next-themes'
-import { Card, CardHeader, CardContent } from '../../ui/card'
+import { Card, CardHeader, CardContent, CardFooter } from '../../ui/card'
 import { Input } from '../../ui/input'
 import { Keypair } from '../../../utils/keypair'
 import { useKeypairStore } from '../../../stores/keypair-store'
@@ -38,7 +38,6 @@ interface CustomModalProps {
 const ConnectModal = ({ controlStyles }: CustomModalProps) => {
     const { setKeypair } = useKeypairStore()
     const [showModal, setShowModal] = useState(false)
-    // const modalRef = useRef<HTMLInputElement>(null)
     const [isBurnerWallet, setIsBurnerWallet] = useState(false)
     const [privateKey, setPrivateKey] = useState('')
     const [showPrivateKeyModal, setShowPrivateKeyModal] = useState(false)
@@ -70,7 +69,10 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
     // Replace `handleCloseModal` usage:
     const handleCloseModal = closeModal
 
-    function handleConnectWallet(connector: Connector): void {
+    function handleConnectWallet(
+        e: React.MouseEvent<HTMLButtonElement>,
+        connector: Connector
+    ): void {
         if (connector.id === 'burner-wallet') {
             setIsBurnerWallet(true)
             return
@@ -81,7 +83,7 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
         handleCloseModal()
     }
 
-    function handleConnectBurner(ix: number) {
+    function handleConnectBurner(e: React.MouseEvent<HTMLButtonElement>, ix: number) {
         const connector = connectors.find(it => it.id == 'burner-wallet')
         if (connector && connector instanceof BurnerConnector) {
             connector.burnerAccount = burnerAccounts[ix]
@@ -193,7 +195,7 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
                                             <button
                                                 key={burnerAcc.publicKey}
                                                 className="retro-button retro-button-outline w-full py-3 px-4 flex items-center gap-3"
-                                                onClick={() => handleConnectBurner(ix)}
+                                                onClick={e => handleConnectBurner(e, ix)}
                                             >
                                                 <BlockieAvatar
                                                     address={burnerAcc.accountAddress}
@@ -208,18 +210,19 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
                                 </div>
                             )}
                         </CardContent>
+                        <CardFooter>
+                            {isBurnerWallet && (
+                                <div className="mt-4 flex justify-start">
+                                    <button
+                                        onClick={() => setIsBurnerWallet(false)}
+                                        className={`py-2 px-3 md:py-2 md:px-4 flex items-center rounded-md ${isDarkMode ? 'bg-white text-black' : 'bg-black text-white'}`}
+                                    >
+                                        Back to Wallets
+                                    </button>
+                                </div>
+                            )}
+                        </CardFooter>
                     </Card>
-
-                    {isBurnerWallet && (
-                        <div className="mt-4 flex justify-start">
-                            <button
-                                onClick={() => setIsBurnerWallet(false)}
-                                className="retro-button retro-button-secondary py-2 px-4 flex items-center gap-2"
-                            >
-                                Back to Wallets
-                            </button>
-                        </div>
-                    )}
                 </GenericModal>
             )}
             {showPrivateKeyModal && (

@@ -108,7 +108,7 @@ pub trait IObscura<TContractState> {
     ///
     /// # Formula
     /// public_amount = ext_amount - fee (with proper field arithmetic)
-    fn calculate_public_amount(ref self: TContractState, ext_amount: I256, fee: u256) -> u256;
+    fn calculate_public_amount(self: @TContractState, ext_amount: I256, fee: u256) -> u256;
 
     /// Checks if a nullifier has already been spent.
     ///

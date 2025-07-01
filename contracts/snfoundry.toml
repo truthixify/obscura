@@ -1,5 +1,9 @@
+# [sncast.default]
+# url = "http://localhost:5050/rpc"
+# accounts-file = "accounts.json"
+# account = "devnet0"
+# show-explorer-links = false
+
 [sncast.default]
-url = "http://localhost:5050/rpc"
-accounts-file = "accounts.json"
-account = "devnet0"
-show-explorer-links = false
+url = "https://starknet-sepolia.public.blastapi.io/rpc/v0_8"
+account = "my_imported_account"

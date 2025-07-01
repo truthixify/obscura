@@ -6,7 +6,7 @@
 const deployedContracts = {
     devnet: {
         Obscura: {
-            address: '0x2ea05b9515d5e40f0470d7cb104c5abfca1fe094bc25295244561dbbaba1cb3',
+            address: '0x3a975d1b039dd6b16bd0655ec2ffec5463f8925e79938f57b2e0b6b75426489',
             abi: [
                 {
                     type: 'impl',
@@ -239,7 +239,7 @@ const deployedContracts = {
                                     type: 'core::integer::u256'
                                 }
                             ],
-                            state_mutability: 'external'
+                            state_mutability: 'view'
                         },
                         {
                             type: 'function',
@@ -507,12 +507,12 @@ const deployedContracts = {
                     ]
                 }
             ],
-            classHash: '0x21adaa88a205833f90ca9912f188db939f7656727a21de90e5b435df7af447a'
+            classHash: '0x10276a33673c122f4d43b294813633bdb3ed7fda6ab9f888801851a8604fb49'
         }
     },
     sepolia: {
         Obscura: {
-            address: '0x233066e1b99be0e1edc942d762789d75989a04364d91cf3cdbb494012a746d',
+            address: '0x43ada06454f9fbe1c1ad4700e1807b8c6a806545e13f63874265f411618fe4',
             abi: [
                 {
                     type: 'impl',
@@ -745,7 +745,7 @@ const deployedContracts = {
                                     type: 'core::integer::u256'
                                 }
                             ],
-                            state_mutability: 'external'
+                            state_mutability: 'view'
                         },
                         {
                             type: 'function',
@@ -1013,7 +1013,7 @@ const deployedContracts = {
                     ]
                 }
             ],
-            classHash: '0x21adaa88a205833f90ca9912f188db939f7656727a21de90e5b435df7af447a'
+            classHash: '0x10276a33673c122f4d43b294813633bdb3ed7fda6ab9f888801851a8604fb49'
         }
     }
 } as const

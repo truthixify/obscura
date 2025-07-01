@@ -4,6 +4,7 @@ import { useOutsideClick } from '../hooks/scaffold-stark'
 import { CustomConnectButton } from './scaffold-stark/CustomConnectButton'
 import { useTargetNetwork } from '../hooks/scaffold-stark/useTargetNetwork'
 import { useAccount, useNetwork, useProvider } from '@starknet-react/core'
+import Logo from '../assets/obscura.png'
 
 interface HeaderProps {
     currentPattern: number
@@ -30,7 +31,6 @@ export function Header({ controlStyles }: HeaderProps) {
     )
 
     const { targetNetwork } = useTargetNetwork()
-    // const isLocalNetwork = targetNetwork.network === devnet.network
 
     const { provider } = useProvider()
     const { address, status, chainId } = useAccount()
@@ -63,13 +63,19 @@ export function Header({ controlStyles }: HeaderProps) {
         <header
             className={`absolute top-0 left-0 right-0 w-full py-4 px-4 flex justify-between items-center z-50 ${controlStyles.bg} backdrop-blur-[1px] border-b rounded-bl-lg rounded-br-lg ${controlStyles.border}`}
         >
-            <div className="flex items-center space-between">
-                <h1
+            {/* <div className="flex items-center space-between"> */}
+            {/* <h1
                     className={`hidden sm:block text-4xl font-bold uppercase  ${controlStyles.text}`}
                 >
                     Obscura
-                </h1>
-            </div>
+                </h1> */}
+            <img
+                className={`z-50 rounded-full ${controlStyles.bg} {controlStyles.border}`}
+                src={Logo}
+                width={80}
+                height={20}
+            />
+            {/* </div> */}
 
             <div className="flex items-center gap-2 md:gap-4">
                 <TooltipProvider>

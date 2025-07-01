@@ -374,7 +374,7 @@ pub mod Obscura {
         /// - Validates fee and amount limits
         /// - Ensures mathematical consistency in proofs
         /// - Handles negative amounts correctly
-        fn calculate_public_amount(ref self: ContractState, ext_amount: I256, fee: u256) -> u256 {
+        fn calculate_public_amount(self: @ContractState, ext_amount: I256, fee: u256) -> u256 {
             assert(fee < MAX_FEE, INVALID_FEE);
             assert(
                 ext_amount > -(MAX_EXT_AMOUNT.into()) && ext_amount < MAX_EXT_AMOUNT.into(),

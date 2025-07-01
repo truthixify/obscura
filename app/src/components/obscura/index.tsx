@@ -188,10 +188,13 @@ const Index = () => {
     }, [isAnimated, patterns.length])
 
     useEffect(() => {
+        console.log('keypair generating')
+        console.log(obscura, address, account)
         if (!address || !account) return
 
         const loadKeypair = async () => {
             const keypair = await generateKeypairFromSignature(account as Account)
+            console.log(keypair)
             setKeypair(keypair)
 
             try {
@@ -203,11 +206,15 @@ const Index = () => {
                 console.log(error)
             }
         }
+        console.log('keypair generated')
 
         loadKeypair()
     }, [address, account])
 
     useEffect(() => {
+        console.log(keypair, address)
+        if (!address || !keypair) return
+
         const fetchUserAddress = async () => {
             let account: AccountData
             try {
@@ -535,12 +542,16 @@ const Index = () => {
     }
 
     const handleMaxFund = async () => {
-        if (!address)
+        if (!address || !keypair) {
             toast({
-                title: 'Wallet Not Connected',
-                description: 'Please connect your wallet.',
+                title: 'Account Not Connected',
+                description: 'Please connect your wallet or private key.',
                 variant: 'destructive'
             })
+
+            return
+        }
+
         const userBalance = await strk.balance_of(address)
         if (userBalance <= 0n || !userBalance)
             toast({
@@ -552,12 +563,15 @@ const Index = () => {
     }
 
     const handleMaxTransfer = async () => {
-        if (!address)
+        if (!address || !keypair) {
             toast({
-                title: 'Wallet Not Connected',
-                description: 'Please connect your wallet.',
+                title: 'Account Not Connected',
+                description: 'Please connect your wallet or private key.',
                 variant: 'destructive'
             })
+
+            return
+        }
 
         if (balance <= 0n || !balance)
             toast({
@@ -569,12 +583,15 @@ const Index = () => {
     }
 
     const handleMaxWithdrawal = async () => {
-        if (!address)
+        if (!address || !keypair) {
             toast({
-                title: 'Wallet Not Connected',
-                description: 'Please connect your wallet.',
+                title: 'Account Not Connected',
+                description: 'Please connect your wallet or private key.',
                 variant: 'destructive'
             })
+
+            return
+        }
 
         if (balance <= 0n || !balance)
             toast({
@@ -833,8 +850,7 @@ const Index = () => {
                     )}
                 </div>
             </div>
-
-            <div className="relative container mx-auto px-4 py-8 flex items-center justify-center min-h-screen z-10">
+            <div className="relative container mx-auto px-4 py-8 flex flex-col items-center justify-center min-h-screen z-10">
                 <Card
                     className={`w-full max-w-2xl backdrop-blur-xl border shadow-2xl transition-all duration-300 ${
                         isDarkMode

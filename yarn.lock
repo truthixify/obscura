@@ -2201,8 +2201,8 @@ __metadata:
     "@solana/web3.js": ^1.98.0
     "@starknet-io/get-starknet": ^4.0.7
     "@starknet-io/types-js": ^0.8.1
-    "@starknet-react/chains": ^3.1.2
-    "@starknet-react/core": ^3.7.2
+    "@starknet-react/chains": 4.0.1-beta.3
+    "@starknet-react/core": 4.0.1-beta.4
     "@starknet-react/typescript-config": 0.0.2
     "@testing-library/dom": ^10.4.0
     "@testing-library/jest-dom": ^6.6.3
@@ -4029,14 +4029,40 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@starknet-react/chains@npm:^3.1.2, @starknet-react/chains@npm:^3.1.3":
+"@starknet-react/chains@npm:4.0.1-beta.3, @starknet-react/chains@npm:^4.0.1-beta.3":
+  version: 4.0.1-beta.3
+  resolution: "@starknet-react/chains@npm:4.0.1-beta.3"
+  checksum: e41afd5049ec0085428e5d2b17da7e5532624a0a603e44769c4937b24975d08e94ff202b99dab6cec1fe410acedc44530e29a6a334499a0257b2542b1daed3fa
+  languageName: node
+  linkType: hard
+
+"@starknet-react/chains@npm:^3.1.3":
   version: 3.1.3
   resolution: "@starknet-react/chains@npm:3.1.3"
   checksum: 28acadd103c2248bb189a4300eb81307f27cc91b6cdc1af737a9ea1bf43b16fd0634194de80d8e6968be73ca387deb3119720ecfee8e2943b8fe533e5dd25b58
   languageName: node
   linkType: hard
 
-"@starknet-react/core@npm:^3.0.2, @starknet-react/core@npm:^3.7.2":
+"@starknet-react/core@npm:4.0.1-beta.4":
+  version: 4.0.1-beta.4
+  resolution: "@starknet-react/core@npm:4.0.1-beta.4"
+  dependencies:
+    "@starknet-io/types-js": ^0.7.10
+    "@starknet-react/chains": ^4.0.1-beta.3
+    "@tanstack/react-query": ^5.25.0
+    abi-wan-kanabi: ^2.2.4
+    eventemitter3: ^5.0.1
+    viem: ^2.21.1
+    zod: ^3.22.4
+  peerDependencies:
+    get-starknet-core: ^4.0.0
+    react: ^18.0
+    starknet: ^7.5.0
+  checksum: 40918d8167e1d9b4ede77f8a7d2dd5dab6b562798375d5cdb3e6134011d264f9fbd377fafa6222eae0f4910393716b2801c50ae9567ce5777615fcbb40256b1e
+  languageName: node
+  linkType: hard
+
+"@starknet-react/core@npm:^3.0.2":
   version: 3.7.4
   resolution: "@starknet-react/core@npm:3.7.4"
   dependencies:

@@ -12,6 +12,8 @@ const currentNetworkName = currentNetwork.network
 
 // Get RPC URL for the current network
 const rpcUrl = scaffoldConfig.rpcProviderUrl[currentNetworkName] || ''
+console.log(scaffoldConfig, 'lol', import.meta.env.VITE_PUBLIC_SEPOLIA_PROVIDER_URL)
+console.log('lol', import.meta)
 
 // Important: if the rpcUrl is empty (not configed in .env), we use the publicProvider
 // which randomly choose a provider from the chain list of public providers.

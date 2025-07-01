@@ -11,10 +11,10 @@ import {
     TypedData,
     WeierstrassSignatureType,
     num,
-    addAddressPadding
+    addAddressPadding,
+    ByteArray
 } from 'starknet'
 import { I256 } from './custom_type'
-import { ethers } from 'ethers'
 import { Keypair } from './keypair'
 
 export const feltToString = (input: bigint | undefined): string => {
@@ -190,10 +190,7 @@ export function shuffle<T>(array: T[]): T[] {
     return array
 }
 
-const FIXED_MESSAGE = `You are about to generate your obscura private key by signing this message. This key lets the application decrypt your balance
-
-IMPORTANT: Only sign this message if you trust the application.
-`
+const FIXED_MESSAGE = `You are about to generate your obscura private key by signing this message. This key lets the application decrypt your balance`
 
 // Define the typedData structure (EIP-712 style for Starknet)
 const messageStructure: TypedData = {
@@ -203,7 +200,7 @@ const messageStructure: TypedData = {
             { name: 'chainId', type: 'felt' },
             { name: 'version', type: 'felt' }
         ],
-        Message: [{ name: 'message', type: 'string' }]
+        Message: [{ name: 'message', type: 'ByteArray' }]
     },
     primaryType: 'Message',
     domain: {
@@ -216,8 +213,6 @@ const messageStructure: TypedData = {
     }
 }
 
-// You are about to generate your obscura private key by signing this message. This key lets the application decrypt your balance
-
 export async function generateKeypairFromSignature(account: Account): Promise<Keypair> {
     try {
         const signature = (await account.signMessage(messageStructure)) as WeierstrassSignatureType
@@ -228,15 +223,4 @@ export async function generateKeypairFromSignature(account: Account): Promise<Ke
     } catch (error) {
         throw error
     }
-}
-
-export async function recoverAddressFromSignature(
-    account: Account,
-    signature: string
-): Promise<string> {
-    const msgHash = await account.hashMessage(messageStructure)
-
-    return ethers.verifyMessage(msgHash, signature)
-
-    //   return account.verifyMessageInStarknet(FIXED_MESSAGE, signature, account.address)
 }
