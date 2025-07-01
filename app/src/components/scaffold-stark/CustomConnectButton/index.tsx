@@ -42,12 +42,11 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
     const { connector } = useConnect()
     const { disconnect } = useDisconnect()
     const { targetNetwork } = useTargetNetwork()
-    const { account, status, address: accountAddress } = useAccount()
-    const { balance, isLoadingBalance } = useBalanceStore()
+    const { account, status, address } = useAccount()
+    const { balance, isLoadingBalance, reset: resetBalanceStore } = useBalanceStore()
     const [accountChainId, setAccountChainId] = useState<bigint>(0n)
-    const { isRegistered, setIsRegistered, setOwner, setAddress } = useAccountStore()
-    const { address } = useAccount()
-    const { keypair } = useKeypairStore()
+    const { isRegistered, setIsRegistered, setOwner, setAddress, reset: resetAccountStore } = useAccountStore()
+    const { keypair, reset: resetKeyStore } = useKeypairStore()
     const { data: obscura } = useScaffoldContract({
         contractName: 'Obscura'
     })
@@ -166,10 +165,17 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
         setShowModal(true)
     }
 
-    if (status === 'disconnected' || accountChainId === 0n)
+    const handleLogout = () => {
+        resetBalanceStore()
+        resetAccountStore()
+        resetKeyStore()
+        disconnect()
+    }
+
+    if ((status === 'disconnected' || accountChainId === 0n) && !keypair)
         return <ConnectModal controlStyles={controlStyles} />
 
-    if (accountChainId !== targetNetwork.id) {
+    if ((accountChainId !== targetNetwork.id) && !keypair) {
         return <WrongNetworkDropdown />
     }
 
@@ -186,7 +192,6 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
                 ) : (
                     <Button
                         className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 ${controlStyles.buttonBg} ${controlStyles.buttonText} border ${controlStyles.border} ${controlStyles.buttonHover} transition-all duration-200`}
-                        onClick={handleSetup}
                     >
                         {isLoadingBalance ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -197,7 +202,7 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
                 )}
                 <Button
                     className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 ${controlStyles.buttonBg} ${controlStyles.buttonText} border ${controlStyles.border} ${controlStyles.buttonHover} transition-all duration-200`}
-                    onClick={() => disconnect()}
+                    onClick={handleLogout}
                 >
                     <LogOut className="h-4 w-4" />
                 </Button>

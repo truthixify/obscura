@@ -46,7 +46,7 @@ export async function createAccount(data: AccountData): Promise<AccountData> {
  * @param query - Object with optional `owner` and/or `address`
  * @returns The matched account(s)
  */
-export async function getAccount(query: AccountQuery = {}): Promise<AccountData | AccountData[]> {
+export async function getAccount(query: AccountQuery = {}): Promise<AccountData> {
     try {
         const res = await api.get<AccountData>('/account', {
             params: query

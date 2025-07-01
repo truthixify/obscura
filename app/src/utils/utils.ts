@@ -12,7 +12,6 @@ import {
     WeierstrassSignatureType,
     num,
     addAddressPadding,
-    ec
 } from 'starknet'
 import { I256 } from './custom_type'
 import { ethers } from 'ethers'
@@ -72,9 +71,9 @@ export const bigintToUint8Array = (bigInt: bigint): Uint8Array => {
     return new Uint8Array(buffer)
 }
 
-export const uint8ArrayToBigInt = (uint8Array: Uint8Array): BigInt => {
+export const uint8ArrayToBigInt = (uint8Array: Uint8Array): bigint => {
     // Convert Uint8Array to a hex string and then to BigInt
-    let hexString = Buffer.from(uint8Array).toString('hex')
+    const hexString = Buffer.from(uint8Array).toString('hex')
 
     return BigInt('0x' + hexString)
 }
@@ -82,7 +81,7 @@ export const uint8ArrayToBigInt = (uint8Array: Uint8Array): BigInt => {
 export const poseidonHash = (items: (string | number | BigNumberish)[]): BigNumberish => {
     let resultinghash = 0n
     for (let i = 0; i < items.length; i += 2) {
-        let currentHash = poseidonHashBN254(BigInt(items[i]), BigInt(items[i + 1]))
+        const currentHash = poseidonHashBN254(BigInt(items[i]), BigInt(items[i + 1]))
 
         resultinghash = poseidonHashBN254(resultinghash, currentHash)
     }
@@ -213,7 +212,7 @@ const messageStructure: TypedData = {
         version: '1'
     },
     message: {
-        message: 'hello'
+        message: FIXED_MESSAGE
     }
 }
 

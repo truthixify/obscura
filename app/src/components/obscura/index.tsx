@@ -17,14 +17,12 @@ import {
     ChevronUp,
     Sun,
     Moon,
-    X,
-    Plus,
     Settings
 } from 'lucide-react'
 import { useToast } from '../../hooks/use-toast'
 import { Header } from '../header'
 import { useTheme } from 'next-themes'
-import { registerAndTransact, transaction } from '../../utils/index'
+import { transaction } from '../../utils/index'
 import Utxo from '../../utils/utxo'
 import { parseNewCommitEvent } from '../../utils/events_parsing'
 import { useScaffoldContract } from '../../hooks/scaffold-stark/useScaffoldContract'
@@ -33,7 +31,7 @@ import { Account, RpcProvider } from 'starknet'
 import { useBalanceStore } from '../../stores/balance-store'
 import { useKeypairStore } from '../../stores/keypair-store'
 import { generateKeypairFromSignature } from '../../utils/utils'
-import { getAccount } from '../../lib/api'
+import { AccountData, getAccount } from '../../lib/api'
 import { useAccountStore } from '../../stores/account-store'
 import { Keypair } from '../../utils/keypair'
 import SettingsModal from './settings'
@@ -192,11 +190,8 @@ const Index = () => {
     useEffect(() => {
         if (!address || !account) return
 
-        setFundAddress(address)
-
         const loadKeypair = async () => {
             const keypair = await generateKeypairFromSignature(account as Account)
-            console.log('Keypair generated and address is: ', keypair.address())
             setKeypair(keypair)
 
             try {
@@ -208,6 +203,30 @@ const Index = () => {
                 console.log(error)
             }
         }
+
+        loadKeypair()
+    }, [address, account])
+
+    useEffect(() => {
+        const fetchUserAddress = async () => {
+            let account: AccountData
+            try {
+                account = await getAccount({ address: keypair.address() })
+
+                if (account) setIsRegistered(true)
+            } catch (error) {
+                setIsRegistered(false)
+                console.log(error)
+            }
+
+            setFundAddress(address || account.owner)
+        }
+
+        fetchUserAddress()
+    }, [address, keypair])
+
+    useEffect(() => {
+        if (!keypair) return
 
         const checkUserBalance = async () => {
             const parsedNewCommitEvents = await parseNewCommitEvent(
@@ -259,9 +278,8 @@ const Index = () => {
             setIsLoadingBalance(false)
         }
 
-        loadKeypair()
         checkUserBalance()
-    }, [address, account])
+    }, [keypair])
 
     const handleFund = async () => {
         if (!fundAmount || !fundAddress) {
@@ -336,46 +354,6 @@ const Index = () => {
         }
     }
 
-    const handleRegisterAndFund = async () => {
-        if (!fundAmount || !fundAddress) {
-            toast({
-                title: 'Missing Information',
-                description: 'Please fill in all fields before funding.',
-                variant: 'destructive'
-            })
-            return
-        }
-
-        setIsFunding(true)
-
-        try {
-            toast({
-                title: 'Fund Initiated',
-                description: `Funding ${fundAmount} STRK to ${fundAddress.slice(0, 10)}...`
-            })
-
-            const newUtxo = new Utxo({ amount: fundAmount, keypair })
-            const tx = await registerAndTransact({
-                obscura,
-                provider,
-                outputs: [newUtxo],
-                account: {
-                    owner: address,
-                    public_key: newUtxo.keypair.address()
-                }
-            })
-
-            if (tx) {
-                console.log('Fund initiated:', { amount: fundAmount, address: fundAddress })
-            }
-        } catch (error) {
-            console.log(error)
-            setIsFunding(false)
-        } finally {
-            setIsFunding(false)
-        }
-    }
-
     const handleTransfer = async () => {
         if (!transferAmount || !transferAddress) {
             toast({
@@ -401,7 +379,7 @@ const Index = () => {
                 Number(BigInt(a.amount) / BigInt(1e18) - BigInt(b.amount) / BigInt(1e18))
             )
 
-            let selectedUtxos: Utxo[] = []
+            const selectedUtxos: Utxo[] = []
             let totalSelected = 0n
 
             for (const utxo of sortedUtxos) {
@@ -498,7 +476,7 @@ const Index = () => {
                 Number(BigInt(a.amount) / BigInt(1e18) - BigInt(b.amount) / BigInt(1e18))
             )
 
-            let selectedUtxos: Utxo[] = []
+            const selectedUtxos: Utxo[] = []
             let totalSelected = 0n
 
             for (const utxo of sortedUtxos) {

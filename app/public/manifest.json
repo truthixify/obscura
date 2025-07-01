@@ -1,7 +1,7 @@
 {
-    "name": "Mastermind",
-    "short_name": "mastermind",
-    "description": "Challenge your logic in this Web3-powered Mastermind game. Prove your guesses with zero-knowledge proofs on Starknet.",
+    "name": "Obscura",
+    "short_name": "obscura",
+    "description": "A shielded UTXO pool for Starknet enabling private, anonymous asset transfers via zero-knowledge cryptography.",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",

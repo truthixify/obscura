@@ -18,7 +18,6 @@ import {
     UserCircle,
     X
 } from 'lucide-react'
-import { usePlayerStore } from '../../../stores/playerStore'
 
 // const allowedNetworks = getTargetNetworks()
 
@@ -43,7 +42,6 @@ export const AddressInfoDropdown = ({
     const [selectingNetwork, setSelectingNetwork] = useState(false)
     const { connectors, connect } = useConnect()
     // const { resolvedTheme } = useTheme()
-    const { playerName } = usePlayerStore()
     // const isDarkMode = resolvedTheme === 'dark'
     const dropdownRef = useRef<HTMLDetailsElement>(null)
     const closeDropdown = () => {
@@ -103,9 +101,7 @@ export const AddressInfoDropdown = ({
                         )}
                     </div>
                     <span className="ml-2 mr-2 text-sm font-bold">
-                        {playerName
-                            ? playerName
-                            : isENS(displayName)
+                        {isENS(displayName)
                               ? displayName
                               : profile?.name || address?.slice(0, 6) + '...' + address?.slice(-4)}
                     </span>

@@ -1,13 +1,8 @@
-// @ts-nocheck
-import { Button } from './ui/button'
-import { Moon, Sun, Wallet, Shield } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip'
 import { useCallback, useRef, useState, useEffect } from 'react'
 import { useOutsideClick } from '../hooks/scaffold-stark'
 import { CustomConnectButton } from './scaffold-stark/CustomConnectButton'
-import { useTheme } from 'next-themes'
 import { useTargetNetwork } from '../hooks/scaffold-stark/useTargetNetwork'
-import { devnet } from '@starknet-react/chains'
 import { useAccount, useNetwork, useProvider } from '@starknet-react/core'
 
 interface HeaderProps {
@@ -25,8 +20,8 @@ interface HeaderProps {
     }
 }
 
-export function Header({ currentPattern, controlStyles }: HeaderProps) {
-    const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+export function Header({ controlStyles }: HeaderProps) {
+    const [_, setIsDrawerOpen] = useState(false)
     const burgerMenuRef = useRef<HTMLDivElement>(null)
 
     useOutsideClick(
@@ -35,7 +30,7 @@ export function Header({ currentPattern, controlStyles }: HeaderProps) {
     )
 
     const { targetNetwork } = useTargetNetwork()
-    const isLocalNetwork = targetNetwork.network === devnet.network
+    // const isLocalNetwork = targetNetwork.network === devnet.network
 
     const { provider } = useProvider()
     const { address, status, chainId } = useAccount()
@@ -69,7 +64,11 @@ export function Header({ currentPattern, controlStyles }: HeaderProps) {
             className={`absolute top-0 left-0 right-0 w-full py-4 px-4 flex justify-between items-center z-50 ${controlStyles.bg} backdrop-blur-[1px] border-b rounded-bl-lg rounded-br-lg ${controlStyles.border}`}
         >
             <div className="flex items-center space-between">
-                {/* <h1 className={`text-4xl font-bold  ${controlStyles.text}`}>Obscura</h1> */}
+                <h1
+                    className={`hidden sm:block text-4xl font-bold uppercase  ${controlStyles.text}`}
+                >
+                    Obscura
+                </h1>
             </div>
 
             <div className="flex items-center gap-2 md:gap-4">

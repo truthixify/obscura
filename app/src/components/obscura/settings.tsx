@@ -3,13 +3,14 @@ import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Card, CardContent } from '../ui/card'
 import { Label } from '../ui/label'
-import { Copy, Download, Wallet, X } from 'lucide-react'
+import { Copy, Download, X } from 'lucide-react'
 import { useToast } from '../../hooks/use-toast'
 import { useTheme } from 'next-themes'
 import { useBalanceStore } from '../../stores/balance-store'
 import { useKeypairStore } from '../../stores/keypair-store'
 import { useAccount } from '@starknet-react/core'
 import { downloadPrivateKeyFile } from '../../lib/download-private-key-file'
+import { useAccountStore } from '../../stores/account-store'
 
 const SettingsModal = ({ isOpen, onClose }) => {
     const { toast } = useToast()
@@ -17,7 +18,8 @@ const SettingsModal = ({ isOpen, onClose }) => {
     const { balance } = useBalanceStore()
     const { keypair } = useKeypairStore()
     const { address } = useAccount()
-    const [isCopied, setIsCopied] = useState(false)
+    const [_, setIsCopied] = useState(false)
+    const { owner } = useAccountStore()
 
     const isDarkMode = theme === 'dark'
 
@@ -47,7 +49,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
         }
 
         try {
-            await navigator.clipboard.writeText(keypair.toString())
+            await navigator.clipboard.writeText(keypair.privkey)
             setIsCopied(true)
             toast({
                 title: 'Key Copied',
@@ -83,7 +85,9 @@ const SettingsModal = ({ isOpen, onClose }) => {
     if (!isOpen) return null
 
     return (
-        <div className={`fixed inset-0 z-50 px-2 flex items-center justify-center ${isDarkMode ? 'bg-black/95' : 'bg-white/95'} backdrop-blur-sm`}>
+        <div
+            className={`fixed inset-0 z-50 px-2 flex items-center justify-center ${isDarkMode ? 'bg-black/95' : 'bg-white/95'} backdrop-blur-sm`}
+        >
             <Card
                 className={`w-full max-w-md ${controlStyles.bg} ${controlStyles.border} shadow-2xl transition-all duration-300`}
             >
@@ -106,12 +110,12 @@ const SettingsModal = ({ isOpen, onClose }) => {
                                 htmlFor="wallet-address"
                                 className={`font-medium ${controlStyles.text}`}
                             >
-                                Wallet Address
+                                Owner Address
                             </Label>
                             <div className="flex items-center space-x-2">
                                 <Input
                                     id="wallet-address"
-                                    value={address || 'No wallet connected'}
+                                    value={address || owner || 'No wallet connected'}
                                     readOnly
                                     className={`backdrop-blur-sm ${controlStyles.inputBg} ${controlStyles.inputBorder} ${controlStyles.placeholder} ${controlStyles.text} cursor-not-allowed`}
                                 />
@@ -171,7 +175,6 @@ const SettingsModal = ({ isOpen, onClose }) => {
                             </div>
                         </div>
 
-                        
                         <div className="space-y-2">
                             <Label
                                 htmlFor="balance"
@@ -197,7 +200,9 @@ const SettingsModal = ({ isOpen, onClose }) => {
                             <div className="flex items-center space-x-2">
                                 <Input
                                     id="private-key"
-                                    value={keypair.privkey ? '••••••••••••••••' : 'No key available'}
+                                    value={
+                                        keypair.privkey ? '••••••••••••••••' : 'No key available'
+                                    }
                                     readOnly
                                     className={`backdrop-blur-sm ${controlStyles.inputBg} ${controlStyles.inputBorder} ${controlStyles.placeholder} ${controlStyles.text} cursor-not-allowed`}
                                 />

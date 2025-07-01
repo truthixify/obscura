@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import MerkleTree from 'fixed-merkle-tree'
 import { toFixedHex, poseidonHash2, getExtDataHash, FIELD_SIZE, shuffle } from './utils'
 import Utxo from './utxo'

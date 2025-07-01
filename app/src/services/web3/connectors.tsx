@@ -5,7 +5,6 @@ import scaffoldConfig from '../../../scaffold.config'
 import { LAST_CONNECTED_TIME_LOCALSTORAGE_KEY } from '../../utils/Constants'
 import { KeplrConnector } from './keplr'
 import { supportedChains } from '../../../supportedChains'
-import { controllerInstance } from '../../utils/scaffold-stark/controller'
 
 const targetNetworks = getTargetNetworks()
 

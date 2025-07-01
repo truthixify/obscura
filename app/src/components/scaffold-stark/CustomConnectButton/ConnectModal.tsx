@@ -13,6 +13,9 @@ import { Card, CardHeader, CardContent } from '../../ui/card'
 import { Input } from '../../ui/input'
 import { Keypair } from '../../../utils/keypair'
 import { useKeypairStore } from '../../../stores/keypair-store'
+import { toast } from '../../ui/use-toast'
+import { getAccount } from '../../../lib/api'
+import { useAccountStore } from '../../../stores/account-store'
 
 const loader = ({ src }: { src: string }) => {
     return src
@@ -53,6 +56,8 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
         LAST_CONNECTED_TIME_LOCALSTORAGE_KEY,
         0
     )
+    const { setIsRegistered, setAddress, setOwner } = useAccountStore()
+    const [isLoggingIn, setIsLoggingIn] = useState(false)
 
     // const handleCloseModal = () => {
     //   if (modalRef.current) {
@@ -66,7 +71,6 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
     const handleCloseModal = closeModal
 
     function handleConnectWallet(
-        e: React.MouseEvent<HTMLButtonElement>,
         connector: Connector
     ): void {
         if (connector.id === 'burner-wallet') {
@@ -79,7 +83,7 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
         handleCloseModal()
     }
 
-    function handleConnectBurner(e: React.MouseEvent<HTMLButtonElement>, ix: number) {
+    function handleConnectBurner(ix: number) {
         const connector = connectors.find(it => it.id == 'burner-wallet')
         if (connector && connector instanceof BurnerConnector) {
             connector.burnerAccount = burnerAccounts[ix]
@@ -87,6 +91,36 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
             setLastConnector({ id: connector.id, ix })
             setLastConnectionTime(Date.now())
             handleCloseModal()
+        }
+    }
+
+    const handleLoginWithPrivateKey = async () => {
+        setIsLoggingIn(true)
+        try {
+            try {
+                const keypair = new Keypair(privateKey)
+                const keypairAddress = keypair.address()
+                const account = await getAccount({ address: keypairAddress })
+
+                setKeypair(keypair)
+                setOwner(account.owner)
+                setAddress(account.address)
+                setIsRegistered(true)
+                setShowPrivateKeyModal(false)
+
+                closeModal()
+            } catch (error) {
+                throw error
+            }
+        } catch (error) {
+            toast({
+                title: 'Failed to login with private key',
+                description:
+                    error instanceof Error ? error.message : error.error ? error.error : error,
+                variant: 'destructive'
+            })
+        } finally {
+            setIsLoggingIn(false)
         }
     }
 
@@ -101,7 +135,7 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
                 {status === 'pending' ? (
                     <>
                         <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full mr-2"></div>
-                        Connecting...
+                        Logging in...
                     </>
                 ) : status === 'success' ? (
                     'Connected'
@@ -161,7 +195,7 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
                                             <button
                                                 key={burnerAcc.publicKey}
                                                 className="retro-button retro-button-outline w-full py-3 px-4 flex items-center gap-3"
-                                                onClick={e => handleConnectBurner(e, ix)}
+                                                onClick={() => handleConnectBurner(ix)}
                                             >
                                                 <BlockieAvatar
                                                     address={burnerAcc.accountAddress}
@@ -207,6 +241,7 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
                             </h3>
                             <button
                                 onClick={() => {
+                                    setPrivateKey('')
                                     setShowPrivateKeyModal(false)
                                     closeModal()
                                 }}
@@ -229,13 +264,9 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
                             />
                             <Button
                                 className={`w-full mt-4 p-2 flex items-center justify-center ${isDarkMode ? 'bg-white text-black' : 'bg-black text-white'}`}
-                                onClick={() => {
-                                    setKeypair(new Keypair(privateKey))
-                                    setShowPrivateKeyModal(false)
-                                    closeModal()
-                                }}
+                                onClick={handleLoginWithPrivateKey}
                             >
-                                Login
+                                {isLoggingIn ? 'Logging in...': 'Login'}
                             </Button>
                         </CardContent>
                     </Card>

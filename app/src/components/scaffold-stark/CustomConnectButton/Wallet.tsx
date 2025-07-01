@@ -12,7 +12,7 @@ const Wallet = ({
 }: {
     connector: Connector
     loader: ({ src }: { src: string }) => string
-    handleConnectWallet: (e: React.MouseEvent<HTMLButtonElement>, connector: Connector) => void
+    handleConnectWallet: (connector: Connector) => void
 }) => {
     const [clicked, setClicked] = useState(false)
     const [isMounted, setIsMounted] = useState(false)

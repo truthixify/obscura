@@ -4,6 +4,7 @@ import { Keypair } from '../utils/keypair'
 interface KeypairState {
     keypair: Keypair | null
     setKeypair: (kp?: Keypair) => void
+    reset: () => void
 }
 
 export const useKeypairStore = create<KeypairState>(set => ({
@@ -12,5 +13,10 @@ export const useKeypairStore = create<KeypairState>(set => ({
     setKeypair: (kp?: Keypair) => {
         const keypair = kp ?? new Keypair()
         set({ keypair })
-    }
+    },
+
+    reset: () =>
+        set({
+            keypair: null,
+        })
 }))
