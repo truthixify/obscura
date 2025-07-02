@@ -35,7 +35,8 @@ import { AccountData, getAccount } from '../../lib/api'
 import { useAccountStore } from '../../stores/account-store'
 import { Keypair } from '../../utils/keypair'
 import SettingsModal from './settings'
-import { useWalletModalStore } from '../../stores/wallet-modal-store'
+import { useModalStore } from '../../stores/modal-store'
+import { useScaffoldEventHistory } from '../../hooks/scaffold-stark/useScaffoldEventHistory'
 
 const Index = () => {
     const { data: obscura } = useScaffoldContract({
@@ -54,11 +55,14 @@ const Index = () => {
     const [isArtControlOpen, setIsArtControlOpen] = useState(false)
 
     // Wallet modal state
-    const { isWalletModalOpen } = useWalletModalStore()
+    const { isModalOpen, setIsModalOpen } = useModalStore()
 
     // Settings modal state
     const [isSettinngsOpen, setIsSettingsOpen] = useState(false)
-    const closeSettingsModal = () => setIsSettingsOpen(false)
+    const closeSettingsModal = () => {
+        setIsSettingsOpen(false)
+        setIsModalOpen(false)
+    }
 
     // Utxos state
     const [utxos, setUtxos] = useState<Utxo[] | null>(null)
@@ -237,8 +241,10 @@ const Index = () => {
         const checkUserBalance = async () => {
             const parsedNewCommitEvents = await parseNewCommitEvent(
                 obscura,
-                provider as RpcProvider
+                provider as RpcProvider,
+                { block_number: 902992n }
             )
+            console.log(parsedNewCommitEvents)
 
             if (!parsedNewCommitEvents) return
 
@@ -278,6 +284,7 @@ const Index = () => {
                     balance += BigInt(utxo.amount)
                 }
             }
+            console.log(utxos)
 
             setUtxos(utxos)
             setBalance(Number(balance / BigInt(1e18)))
@@ -326,6 +333,11 @@ const Index = () => {
         } catch (error) {
             console.log(error)
             setIsFunding(false)
+            toast({
+                title: 'Fund failed',
+                description: error instanceof Error ? error.message : 'Something went wrong',
+                variant: 'destructive'
+            })
         } finally {
             setIsFunding(false)
         }
@@ -854,7 +866,7 @@ const Index = () => {
                         isDarkMode
                             ? 'bg-black/30 border-white/20 shadow-black/50'
                             : 'bg-white/30 border-black/20 shadow-black/20'
-                    } ${isWalletModalOpen ? 'hidden' : 'block'}`}
+                    } ${isModalOpen ? 'hidden' : 'block'}`}
                 >
                     <CardContent className="space-y-6 pt-6">
                         <Tabs defaultValue="fund" className="w-full">

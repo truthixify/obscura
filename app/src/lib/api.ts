@@ -11,7 +11,7 @@ const api = axios.create({
  * Interface for account data used in POST and response
  */
 export interface AccountData {
-    blockNumber: number
+    blockNumber?: number
     owner: string
     address: string
     _id?: string

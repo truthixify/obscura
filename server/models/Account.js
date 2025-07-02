@@ -2,10 +2,6 @@ const mongoose = require('mongoose')
 
 const AccountSchema = new mongoose.Schema(
     {
-        blockNumber: {
-            type: Number,
-            required: true,
-        },
         owner: {
             type: String,
             required: true,

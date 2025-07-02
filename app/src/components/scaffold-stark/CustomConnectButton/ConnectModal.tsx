@@ -16,7 +16,7 @@ import { useKeypairStore } from '../../../stores/keypair-store'
 import { toast } from '../../ui/use-toast'
 import { getAccount } from '../../../lib/api'
 import { useAccountStore } from '../../../stores/account-store'
-import { useWalletModalStore } from '../../../stores/wallet-modal-store'
+import { useModalStore } from '../../../stores/modal-store'
 
 const loader = ({ src }: { src: string }) => {
     return src
@@ -59,15 +59,15 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
     const { setIsRegistered, setAddress, setOwner } = useAccountStore()
     const [isLoggingIn, setIsLoggingIn] = useState(false)
 
-    const {setIsWalletModalOpen} = useWalletModalStore()
+    const { setIsModalOpen } = useModalStore()
 
     const openModal = () => {
-        setIsWalletModalOpen(true)
+        setIsModalOpen(true)
         setShowModal(true)
     }
     const closeModal = () => {
         setShowModal(false)
-        setIsWalletModalOpen(false)
+        setIsModalOpen(false)
     }
 
     // Replace `handleCloseModal` usage:
@@ -142,13 +142,13 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
                         Logging in...
                     </>
                 ) : status === 'success' ? (
-                    'Connected'
+                    'Logged in'
                 ) : (
                     <>Login</>
                 )}
             </Button>
 
-            {(!showPrivateKeyModal && showModal) && (
+            {!showPrivateKeyModal && showModal && (
                 <GenericModal onClose={closeModal}>
                     <Card
                         className={`w-full max-w-2xl border shadow-2xl transition-all duration-300 ${
@@ -173,9 +173,9 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
                                 <X className="h-4 w-4" />
                             </button>
                         </CardHeader>
-                        <CardContent className='flex flex-wrap gap-2'>
+                        <CardContent className="flex flex-col gap-2">
                             <button
-                                className={`md:w-1/2 w-full py-3 px-4 flex items-center gap-3 ${controlStyles.bg} ${controlStyles.text} border ${controlStyles.border} ${controlStyles.secondaryHover} rounded-lg`}
+                                className={`w-full py-3 px-4 flex items-center gap-3 ${controlStyles.bg} ${controlStyles.text} border ${controlStyles.border} ${controlStyles.secondaryHover} rounded-lg`}
                                 onClick={() => setShowPrivateKeyModal(true)}
                             >
                                 <KeySquare className="h-6 w-6" />
@@ -184,7 +184,10 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
                             {!isBurnerWallet ? (
                                 // Wallet options
                                 connectors.map((connector, index) => (
-                                    <div className={`md:w-1/2 w-full ${controlStyles.bg} ${controlStyles.text} border ${controlStyles.border} ${controlStyles.secondaryHover} rounded-lg`} key={connector.id || index}>
+                                    <div
+                                        className={`w-full ${controlStyles.bg} ${controlStyles.text} border ${controlStyles.border} ${controlStyles.secondaryHover} rounded-lg`}
+                                        key={connector.id || index}
+                                    >
                                         <Wallet
                                             connector={connector}
                                             loader={loader}

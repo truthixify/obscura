@@ -39,13 +39,13 @@ const toastVariants = cva(
         variants: {
             variant: {
                 default:
-                    'bg-blue-100/85 text-blue-900 border border-blue-300 dark:bg-blue-400/20 dark:text-blue-100 dark:border-blue-500 border-l-4 border-l-blue-400 dark:border-l-blue-400',
+                    'bg-blue-900/90 text-white border border-blue-700 dark:bg-blue-800/90 dark:text-white dark:border-blue-600 border-l-4 border-l-blue-700 dark:border-l-blue-500',
                 destructive:
-                    'bg-red-100/85 text-red-900 border border-red-300 dark:bg-red-400/20 dark:text-red-100 dark:border-red-400 border-l-4 border-l-red-400 dark:border-l-red-400',
+                    'bg-red-900/90 text-white border border-red-700 dark:bg-red-800/90 dark:text-white dark:border-red-600 border-l-4 border-l-red-700 dark:border-l-red-500',
                 success:
-                    'bg-green-100/85 text-green-900 border border-green-300 dark:bg-green-400/20 dark:text-green-100 dark:border-green-400 border-l-4 border-l-green-400 dark:border-l-green-400',
+                    'bg-green-900/90 text-white border border-green-700 dark:bg-green-800/90 dark:text-white dark:border-green-600 border-l-4 border-l-green-700 dark:border-l-green-500',
                 warning:
-                    'bg-amber-100/85 text-amber-900 border border-amber-300 dark:bg-amber-400/20 dark:text-amber-100 dark:border-amber-400 border-l-4 border-l-amber-400 dark:border-l-amber-400'
+                    'bg-amber-900/90 text-white border border-amber-700 dark:bg-amber-800/90 dark:text-white dark:border-amber-600 border-l-4 border-l-amber-700 dark:border-l-amber-500'
             }
         },
         defaultVariants: {

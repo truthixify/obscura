@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader } from '../../ui/card'
 import { useTheme } from 'next-themes'
 import { Checkbox } from '../../ui/checkbox'
 import { createAccount } from '../../../lib/api'
+import { useModalStore } from '../../../stores/modal-store'
 
 interface CustomConnectButtonProps {
     controlStyles: {
@@ -48,6 +49,7 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
     const {
         isRegistered,
         setIsRegistered,
+        owner,
         setOwner,
         setAddress,
         reset: resetAccountStore
@@ -61,7 +63,7 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
     const [checkboxChecked, setCheckboxChecked] = useState(false)
     const [isRegistering, setIsRegistering] = useState(false)
     const { theme } = useTheme()
-    const { provider } = useProvider()
+    const { setIsModalOpen } = useModalStore()
 
     const isDarkMode = theme == 'dark' ? true : false
 
@@ -93,6 +95,7 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
     const closeModal = () => {
         setCheckboxChecked(false)
         setShowModal(false)
+        setIsModalOpen(false)
     }
 
     const handleCopy = async () => {
@@ -127,19 +130,17 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
             }
 
             const tx = await obscura.register(userAccount)
-            const txReceipt = await provider.waitForTransaction(tx.transaction_hash)
-            const blockNumber = (txReceipt as any).block_number
+            // const txReceipt = await provider.waitForTransaction(tx.transaction_hash)
+            // const blockNumber = (txReceipt as any).block_number
 
-            if (blockNumber) {
-                const account = await createAccount({
-                    blockNumber,
-                    address: keypair.address(),
-                    owner: address
-                })
+            const account = await createAccount({
+                address: keypair.address(),
+                owner: address
+            })
 
-                setOwner(account.owner)
-                setAddress(account.address)
-            }
+            setOwner(account.owner)
+            setAddress(account.address)
+
             setIsRegistered(true)
         } catch (error) {
             console.log(error)
@@ -159,7 +160,6 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
     }
 
     const handleSetup = async () => {
-        console.log(address)
         if (!address) {
             toast({
                 title: 'Wallet Not Connected',
@@ -170,6 +170,7 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
         }
 
         setShowModal(true)
+        setIsModalOpen(true)
     }
 
     const handleLogout = () => {
@@ -189,7 +190,7 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
     return (
         <>
             <div className="flex gap-2">
-                {!isRegistered ? (
+                {!isRegistered && owner ? (
                     <Button
                         className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 ${controlStyles.buttonBg} ${controlStyles.buttonText} border ${controlStyles.border} ${controlStyles.buttonHover} transition-all duration-200`}
                         onClick={handleSetup}

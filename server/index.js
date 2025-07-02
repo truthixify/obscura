@@ -26,11 +26,11 @@ mongoose
 // POST endpoint to add new account
 app.post('/account', async (req, res) => {
     try {
-        const { blockNumber, owner, address } = req.body
-        if (typeof blockNumber !== 'number' || !owner || !address) {
+        const { owner, address } = req.body
+        if (!owner || !address) {
             return res.status(400).json({ error: 'Invalid input data' })
         }
-        const newAccount = new Account({ blockNumber, owner, address })
+        const newAccount = new Account({ owner, address })
         await newAccount.save()
         res.status(201).json(newAccount)
     } catch (err) {

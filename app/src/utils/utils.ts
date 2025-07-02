@@ -12,9 +12,7 @@ import {
     WeierstrassSignatureType,
     num,
     addAddressPadding,
-    constants,
-    TypedDataRevision,
-    shortString
+    constants
 } from 'starknet'
 import { I256 } from './custom_type'
 import { Keypair } from './keypair'
@@ -199,7 +197,7 @@ const messageStructure: TypedData = {
         StarkNetDomain: [
             { name: 'name', type: 'felt' },
             { name: 'chainId', type: 'felt' },
-            { name: 'version', type: 'felt' },
+            { name: 'version', type: 'felt' }
         ],
         Message: [{ name: 'message', type: 'felt' }]
     },
@@ -207,7 +205,7 @@ const messageStructure: TypedData = {
     domain: {
         name: 'Obscura',
         chainId: constants.StarknetChainId.SN_SEPOLIA,
-        version: "1.0.0",
+        version: '1.0.0'
     },
     message: {
         message: FIXED_MESSAGE
@@ -217,14 +215,18 @@ const messageStructure: TypedData = {
 export async function generateKeypairFromSignature(account: Account): Promise<Keypair> {
     try {
         const signature = (await account.signMessage(messageStructure)) as WeierstrassSignatureType
-        (signature as any).forEach(s => console.log(num.toHex(s)))
-        console.log("sig", signature)
+        let sigHex: any
 
-        const keypair = new Keypair(addAddressPadding(num.toHex(signature.r)))
+        if ((signature as any).length == 2) {
+            sigHex = num.toHex(signature[1])
+        } else {
+            sigHex = num.toHex(signature[3])
+        }
+
+        const keypair = new Keypair(addAddressPadding(sigHex))
 
         return keypair
     } catch (error) {
         throw error
     }
 }
-
