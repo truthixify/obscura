@@ -16,6 +16,7 @@ import { useKeypairStore } from '../../../stores/keypair-store'
 import { toast } from '../../ui/use-toast'
 import { getAccount } from '../../../lib/api'
 import { useAccountStore } from '../../../stores/account-store'
+import { useWalletModalStore } from '../../../stores/wallet-modal-store'
 
 const loader = ({ src }: { src: string }) => {
     return src
@@ -58,19 +59,22 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
     const { setIsRegistered, setAddress, setOwner } = useAccountStore()
     const [isLoggingIn, setIsLoggingIn] = useState(false)
 
-    // const handleCloseModal = () => {
-    //   if (modalRef.current) {
-    //     modalRef.current.checked = false;
-    //   }
-    // };
-    const openModal = () => setShowModal(true)
-    const closeModal = () => setShowModal(false)
+    const {setIsWalletModalOpen} = useWalletModalStore()
+
+    const openModal = () => {
+        setIsWalletModalOpen(true)
+        setShowModal(true)
+    }
+    const closeModal = () => {
+        setShowModal(false)
+        setIsWalletModalOpen(false)
+    }
 
     // Replace `handleCloseModal` usage:
     const handleCloseModal = closeModal
 
     function handleConnectWallet(
-        e: React.MouseEvent<HTMLButtonElement>,
+        _: React.MouseEvent<HTMLButtonElement>,
         connector: Connector
     ): void {
         if (connector.id === 'burner-wallet') {
@@ -83,7 +87,7 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
         handleCloseModal()
     }
 
-    function handleConnectBurner(e: React.MouseEvent<HTMLButtonElement>, ix: number) {
+    function handleConnectBurner(_: React.MouseEvent<HTMLButtonElement>, ix: number) {
         const connector = connectors.find(it => it.id == 'burner-wallet')
         if (connector && connector instanceof BurnerConnector) {
             connector.burnerAccount = burnerAccounts[ix]
@@ -144,10 +148,10 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
                 )}
             </Button>
 
-            {showModal && (
+            {(!showPrivateKeyModal && showModal) && (
                 <GenericModal onClose={closeModal}>
                     <Card
-                        className={`w-full max-w-2xl border border-black/20 shadow-2xl transition-all duration-300 ${
+                        className={`w-full max-w-2xl border shadow-2xl transition-all duration-300 ${
                             isDarkMode
                                 ? 'bg-black/30 border-white/20 shadow-black/50'
                                 : 'bg-white/30 border-black/20 shadow-black/20'
@@ -169,9 +173,9 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
                                 <X className="h-4 w-4" />
                             </button>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className='flex flex-wrap gap-2'>
                             <button
-                                className="retro-button retro-button-outline w-full py-3 px-4 flex items-center gap-3"
+                                className={`md:w-1/2 w-full py-3 px-4 flex items-center gap-3 ${controlStyles.bg} ${controlStyles.text} border ${controlStyles.border} ${controlStyles.secondaryHover} rounded-lg`}
                                 onClick={() => setShowPrivateKeyModal(true)}
                             >
                                 <KeySquare className="h-6 w-6" />
@@ -180,12 +184,13 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
                             {!isBurnerWallet ? (
                                 // Wallet options
                                 connectors.map((connector, index) => (
-                                    <Wallet
-                                        key={connector.id || index}
-                                        connector={connector}
-                                        loader={loader}
-                                        handleConnectWallet={handleConnectWallet}
-                                    />
+                                    <div className={`md:w-1/2 w-full ${controlStyles.bg} ${controlStyles.text} border ${controlStyles.border} ${controlStyles.secondaryHover} rounded-lg`} key={connector.id || index}>
+                                        <Wallet
+                                            connector={connector}
+                                            loader={loader}
+                                            handleConnectWallet={handleConnectWallet}
+                                        />
+                                    </div>
                                 ))
                             ) : (
                                 // Burner wallet accounts
@@ -228,7 +233,7 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
             {showPrivateKeyModal && (
                 <GenericModal onClose={closeModal}>
                     <Card
-                        className={`w-full max-w-2xl border border-black/20 shadow-2xl transition-all duration-300 ${
+                        className={`w-full max-w-2xl border shadow-2xl transition-all duration-300 ${
                             isDarkMode
                                 ? 'bg-black/30 border-white/20 shadow-black/50'
                                 : 'bg-white/30 border-black/20 shadow-black/20'
@@ -238,13 +243,12 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
                             <h3
                                 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-black'}`}
                             >
-                                Input Private Key
+                                Private Key
                             </h3>
                             <button
                                 onClick={() => {
                                     setPrivateKey('')
                                     setShowPrivateKeyModal(false)
-                                    closeModal()
                                 }}
                                 className={`p-2 flex items-center justify-center ${isDarkMode ? 'text-white' : 'text-black'}`}
                             >
@@ -254,7 +258,7 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
                         <CardContent>
                             <Input
                                 id="fund-address"
-                                placeholder="Enter your private key..."
+                                placeholder="Enter your shielded pool private key..."
                                 value={privateKey}
                                 onChange={e => setPrivateKey(e.target.value)}
                                 className={`backdrop-blur-sm border transition-colors duration-200 h-14 ${

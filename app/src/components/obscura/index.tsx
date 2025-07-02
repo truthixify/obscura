@@ -35,6 +35,7 @@ import { AccountData, getAccount } from '../../lib/api'
 import { useAccountStore } from '../../stores/account-store'
 import { Keypair } from '../../utils/keypair'
 import SettingsModal from './settings'
+import { useWalletModalStore } from '../../stores/wallet-modal-store'
 
 const Index = () => {
     const { data: obscura } = useScaffoldContract({
@@ -51,6 +52,9 @@ const Index = () => {
     const [isAnimated, setIsAnimated] = useState(true)
     const [currentPattern, setCurrentPattern] = useState(0)
     const [isArtControlOpen, setIsArtControlOpen] = useState(false)
+
+    // Wallet modal state
+    const { isWalletModalOpen } = useWalletModalStore()
 
     // Settings modal state
     const [isSettinngsOpen, setIsSettingsOpen] = useState(false)
@@ -188,13 +192,10 @@ const Index = () => {
     }, [isAnimated, patterns.length])
 
     useEffect(() => {
-        console.log('keypair generating')
-        console.log(obscura, address, account)
         if (!address || !account) return
 
         const loadKeypair = async () => {
             const keypair = await generateKeypairFromSignature(account as Account)
-            console.log(keypair)
             setKeypair(keypair)
 
             try {
@@ -206,13 +207,11 @@ const Index = () => {
                 console.log(error)
             }
         }
-        console.log('keypair generated')
 
         loadKeypair()
     }, [address, account])
 
     useEffect(() => {
-        console.log(keypair, address)
         if (!address || !keypair) return
 
         const fetchUserAddress = async () => {
@@ -346,7 +345,6 @@ const Index = () => {
 
         try {
             const tx = await strk.approve(obscura.address, BigInt(fundAmount * 1e18))
-            console.log(tx)
         } catch (error) {
             setIsApproved(false)
             setIsApproving(false)
@@ -856,7 +854,7 @@ const Index = () => {
                         isDarkMode
                             ? 'bg-black/30 border-white/20 shadow-black/50'
                             : 'bg-white/30 border-black/20 shadow-black/20'
-                    }`}
+                    } ${isWalletModalOpen ? 'hidden' : 'block'}`}
                 >
                     <CardContent className="space-y-6 pt-6">
                         <Tabs defaultValue="fund" className="w-full">

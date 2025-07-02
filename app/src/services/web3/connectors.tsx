@@ -1,9 +1,8 @@
-import { argent, braavos, InjectedConnector } from '@starknet-react/core'
+import { argent, InjectedConnector } from '@starknet-react/core'
 import { getTargetNetworks } from '../../utils/scaffold-stark'
 import { BurnerConnector } from '@scaffold-stark/stark-burner'
 import scaffoldConfig from '../../../scaffold.config'
 import { LAST_CONNECTED_TIME_LOCALSTORAGE_KEY } from '../../utils/Constants'
-import { KeplrConnector } from './keplr'
 import { supportedChains } from '../../../supportedChains'
 
 const targetNetworks = getTargetNetworks()
@@ -25,12 +24,10 @@ function withDisconnectWrapper(connector: InjectedConnector) {
 function getConnectors() {
     const { targetNetworks } = scaffoldConfig
 
-    const connectors: InjectedConnector[] = [argent(), braavos()]
+    const connectors: InjectedConnector[] = [argent()]
     const isDevnet = targetNetworks.some(network => (network.network as string) === 'devnet')
 
-    if (!isDevnet) {
-        connectors.push(new KeplrConnector())
-    } else {
+    if (isDevnet) {
         const burnerConnector = new BurnerConnector()
         burnerConnector.chain = supportedChains.devnet
         connectors.push(burnerConnector as unknown as InjectedConnector)

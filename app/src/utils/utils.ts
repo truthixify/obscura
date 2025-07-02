@@ -12,7 +12,9 @@ import {
     WeierstrassSignatureType,
     num,
     addAddressPadding,
-    ByteArray
+    constants,
+    TypedDataRevision,
+    shortString
 } from 'starknet'
 import { I256 } from './custom_type'
 import { Keypair } from './keypair'
@@ -190,23 +192,22 @@ export function shuffle<T>(array: T[]): T[] {
     return array
 }
 
-const FIXED_MESSAGE = `You are about to generate your obscura private key by signing this message. This key lets the application decrypt your balance`
+const FIXED_MESSAGE = `Generate obscura private key`
 
-// Define the typedData structure (EIP-712 style for Starknet)
 const messageStructure: TypedData = {
     types: {
         StarkNetDomain: [
             { name: 'name', type: 'felt' },
             { name: 'chainId', type: 'felt' },
-            { name: 'version', type: 'felt' }
+            { name: 'version', type: 'felt' },
         ],
-        Message: [{ name: 'message', type: 'ByteArray' }]
+        Message: [{ name: 'message', type: 'felt' }]
     },
     primaryType: 'Message',
     domain: {
         name: 'Obscura',
-        chainId: 'SN_SEPOLIA',
-        version: '1'
+        chainId: constants.StarknetChainId.SN_SEPOLIA,
+        version: "1.0.0",
     },
     message: {
         message: FIXED_MESSAGE
@@ -216,6 +217,8 @@ const messageStructure: TypedData = {
 export async function generateKeypairFromSignature(account: Account): Promise<Keypair> {
     try {
         const signature = (await account.signMessage(messageStructure)) as WeierstrassSignatureType
+        (signature as any).forEach(s => console.log(num.toHex(s)))
+        console.log("sig", signature)
 
         const keypair = new Keypair(addAddressPadding(num.toHex(signature.r)))
 
@@ -224,3 +227,4 @@ export async function generateKeypairFromSignature(account: Account): Promise<Ke
         throw error
     }
 }
+
