@@ -190,10 +190,11 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
     return (
         <>
             <div className="flex gap-2">
-                {!isRegistered && owner ? (
+                {!isRegistered ? (
                     <Button
                         className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 ${controlStyles.buttonBg} ${controlStyles.buttonText} border ${controlStyles.border} ${controlStyles.buttonHover} transition-all duration-200`}
                         onClick={handleSetup}
+                        disabled={!owner}
                     >
                         {isRegistering ? 'Setting up account...' : 'Set up account'}
                     </Button>

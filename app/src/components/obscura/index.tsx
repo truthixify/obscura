@@ -36,7 +36,6 @@ import { useAccountStore } from '../../stores/account-store'
 import { Keypair } from '../../utils/keypair'
 import SettingsModal from './settings'
 import { useModalStore } from '../../stores/modal-store'
-import { useScaffoldEventHistory } from '../../hooks/scaffold-stark/useScaffoldEventHistory'
 
 const Index = () => {
     const { data: obscura } = useScaffoldContract({
@@ -433,7 +432,7 @@ const Index = () => {
 
             const account = await getAccount({ address: receiverKeypair.address() })
 
-            if (!account) {
+            if (!account.owner) {
                 toast({
                     title: 'Invalid address',
                     description: 'Could not find account for recipient.',
