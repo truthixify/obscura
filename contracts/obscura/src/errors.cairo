@@ -25,7 +25,7 @@
 /// # Resolution
 /// - Ensure the caller is the account owner
 /// - Use the correct account address for registration
-pub const ONLY_OWNER_CAN_BE_REGISTERED: felt252 = 'Only owner can be registered';
+pub const ERROR_ONLY_OWNER_CAN_BE_REGISTERED: felt252 = 'Only owner can be registered';
 
 /// Error message for invalid Merkle root in transaction proofs.
 ///
@@ -40,7 +40,7 @@ pub const ONLY_OWNER_CAN_BE_REGISTERED: felt252 = 'Only owner can be registered'
 /// # Resolution
 /// - Use a recent, valid Merkle root
 /// - Ensure the proof is based on current state
-pub const INVALID_MERKLE_ROOT: felt252 = 'Invalid merkle root';
+pub const ERROR_INVALID_MERKLE_ROOT: felt252 = 'Invalid merkle root';
 
 /// Error message for attempting to spend already spent inputs.
 ///
@@ -55,7 +55,7 @@ pub const INVALID_MERKLE_ROOT: felt252 = 'Invalid merkle root';
 /// # Resolution
 /// - Use fresh, unspent inputs for new transactions
 /// - Check input status before creating proofs
-pub const INPUT_ALREADY_SPENT: felt252 = 'Input is already spent';
+pub const ERROR_INPUT_ALREADY_SPENT: felt252 = 'Input is already spent';
 
 /// Error message for invalid recipient addresses.
 ///
@@ -69,7 +69,7 @@ pub const INPUT_ALREADY_SPENT: felt252 = 'Input is already spent';
 /// # Resolution
 /// - Use a valid, non-zero recipient address
 /// - Ensure the recipient address is properly formatted
-pub const ZERO_ADDRESS: felt252 = 'Invalid cannot be address';
+pub const ERROR_ZERO_ADDRESS: felt252 = 'Invalid cannot be address';
 
 /// Error message for invalid fee amounts.
 ///
@@ -84,7 +84,7 @@ pub const ZERO_ADDRESS: felt252 = 'Invalid cannot be address';
 /// # Resolution
 /// - Use a fee amount within the system limits
 /// - Ensure fee calculation is correct
-pub const INVALID_FEE: felt252 = 'Invalid fee';
+pub const ERROR_INVALID_FEE: felt252 = 'Invalid fee';
 
 /// Error message for invalid external amounts.
 ///
@@ -99,7 +99,7 @@ pub const INVALID_FEE: felt252 = 'Invalid fee';
 /// # Resolution
 /// - Use an amount within the system limits
 /// - Ensure amount calculation is correct
-pub const INVALID_EXT_AMOUNT: felt252 = 'Invalid ext amount';
+pub const ERROR_INVALID_EXT_AMOUNT: felt252 = 'Invalid ext amount';
 
 /// Error message for invalid Merkle tree depth.
 ///
@@ -114,7 +114,7 @@ pub const INVALID_EXT_AMOUNT: felt252 = 'Invalid ext amount';
 /// # Resolution
 /// - Use a depth between 1 and 31
 /// - Consider gas costs and storage requirements
-pub const INVALID_TREE_DEPTH: felt252 = 'Invalid tree depth';
+pub const ERROR_INVALID_TREE_DEPTH: felt252 = 'Invalid tree depth';
 
 /// Error message for attempting to insert into a full Merkle tree.
 ///
@@ -128,7 +128,7 @@ pub const INVALID_TREE_DEPTH: felt252 = 'Invalid tree depth';
 /// # Resolution
 /// - Wait for commitments to be spent (creating space)
 /// - Consider upgrading to a larger tree if needed
-pub const MERKLE_TREE_IS_FULL: felt252 = 'Merkle tree is full';
+pub const ERROR_MERKLE_TREE_IS_FULL: felt252 = 'Merkle tree is full';
 
 /// Error message for incorrect external data hash.
 ///
@@ -143,7 +143,7 @@ pub const MERKLE_TREE_IS_FULL: felt252 = 'Merkle tree is full';
 /// # Resolution
 /// - Ensure external data matches the proof
 /// - Regenerate proof with correct external data
-pub const INCORRECT_EXT_HASH: felt252 = 'Incorrect external data hash';
+pub const ERROR_INCORRECT_EXT_HASH: felt252 = 'Incorrect external data hash';
 
 /// Error message for invalid public amount in proof.
 ///
@@ -158,7 +158,7 @@ pub const INCORRECT_EXT_HASH: felt252 = 'Incorrect external data hash';
 /// # Resolution
 /// - Ensure amounts are calculated correctly
 /// - Regenerate proof with correct amounts
-pub const INVALID_PUBLIC_AMOUNT: felt252 = 'Invalid public amount';
+pub const ERROR_INVALID_PUBLIC_AMOUNT: felt252 = 'Invalid public amount';
 
 /// Error message for invalid transaction proof.
 ///
@@ -173,7 +173,7 @@ pub const INVALID_PUBLIC_AMOUNT: felt252 = 'Invalid public amount';
 /// # Resolution
 /// - Regenerate proof with correct inputs
 /// - Ensure all proof components are valid
-pub const INVALID_TRANSACTION_PROOF: felt252 = 'Invalid transaction proof';
+pub const ERROR_INVALID_TRANSACTION_PROOF: felt252 = 'Invalid transaction proof';
 
 /// Error message for deposit amounts exceeding the maximum limit.
 ///
@@ -187,4 +187,4 @@ pub const INVALID_TRANSACTION_PROOF: felt252 = 'Invalid transaction proof';
 /// # Resolution
 /// - Reduce deposit amount to within limits
 /// - Split large deposits into smaller transactions
-pub const AMOUNT_LARGER_THAN_MAXIMUM_DEPOSIT: felt252 = 'Deposit amount is too large';
+pub const ERROR_AMOUNT_LARGER_THAN_MAXIMUM_DEPOSIT: felt252 = 'Deposit amount is too large';

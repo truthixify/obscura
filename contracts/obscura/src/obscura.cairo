@@ -169,7 +169,7 @@ pub mod Obscura {
         fn register(ref self: ContractState, account: Account) {
             let caller = get_caller_address();
 
-            assert(account.owner == caller, ONLY_OWNER_CAN_BE_REGISTERED);
+            assert(account.owner == caller, ERROR_ONLY_OWNER_CAN_BE_REGISTERED);
 
             self
                 .emit(
@@ -212,7 +212,7 @@ pub mod Obscura {
             if ext_data.ext_amount > I256Trait::zero() {
                 assert(
                     ext_data.ext_amount <= self.maximum_deposit_amount.read().into(),
-                    AMOUNT_LARGER_THAN_MAXIMUM_DEPOSIT,
+                    ERROR_AMOUNT_LARGER_THAN_MAXIMUM_DEPOSIT,
                 );
 
                 // Transfer tokens from caller to contract
@@ -225,11 +225,11 @@ pub mod Obscura {
             }
 
             // Verify the Merkle root is known and recent
-            assert(self.is_known_root(args.root), INVALID_MERKLE_ROOT);
+            assert(self.is_known_root(args.root), ERROR_INVALID_MERKLE_ROOT);
 
             // Check that all input nullifiers haven't been spent
             for i in 0..args.input_nullifiers.len() {
-                assert(!self.is_spent(*args.input_nullifiers.at(i)), INPUT_ALREADY_SPENT);
+                assert(!self.is_spent(*args.input_nullifiers.at(i)), ERROR_INPUT_ALREADY_SPENT);
             }
 
             // Verify external data hash consistency
@@ -237,14 +237,14 @@ pub mod Obscura {
             Serde::serialize(@ext_data, ref serialized_ext_data);
             let computed_ext_data_hash = poseidon_hash_span(serialized_ext_data.span());
 
-            assert(args.ext_data_hash == computed_ext_data_hash.into(), INCORRECT_EXT_HASH);
+            assert(args.ext_data_hash == computed_ext_data_hash.into(), ERROR_INCORRECT_EXT_HASH);
 
             // Verify public amount consistency
             assert(
                 args
                     .public_amount == self
                     .calculate_public_amount(ext_data.ext_amount, ext_data.fee),
-                INVALID_PUBLIC_AMOUNT,
+                ERROR_INVALID_PUBLIC_AMOUNT,
             );
 
             // Verify the zero-knowledge proof using external verifier
@@ -256,7 +256,7 @@ pub mod Obscura {
                 .unwrap_syscall();
             let _public_inputs = Serde::<Option<Span<u256>>>::deserialize(ref result)
                 .unwrap()
-                .expect(INVALID_TRANSACTION_PROOF);
+                .expect(ERROR_INVALID_TRANSACTION_PROOF);
 
             // Mark input nullifiers as spent to prevent double-spending
             for i in 0..args.input_nullifiers.len() {
@@ -265,7 +265,7 @@ pub mod Obscura {
 
             // Handle withdrawals (negative external amount)
             if ext_data.ext_amount < I256Trait::zero() {
-                assert(!ext_data.recipient.is_zero(), ZERO_ADDRESS);
+                assert(!ext_data.recipient.is_zero(), ERROR_ZERO_ADDRESS);
 
                 // Transfer tokens from contract to recipient
                 strk_dispatcher
@@ -375,10 +375,10 @@ pub mod Obscura {
         /// - Ensures mathematical consistency in proofs
         /// - Handles negative amounts correctly
         fn calculate_public_amount(self: @ContractState, ext_amount: I256, fee: u256) -> u256 {
-            assert(fee < MAX_FEE, INVALID_FEE);
+            assert(fee < MAX_FEE, ERROR_INVALID_FEE);
             assert(
                 ext_amount > -(MAX_EXT_AMOUNT.into()) && ext_amount < MAX_EXT_AMOUNT.into(),
-                INVALID_EXT_AMOUNT,
+                ERROR_INVALID_EXT_AMOUNT,
             );
 
             let public_amount: I256 = ext_amount - fee.into();
@@ -526,7 +526,7 @@ pub mod Obscura {
         /// - Ensures tree depth is reasonable (1-31 levels)
         /// - Prevents excessive gas costs and storage usage
         fn new_merkle_tree(ref self: ContractState, levels: u32) {
-            assert(levels > 0 && levels < 32, INVALID_TREE_DEPTH);
+            assert(levels > 0 && levels < 32, ERROR_INVALID_TREE_DEPTH);
 
             let zeros = Self::build_zeros(levels);
             let root_zero = *zeros.at(levels.into());
@@ -572,7 +572,7 @@ pub mod Obscura {
             let levels = self.merkle_tree.levels.read();
             let next_index = self.merkle_tree.next_index.read();
 
-            assert(next_index != 2_u32.pow(levels), MERKLE_TREE_IS_FULL);
+            assert(next_index != 2_u32.pow(levels), ERROR_MERKLE_TREE_IS_FULL);
 
             let mut current_index = next_index / 2;
             let mut current_level_hash: u256 = Self::hash_left_and_right(leaf1, leaf2);
