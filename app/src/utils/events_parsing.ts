@@ -9,17 +9,32 @@ export const parseEvents = async (
     to_block?: any
 ): Promise<any[]> => {
     const keyFilter = [[num.toHex(hash.starknetKeccak(eventName)), ...otherKeys]]
-    const eventsList = await provider.getEvents({
-        address: obscura.address,
-        keys: keyFilter,
-        from_block,
-        to_block,
-        chunk_size: 10
-    })
-    const abiEvents = events.getAbiEvents(obscura.abi)
-    const abiStructs = CallData.getAbiStruct(obscura.abi)
-    const abiEnums = CallData.getAbiEnum(obscura.abi)
-    const parsedEvents = events.parseEvents(eventsList.events, abiEvents, abiStructs, abiEnums)
+    let continuationToken: string | undefined = '0'
+    let parsedEvents: any[] = []
+
+    while (continuationToken) {
+        const eventsList = await provider.getEvents({
+            address: obscura.address,
+            keys: keyFilter,
+            from_block,
+            to_block,
+            chunk_size: 10,
+            continuation_token: continuationToken === '0' ? undefined : continuationToken
+        })
+        const abiEvents = events.getAbiEvents(obscura.abi)
+        const abiStructs = CallData.getAbiStruct(obscura.abi)
+        const abiEnums = CallData.getAbiEnum(obscura.abi)
+        const parsedEventsInner = events.parseEvents(
+            eventsList.events,
+            abiEvents,
+            abiStructs,
+            abiEnums
+        )
+
+        continuationToken = eventsList.continuation_token
+
+        parsedEvents = [...parsedEvents, ...parsedEventsInner]
+    }
 
     return parsedEvents
 }

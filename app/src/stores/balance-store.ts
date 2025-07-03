@@ -13,7 +13,7 @@ export const useBalanceStore = create<BalanceState>(set => ({
 
     setBalance: (value: number) => set({ balance: value }),
 
-    isLoadingBalance: true,
+    isLoadingBalance: false,
 
     setIsLoadingBalance: (value: boolean) => set({ isLoadingBalance: value }),
 

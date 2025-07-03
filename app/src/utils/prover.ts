@@ -15,7 +15,6 @@ export async function prove(input: any) {
 
     // Generate Witness
     const noir = new Noir({ bytecode, abi: abi as any })
-    console.log(input)
     const execResult = await noir.execute(input)
     // console.log('Witness Generated:', execResult)
 

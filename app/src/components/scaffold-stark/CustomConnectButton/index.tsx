@@ -20,6 +20,11 @@ import { useTheme } from 'next-themes'
 import { Checkbox } from '../../ui/checkbox'
 import { createAccount } from '../../../lib/api'
 import { useModalStore } from '../../../stores/modal-store'
+import Utxo from '../../../utils/utxo'
+import { parseNewCommitEvent } from '../../../utils/events_parsing'
+import { RpcProvider } from 'starknet'
+import { useUtxoStore } from '../../../stores/utxo-store'
+import { ReloadIcon } from '@radix-ui/react-icons'
 
 interface CustomConnectButtonProps {
     controlStyles: {
@@ -64,6 +69,9 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
     const [isRegistering, setIsRegistering] = useState(false)
     const { theme } = useTheme()
     const { setIsModalOpen } = useModalStore()
+    const { provider } = useProvider()
+    const { setIsLoadingBalance, setBalance } = useBalanceStore()
+    const { setUtxos } = useUtxoStore()
 
     const isDarkMode = theme == 'dark' ? true : false
 
@@ -132,30 +140,37 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
             const tx = await obscura.register(userAccount)
             // const txReceipt = await provider.waitForTransaction(tx.transaction_hash)
             // const blockNumber = (txReceipt as any).block_number
+            console.log(tx)
 
             const account = await createAccount({
                 address: keypair.address(),
                 owner: address
             })
+            console.log('acc', account)
 
             setOwner(account.owner)
             setAddress(account.address)
 
             setIsRegistered(true)
-        } catch (error) {
-            console.log(error)
-            setIsRegistering(false)
-        } finally {
-            setIsRegistering(false)
-            setShowModal(false)
-            setCheckboxChecked(false)
-            closeModal()
 
             toast({
                 title: 'Registration successful',
                 description: "You've successfully registered",
                 variant: 'success'
             })
+        } catch (error) {
+            setIsRegistering(false)
+            console.log(error)
+            toast({
+                title: 'Registration failed',
+                description: error instanceof Error ? error.message : 'Something went wrong',
+                variant: 'destructive'
+            })
+        } finally {
+            setIsRegistering(false)
+            setShowModal(false)
+            setCheckboxChecked(false)
+            closeModal()
         }
     }
 
@@ -180,6 +195,62 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
         disconnect()
     }
 
+    const checkUserBalance = async () => {
+        setIsLoadingBalance(true)
+
+        const parsedNewCommitEvents = await parseNewCommitEvent(obscura, provider as RpcProvider, {
+            block_number: 906832n
+        })
+
+        if (!parsedNewCommitEvents) return
+
+        let balance: bigint = 0n
+
+        const tryDecryptUtxo = (i: number): Utxo | undefined => {
+            try {
+                return Utxo.decrypt(
+                    keypair,
+                    parsedNewCommitEvents[i].encrypted_output,
+                    parsedNewCommitEvents[i].index
+                )
+            } catch {
+                try {
+                    return Utxo.decrypt(
+                        keypair,
+                        parsedNewCommitEvents[i + 1].encrypted_output,
+                        parsedNewCommitEvents[i + 1].index
+                    )
+                } catch {
+                    return undefined
+                }
+            }
+        }
+
+        const utxos: Utxo[] = []
+        for (let i = 0; i < parsedNewCommitEvents.length; i += 2) {
+            const utxo = tryDecryptUtxo(i)
+            if (!utxo) continue
+
+            const nullifier = utxo.getNullifier()
+            const isSpent = await obscura.is_spent(nullifier)
+
+            if (!isSpent) {
+                balance += BigInt(utxo.amount)
+                utxos.push(utxo)
+            }
+        }
+
+        setUtxos(utxos)
+        setBalance(Number(balance) / 1e18)
+        setIsLoadingBalance(false)
+    }
+
+    useEffect(() => {
+        if (!keypair) return
+
+        checkUserBalance()
+    }, [keypair])
+
     if ((status === 'disconnected' || accountChainId === 0n) && !keypair)
         return <ConnectModal controlStyles={controlStyles} />
 
@@ -194,7 +265,7 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
                     <Button
                         className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 ${controlStyles.buttonBg} ${controlStyles.buttonText} border ${controlStyles.border} ${controlStyles.buttonHover} transition-all duration-200`}
                         onClick={handleSetup}
-                        disabled={!owner}
+                        // disabled={!owner}
                     >
                         {isRegistering ? 'Setting up account...' : 'Set up account'}
                     </Button>
@@ -202,10 +273,18 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
                     <Button
                         className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 ${controlStyles.buttonBg} ${controlStyles.buttonText} border ${controlStyles.border} ${controlStyles.buttonHover} transition-all duration-200`}
                     >
+                        <span>Balance: {balance.toFixed(2)} $STRK</span>
+                    </Button>
+                )}
+                {isRegistered && (
+                    <Button
+                        className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 ${controlStyles.buttonBg} ${controlStyles.buttonText} border ${controlStyles.border} ${controlStyles.buttonHover} transition-all duration-200`}
+                        onClick={checkUserBalance}
+                    >
                         {isLoadingBalance ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <ReloadIcon className="h-4 w-4 animate-spin" />
                         ) : (
-                            <span>Shielded Balance: ${balance} STRK</span>
+                            <ReloadIcon className="h-4 w-4" />
                         )}
                     </Button>
                 )}

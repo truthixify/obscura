@@ -10,24 +10,24 @@ import {
     ArrowDownLeft,
     Wallet,
     Palette,
-    RotateCcw,
     Play,
     Pause,
     ChevronDown,
     ChevronUp,
     Sun,
     Moon,
-    Settings
+    Settings,
+    BotOff,
+    Bot
 } from 'lucide-react'
 import { useToast } from '../../hooks/use-toast'
 import { Header } from '../header'
 import { useTheme } from 'next-themes'
 import { transaction } from '../../utils/index'
 import Utxo from '../../utils/utxo'
-import { parseNewCommitEvent } from '../../utils/events_parsing'
 import { useScaffoldContract } from '../../hooks/scaffold-stark/useScaffoldContract'
 import { useAccount, useProvider } from '@starknet-react/core'
-import { Account, RpcProvider } from 'starknet'
+import { Account } from 'starknet'
 import { useBalanceStore } from '../../stores/balance-store'
 import { useKeypairStore } from '../../stores/keypair-store'
 import { generateKeypairFromSignature } from '../../utils/utils'
@@ -36,6 +36,9 @@ import { useAccountStore } from '../../stores/account-store'
 import { Keypair } from '../../utils/keypair'
 import SettingsModal from './settings'
 import { useModalStore } from '../../stores/modal-store'
+import { useUtxoStore } from '../../stores/utxo-store'
+import { TrackNextIcon } from '@radix-ui/react-icons'
+// import { avnuPaymasterProvider } from '@starknet-react/core'
 
 const Index = () => {
     const { data: obscura } = useScaffoldContract({
@@ -52,6 +55,10 @@ const Index = () => {
     const [isAnimated, setIsAnimated] = useState(true)
     const [currentPattern, setCurrentPattern] = useState(0)
     const [isArtControlOpen, setIsArtControlOpen] = useState(false)
+    const [isArt, setIsArt] = useState(true)
+
+    // Utxo state
+    const { utxos } = useUtxoStore()
 
     // Wallet modal state
     const { isModalOpen, setIsModalOpen } = useModalStore()
@@ -63,11 +70,8 @@ const Index = () => {
         setIsModalOpen(false)
     }
 
-    // Utxos state
-    const [utxos, setUtxos] = useState<Utxo[] | null>(null)
-
     // Balance state
-    const { balance, setBalance, setIsLoadingBalance } = useBalanceStore()
+    const { balance } = useBalanceStore()
 
     // Keypair state
     const { keypair, setKeypair } = useKeypairStore()
@@ -186,13 +190,13 @@ const Index = () => {
     const controlStyles = getControlStyles()
 
     useEffect(() => {
-        if (isAnimated) {
+        if (isAnimated && isArt) {
             const interval = setInterval(() => {
                 setCurrentPattern(prev => (prev + 1) % patterns.length)
             }, 4000)
             return () => clearInterval(interval)
         }
-    }, [isAnimated, patterns.length])
+    }, [isAnimated, isArt, patterns.length])
 
     useEffect(() => {
         if (!address || !account) return
@@ -233,65 +237,6 @@ const Index = () => {
 
         fetchUserAddress()
     }, [address, keypair])
-
-    useEffect(() => {
-        if (!keypair) return
-
-        const checkUserBalance = async () => {
-            const parsedNewCommitEvents = await parseNewCommitEvent(
-                obscura,
-                provider as RpcProvider,
-                { block_number: 902992n }
-            )
-            console.log(parsedNewCommitEvents)
-
-            if (!parsedNewCommitEvents) return
-
-            let balance: bigint = 0n
-
-            const tryDecryptUtxo = (i: number): Utxo | undefined => {
-                try {
-                    return Utxo.decrypt(
-                        keypair,
-                        parsedNewCommitEvents[i].encrypted_output,
-                        parsedNewCommitEvents[i].index
-                    )
-                } catch {
-                    try {
-                        return Utxo.decrypt(
-                            keypair,
-                            parsedNewCommitEvents[i + 1].encrypted_output,
-                            parsedNewCommitEvents[i + 1].index
-                        )
-                    } catch {
-                        return undefined
-                    }
-                }
-            }
-
-            const utxos: Utxo[] = []
-            for (let i = 0; i < parsedNewCommitEvents.length; i += 2) {
-                const utxo = tryDecryptUtxo(i)
-                if (!utxo) continue
-
-                utxos.push(utxo)
-
-                const nullifier = utxo.getNullifier()
-                const isSpent = await obscura.is_spent(nullifier)
-
-                if (!isSpent) {
-                    balance += BigInt(utxo.amount)
-                }
-            }
-            console.log(utxos)
-
-            setUtxos(utxos)
-            setBalance(Number(balance / BigInt(1e18)))
-            setIsLoadingBalance(false)
-        }
-
-        checkUserBalance()
-    }, [keypair])
 
     const handleFund = async () => {
         if (!fundAmount || !fundAddress) {
@@ -622,163 +567,171 @@ const Index = () => {
             }`}
         >
             {/* Artistic Background Composition */}
-            <div className="absolute inset-0">
-                {/* Pattern 0: Flowing Gradients */}
-                <div
-                    className={`absolute inset-0 transition-opacity duration-1000 ${currentPattern === 0 ? 'opacity-100' : 'opacity-0'}`}
-                >
-                    <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-500 to-white transform rotate-12 scale-150"></div>
-                    <div className="absolute inset-0 bg-gradient-to-tl from-white via-gray-300 to-black transform -rotate-12 scale-150 mix-blend-multiply"></div>
-                    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-radial from-black to-transparent rounded-full animate-pulse opacity-60"></div>
-                    <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-radial from-white to-transparent rounded-full animate-pulse opacity-80 delay-1000"></div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black to-transparent opacity-30 animate-pulse delay-500"></div>
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white to-transparent opacity-40 animate-pulse delay-1500"></div>
-                </div>
+            {isArt && (
+                <div className="absolute inset-0">
+                    {/* Pattern 0: Flowing Gradients */}
+                    <div
+                        className={`absolute inset-0 transition-opacity duration-1000 ${currentPattern === 0 ? 'opacity-100' : 'opacity-0'}`}
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-500 to-white transform rotate-12 scale-150"></div>
+                        <div className="absolute inset-0 bg-gradient-to-tl from-white via-gray-300 to-black transform -rotate-12 scale-150 mix-blend-multiply"></div>
+                        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-radial from-black to-transparent rounded-full animate-pulse opacity-60"></div>
+                        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-radial from-white to-transparent rounded-full animate-pulse opacity-80 delay-1000"></div>
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black to-transparent opacity-30 animate-pulse delay-500"></div>
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white to-transparent opacity-40 animate-pulse delay-1500"></div>
+                    </div>
 
-                {/* Pattern 1: Sharp Boundaries */}
-                <div
-                    className={`absolute inset-0 transition-opacity duration-1000 ${currentPattern === 1 ? 'opacity-100' : 'opacity-0'}`}
-                >
-                    <div className="absolute inset-0 bg-black transform origin-center rotate-45 translate-x-1/2"></div>
-                    <div className="absolute inset-0 bg-white"></div>
-                    <div className="absolute top-0 left-0 w-1/3 h-full bg-black"></div>
-                    <div className="absolute top-1/3 right-0 w-1/2 h-1/3 bg-white border-4 border-black"></div>
-                    <div className="absolute bottom-0 left-1/4 w-1/2 h-1/4 bg-black"></div>
-                    <div className="absolute inset-0">
+                    {/* Pattern 1: Sharp Boundaries */}
+                    <div
+                        className={`absolute inset-0 transition-opacity duration-1000 ${currentPattern === 1 ? 'opacity-100' : 'opacity-0'}`}
+                    >
+                        <div className="absolute inset-0 bg-black transform origin-center rotate-45 translate-x-1/2"></div>
+                        <div className="absolute inset-0 bg-white"></div>
+                        <div className="absolute top-0 left-0 w-1/3 h-full bg-black"></div>
+                        <div className="absolute top-1/3 right-0 w-1/2 h-1/3 bg-white border-4 border-black"></div>
+                        <div className="absolute bottom-0 left-1/4 w-1/2 h-1/4 bg-black"></div>
+                        <div className="absolute inset-0">
+                            <svg
+                                className="w-full h-full"
+                                viewBox="0 0 100 100"
+                                preserveAspectRatio="none"
+                            >
+                                <polygon points="0,0 20,50 0,100 40,100 60,50 40,0" fill="black" />
+                                <polygon
+                                    points="40,0 60,50 40,100 80,100 100,50 80,0"
+                                    fill="white"
+                                />
+                                <polygon points="20,50 40,0 60,50 40,100" fill="black" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    {/* Pattern 2: Organic Forms */}
+                    <div
+                        className={`absolute inset-0 transition-opacity duration-1000 ${currentPattern === 2 ? 'opacity-100' : 'opacity-0'}`}
+                    >
+                        <div className="absolute inset-0 bg-white"></div>
+                        <div
+                            className="absolute top-1/4 left-1/4 w-96 h-96 bg-black rounded-full transform scale-150 animate-pulse"
+                            style={{ clipPath: 'ellipse(60% 40% at 30% 70%)' }}
+                        ></div>
+                        <div
+                            className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-black rounded-full transform animate-pulse delay-1000"
+                            style={{ clipPath: 'ellipse(80% 60% at 70% 30%)' }}
+                        ></div>
                         <svg
-                            className="w-full h-full"
+                            className="absolute inset-0 w-full h-full"
                             viewBox="0 0 100 100"
                             preserveAspectRatio="none"
                         >
-                            <polygon points="0,0 20,50 0,100 40,100 60,50 40,0" fill="black" />
-                            <polygon points="40,0 60,50 40,100 80,100 100,50 80,0" fill="white" />
-                            <polygon points="20,50 40,0 60,50 40,100" fill="black" />
+                            <path
+                                d="M0,20 Q25,5 50,20 T100,20 L100,40 Q75,55 50,40 T0,40 Z"
+                                fill="black"
+                                opacity="0.8"
+                            />
+                            <path
+                                d="M0,60 Q25,45 50,60 T100,60 L100,80 Q75,95 50,80 T0,80 Z"
+                                fill="black"
+                                opacity="0.6"
+                            />
                         </svg>
+                        <div
+                            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-black rounded-full opacity-70"
+                            style={{
+                                clipPath:
+                                    'polygon(50% 0%, 80% 10%, 100% 35%, 100% 70%, 80% 90%, 50% 100%, 20% 90%, 0% 70%, 0% 35%, 20% 10%)'
+                            }}
+                        ></div>
                     </div>
-                </div>
 
-                {/* Pattern 2: Organic Forms */}
-                <div
-                    className={`absolute inset-0 transition-opacity duration-1000 ${currentPattern === 2 ? 'opacity-100' : 'opacity-0'}`}
-                >
-                    <div className="absolute inset-0 bg-white"></div>
+                    {/* Pattern 3: Geometric Patterns */}
                     <div
-                        className="absolute top-1/4 left-1/4 w-96 h-96 bg-black rounded-full transform scale-150 animate-pulse"
-                        style={{ clipPath: 'ellipse(60% 40% at 30% 70%)' }}
-                    ></div>
-                    <div
-                        className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-black rounded-full transform animate-pulse delay-1000"
-                        style={{ clipPath: 'ellipse(80% 60% at 70% 30%)' }}
-                    ></div>
-                    <svg
-                        className="absolute inset-0 w-full h-full"
-                        viewBox="0 0 100 100"
-                        preserveAspectRatio="none"
+                        className={`absolute inset-0 transition-opacity duration-1000 ${currentPattern === 3 ? 'opacity-100' : 'opacity-0'}`}
                     >
-                        <path
-                            d="M0,20 Q25,5 50,20 T100,20 L100,40 Q75,55 50,40 T0,40 Z"
-                            fill="black"
-                            opacity="0.8"
-                        />
-                        <path
-                            d="M0,60 Q25,45 50,60 T100,60 L100,80 Q75,95 50,80 T0,80 Z"
-                            fill="black"
-                            opacity="0.6"
-                        />
-                    </svg>
-                    <div
-                        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-black rounded-full opacity-70"
-                        style={{
-                            clipPath:
-                                'polygon(50% 0%, 80% 10%, 100% 35%, 100% 70%, 80% 90%, 50% 100%, 20% 90%, 0% 70%, 0% 35%, 20% 10%)'
-                        }}
-                    ></div>
-                </div>
-
-                {/* Pattern 3: Geometric Patterns */}
-                <div
-                    className={`absolute inset-0 transition-opacity duration-1000 ${currentPattern === 3 ? 'opacity-100' : 'opacity-0'}`}
-                >
-                    <div className="absolute inset-0 bg-white"></div>
-                    <div className="absolute inset-0 grid grid-cols-8 grid-rows-8">
-                        {Array.from({ length: 64 }, (_, i) => (
-                            <div
-                                key={i}
-                                className={`${(Math.floor(i / 8) + i) % 2 === 0 ? 'bg-black' : 'bg-white'} transition-all duration-2000 hover:scale-110`}
-                                style={{
-                                    animationDelay: `${i * 50}ms`,
-                                    animation: isAnimated ? 'pulse 3s infinite' : 'none'
-                                }}
-                            ></div>
-                        ))}
+                        <div className="absolute inset-0 bg-white"></div>
+                        <div className="absolute inset-0 grid grid-cols-8 grid-rows-8">
+                            {Array.from({ length: 64 }, (_, i) => (
+                                <div
+                                    key={i}
+                                    className={`${(Math.floor(i / 8) + i) % 2 === 0 ? 'bg-black' : 'bg-white'} transition-all duration-2000 hover:scale-110`}
+                                    style={{
+                                        animationDelay: `${i * 50}ms`,
+                                        animation: isAnimated ? 'pulse 3s infinite' : 'none'
+                                    }}
+                                ></div>
+                            ))}
+                        </div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="relative">
+                                <div
+                                    className="w-64 h-64 border-8 border-black rounded-full animate-spin"
+                                    style={{ animationDuration: '20s' }}
+                                ></div>
+                                <div
+                                    className="absolute top-8 left-8 w-48 h-48 border-8 border-white rounded-full animate-spin"
+                                    style={{
+                                        animationDuration: '15s',
+                                        animationDirection: 'reverse'
+                                    }}
+                                ></div>
+                                <div className="absolute top-16 left-16 w-32 h-32 bg-black rounded-full animate-pulse"></div>
+                            </div>
+                        </div>
                     </div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="relative">
-                            <div
-                                className="w-64 h-64 border-8 border-black rounded-full animate-spin"
-                                style={{ animationDuration: '20s' }}
-                            ></div>
-                            <div
-                                className="absolute top-8 left-8 w-48 h-48 border-8 border-white rounded-full animate-spin"
-                                style={{ animationDuration: '15s', animationDirection: 'reverse' }}
-                            ></div>
-                            <div className="absolute top-16 left-16 w-32 h-32 bg-black rounded-full animate-pulse"></div>
+
+                    {/* Pattern 4: Ripple Effects */}
+                    <div
+                        className={`absolute inset-0 transition-opacity duration-1000 ${currentPattern === 4 ? 'opacity-100' : 'opacity-0'}`}
+                    >
+                        <div className="absolute inset-0 bg-gradient-radial from-white via-gray-500 to-black"></div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            {Array.from({ length: 8 }, (_, i) => (
+                                <div
+                                    key={i}
+                                    className="absolute border-2 border-black rounded-full animate-ping"
+                                    style={{
+                                        width: `${(i + 1) * 80}px`,
+                                        height: `${(i + 1) * 80}px`,
+                                        animationDelay: `${i * 0.5}s`,
+                                        animationDuration: '4s',
+                                        opacity: 1 - i * 0.1
+                                    }}
+                                ></div>
+                            ))}
+                        </div>
+                        <div className="absolute top-1/4 left-1/4">
+                            {Array.from({ length: 6 }, (_, i) => (
+                                <div
+                                    key={i}
+                                    className="absolute border-2 border-white rounded-full animate-ping"
+                                    style={{
+                                        width: `${(i + 1) * 60}px`,
+                                        height: `${(i + 1) * 60}px`,
+                                        animationDelay: `${i * 0.3}s`,
+                                        animationDuration: '3s',
+                                        opacity: 0.8 - i * 0.1
+                                    }}
+                                ></div>
+                            ))}
+                        </div>
+                        <div className="absolute bottom-1/4 right-1/4">
+                            {Array.from({ length: 6 }, (_, i) => (
+                                <div
+                                    key={i}
+                                    className="absolute border-2 border-black rounded-full animate-ping"
+                                    style={{
+                                        width: `${(i + 1) * 60}px`,
+                                        height: `${(i + 1) * 60}px`,
+                                        animationDelay: `${i * 0.4}s`,
+                                        animationDuration: '3.5s',
+                                        opacity: 0.7 - i * 0.1
+                                    }}
+                                ></div>
+                            ))}
                         </div>
                     </div>
                 </div>
-
-                {/* Pattern 4: Ripple Effects */}
-                <div
-                    className={`absolute inset-0 transition-opacity duration-1000 ${currentPattern === 4 ? 'opacity-100' : 'opacity-0'}`}
-                >
-                    <div className="absolute inset-0 bg-gradient-radial from-white via-gray-500 to-black"></div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        {Array.from({ length: 8 }, (_, i) => (
-                            <div
-                                key={i}
-                                className="absolute border-2 border-black rounded-full animate-ping"
-                                style={{
-                                    width: `${(i + 1) * 80}px`,
-                                    height: `${(i + 1) * 80}px`,
-                                    animationDelay: `${i * 0.5}s`,
-                                    animationDuration: '4s',
-                                    opacity: 1 - i * 0.1
-                                }}
-                            ></div>
-                        ))}
-                    </div>
-                    <div className="absolute top-1/4 left-1/4">
-                        {Array.from({ length: 6 }, (_, i) => (
-                            <div
-                                key={i}
-                                className="absolute border-2 border-white rounded-full animate-ping"
-                                style={{
-                                    width: `${(i + 1) * 60}px`,
-                                    height: `${(i + 1) * 60}px`,
-                                    animationDelay: `${i * 0.3}s`,
-                                    animationDuration: '3s',
-                                    opacity: 0.8 - i * 0.1
-                                }}
-                            ></div>
-                        ))}
-                    </div>
-                    <div className="absolute bottom-1/4 right-1/4">
-                        {Array.from({ length: 6 }, (_, i) => (
-                            <div
-                                key={i}
-                                className="absolute border-2 border-black rounded-full animate-ping"
-                                style={{
-                                    width: `${(i + 1) * 60}px`,
-                                    height: `${(i + 1) * 60}px`,
-                                    animationDelay: `${i * 0.4}s`,
-                                    animationDuration: '3.5s',
-                                    opacity: 0.7 - i * 0.1
-                                }}
-                            ></div>
-                        ))}
-                    </div>
-                </div>
-            </div>
+            )}
 
             {/* Header with Obscura on the left */}
             <Header currentPattern={currentPattern} controlStyles={controlStyles} />
@@ -840,7 +793,6 @@ const Index = () => {
                                     ) : (
                                         <Play className="w-3 h-3" />
                                     )}
-                                    {isAnimated ? 'Pause' : 'Play'}
                                 </button>
                                 <button
                                     onClick={() =>
@@ -848,8 +800,17 @@ const Index = () => {
                                     }
                                     className={`flex items-center gap-2 px-3 py-2 ${controlStyles.secondaryBg} ${controlStyles.secondaryText} border ${controlStyles.border} rounded-lg ${controlStyles.secondaryHover} transition-colors text-xs`}
                                 >
-                                    <RotateCcw className="w-3 h-3" />
-                                    Next
+                                    <TrackNextIcon className="w-3 h-3" />
+                                </button>
+                                <button
+                                    onClick={() => setIsArt(prev => !prev)}
+                                    className={`flex items-center gap-2 px-3 py-2 ${controlStyles.secondaryBg} ${controlStyles.secondaryText} border ${controlStyles.border} rounded-lg ${controlStyles.secondaryHover} transition-colors text-xs`}
+                                >
+                                    {isArt ? (
+                                        <Bot className="w-3 h-3" />
+                                    ) : (
+                                        <BotOff className="w-3 h-3" />
+                                    )}
                                 </button>
                             </div>
                             <div className={`text-xs ${controlStyles.text} opacity-75`}>
@@ -1170,7 +1131,7 @@ const Index = () => {
                                         </Label>
                                         <Input
                                             id="withdraw-address"
-                                            placeholder="Enter shielded address..."
+                                            placeholder="Enter wallet address..."
                                             value={withdrawAddress}
                                             onChange={e => setWithdrawAddress(e.target.value)}
                                             className={`backdrop-blur-sm border transition-colors duration-200 ${
@@ -1191,7 +1152,10 @@ const Index = () => {
                                         disabled={!isRegistered || isWithdrawing}
                                     >
                                         <ArrowUpRight className="w-4 h-4 mr-2" />
-                                        Initiate Withdrawal
+
+                                        {isWithdrawing
+                                            ? 'Initiating Withdrawal...'
+                                            : 'Initiate Withdrawal'}
                                     </Button>
                                 </div>
                             </TabsContent>

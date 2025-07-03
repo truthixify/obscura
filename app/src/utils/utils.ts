@@ -218,6 +218,9 @@ export async function generateKeypairFromSignature(account: Account): Promise<Ke
         let sigHex: any
 
         if ((signature as any).length == 2) {
+            sigHex = num.toHex(signature[0])
+        } else if ((signature as any).length == 3) {
+            // bravoos
             sigHex = num.toHex(signature[1])
         } else {
             sigHex = num.toHex(signature[3])
