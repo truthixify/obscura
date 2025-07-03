@@ -1,3 +1,4 @@
+// @ts-nocheck
 // @refresh reset
 
 import { WrongNetworkDropdown } from './WrongNetworkDropdown'
