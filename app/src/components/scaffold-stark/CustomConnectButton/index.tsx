@@ -7,7 +7,7 @@ import { useAccount, useConnect, useDisconnect, useProvider } from '@starknet-re
 import { useEffect, useState } from 'react'
 import ConnectModal from './ConnectModal'
 import { Button } from '../../ui/button'
-import { LogOut, X, Copy, Check, Download, Loader2 } from 'lucide-react'
+import { LogOut, X, Copy, Check, Download } from 'lucide-react'
 import { useBalanceStore } from '../../../stores/balance-store'
 import { useAccountStore } from '../../../stores/account-store'
 import { toast } from '../../ui/use-toast'
@@ -54,7 +54,6 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
     const {
         isRegistered,
         setIsRegistered,
-        owner,
         setOwner,
         setAddress,
         reset: resetAccountStore

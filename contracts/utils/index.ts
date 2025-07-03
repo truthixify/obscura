@@ -41,8 +41,6 @@ export async function getProof({
 }: GetProofParams): Promise<{ args: any; extData: any }> {
     inputs = shuffle(inputs)
     outputs = shuffle(outputs)
-    console.log("Reached before tree log");
-    console.log(tree)
 
     const inputMerklePathIndices: number[] = []
     const inputMerklePathElements: any[] = []

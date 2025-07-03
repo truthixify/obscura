@@ -1,9 +1,11 @@
-# [sncast.default]
-# url = "http://localhost:5050/rpc"
-# accounts-file = "accounts.json"
-# account = "devnet0"
-# show-explorer-links = false
-
+# Testing on devnet
 [sncast.default]
-url = "https://starknet-sepolia.public.blastapi.io/rpc/v0_8"
-account = "my_imported_account"
+url = "http://localhost:5050/rpc"
+accounts-file = "accounts.json"
+account = "devnet0"
+show-explorer-links = false
+
+# Deploying to testnet
+# [sncast.default]
+# url = "https://starknet-sepolia.public.blastapi.io/rpc/v0_8"
+# account = "my_imported_account"

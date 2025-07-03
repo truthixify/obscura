@@ -1,9 +1,9 @@
 // The test for this contract has to be done end to end (because of proof generation, there is no
 // way to generate proof in snforge or cairo test) and so it is written as a Jest test.
+// You can find the Jest test in contracts/tests and you can run those tests with `yarn test:e2e`
 
 use obscura::interface::IObscuraDispatcher;
 use snforge_std::{ContractClassTrait, DeclareResultTrait, declare};
-use starknet::ContractAddress;
 
 fn deploy_contract() -> IObscuraDispatcher {
     let contract = declare("Obscura").unwrap().contract_class();

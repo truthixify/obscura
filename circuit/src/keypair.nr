@@ -7,7 +7,9 @@ pub fn keypair(private_key: Field) -> Field {
 }
 
 pub fn signature(private_key: Field, commitment: Field, merkle_path: Field) -> Field {
-    let signature = hash_2([hash_2([private_key, private_key]), hash_2([commitment, merkle_path])]);
+    let signature = hash_2(
+        [hash_2([private_key, private_key]), hash_2([commitment, merkle_path])],
+    );
 
     signature
 }

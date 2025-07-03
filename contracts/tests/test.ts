@@ -1,5 +1,5 @@
 import { deployTestContract } from './deploy'
-import { Contract, RpcProvider, Account, hash, num, addAddressPadding, stark } from 'starknet'
+import { Contract, RpcProvider, Account, num, addAddressPadding, stark } from 'starknet'
 import { Keypair } from '../utils/keypair'
 import Utxo from '../utils/utxo'
 import { registerAndTransact, transaction } from '../utils/index'
