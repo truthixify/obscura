@@ -118,10 +118,3 @@
 | ERROR_INVALID_PUBLIC_AMOUNT                 | Invalid public amount                | Public amount in the ZK proof doesn't match calculated public amount from external data          | Ensure amounts are calculated correctly; regenerate proof with correct amounts               |
 | ERROR_INVALID_TRANSACTION_PROOF             | Invalid transaction proof            | Zero-knowledge proof fails verification by the external verifier contract                       | Regenerate proof with correct inputs; ensure all proof components are valid                  |
 | ERROR_AMOUNT_LARGER_THAN_MAXIMUM_DEPOSIT    | Deposit amount is too large          | Deposit amount exceeds the configured maximum deposit amount                                     | Reduce deposit amount to within limits; split large deposits into smaller transactions       |
-
----
-
-## Enums
-
-- **Event Enum:** The only explicit enum in the contract is the `Event` enum, which aggregates all event types (see above).
-- **Custom Types:** No other enums are defined in the main contract, but the structure is extensible for future enum-based logic. 
