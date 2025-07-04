@@ -2,7 +2,7 @@ import MerkleTree from 'fixed-merkle-tree'
 import { toFixedHex, poseidonHash2, getExtDataHash, FIELD_SIZE, shuffle } from './utils'
 import Utxo from './utxo'
 import { prove } from './prover'
-import { BigNumberish, RpcProvider, Contract, stark } from 'starknet'
+import { BigNumberish, RpcProvider, Contract, stark, CallData, Call } from 'starknet'
 import { parseNewCommitEvent } from './events_parsing'
 
 const MERKLE_TREE_HEIGHT = 28
@@ -189,4 +189,33 @@ export async function registerAndTransact({
     const receipt = await obscura.register_and_transact(account, args, extData)
 
     return receipt
+}
+
+export async function generateTransactionCall({
+    obscura,
+    provider,
+    account,
+    ...rest
+}: {
+    obscura: Contract
+    account: any
+    [key: string]: any
+}): Promise<Call[]> {
+    const contractCallData: CallData = new CallData(obscura.abi)
+
+    const { args, extData } = await prepareTransaction({
+        obscura,
+        provider,
+        ...rest
+    })
+
+    const calldata = contractCallData.compile('transact', [args, extData])
+
+    const call: Call = {
+        entrypoint: 'transact',
+        contractAddress: obscura.address,
+        calldata,
+    }
+
+    return [call]
 }

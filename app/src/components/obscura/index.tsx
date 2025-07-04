@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 import { useState, useEffect } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
@@ -40,7 +39,11 @@ import SettingsModal from './settings'
 import { useModalStore } from '../../stores/modal-store'
 import { useUtxoStore } from '../../stores/utxo-store'
 import { TrackNextIcon } from '@radix-ui/react-icons'
-// import { avnuPaymasterProvider } from '@starknet-react/core'
+import { avnuPaymasterProvider } from '@starknet-react/core'
+import { checkGaslessStatus } from '../../lib/avnu'
+
+const apiKey = "f487596d-fd5f-47a7-b558-21da74d70bc9";
+const avnuProvider = avnuPaymasterProvider({ apiKey });
 
 const Index = () => {
     const { data: obscura } = useScaffoldContract({
@@ -190,6 +193,9 @@ const Index = () => {
     }
 
     const controlStyles = getControlStyles()
+
+    const status = checkGaslessStatus()
+    // console.log(status)
 
     useEffect(() => {
         if (isAnimated && isArt) {
@@ -406,7 +412,7 @@ const Index = () => {
 
             const tx = await transaction({
                 obscura,
-                provider,
+                avnuProvider,
                 inputs: selectedUtxos,
                 outputs
             })
@@ -501,7 +507,7 @@ const Index = () => {
 
             const tx = await transaction({
                 obscura,
-                provider,
+                avnuProvider,
                 inputs: selectedUtxos,
                 outputs,
                 recipient: withdrawAddress
