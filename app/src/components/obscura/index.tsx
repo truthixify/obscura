@@ -275,7 +275,8 @@ const Index = () => {
                     description: (
                         <div>
                             <p>
-                                {fundAmount} STRK deposited to {fundAddress.slice(0, 10)}…{fundAddress.slice(-5)}
+                                {fundAmount} STRK deposited to {fundAddress.slice(0, 10)}…
+                                {fundAddress.slice(-5)}
                             </p>
                             <a
                                 href={`https://sepolia.starkscan.co/tx/${tx.transaction_hash}`}
@@ -413,20 +414,21 @@ const Index = () => {
             toast({
                 title: 'Transfer successful',
                 description: (
-                        <div>
-                            <p>
-                                {transferAmount} STRK transfered to {transferAddress.slice(0, 10)}…{transferAddress.slice(-5)}
-                            </p>
-                            <a
-                                href={`https://sepolia.starkscan.co/tx/${tx.transaction_hash}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="underline text-blue-200 hover:text-white"
-                            >
-                                Transaction details
-                            </a>
-                        </div>
-                    ),
+                    <div>
+                        <p>
+                            {transferAmount} STRK transfered to {transferAddress.slice(0, 10)}…
+                            {transferAddress.slice(-5)}
+                        </p>
+                        <a
+                            href={`https://sepolia.starkscan.co/tx/${tx.transaction_hash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline text-blue-200 hover:text-white"
+                        >
+                            Transaction details
+                        </a>
+                    </div>
+                ),
                 variant: 'success'
             })
         } catch (error) {
@@ -508,20 +510,21 @@ const Index = () => {
             toast({
                 title: 'Withdrawal successful',
                 description: (
-                        <div>
-                            <p>
-                                {withdrawAmount} STRK withdrawn to {withdrawAddress.slice(0, 10)}…{withdrawAddress.slice(-5)}
-                            </p>
-                            <a
-                                href={`https://sepolia.starkscan.co/tx/${tx.transaction_hash}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="underline text-blue-200 hover:text-white"
-                            >
-                                Transaction details
-                            </a>
-                        </div>
-                    ),
+                    <div>
+                        <p>
+                            {withdrawAmount} STRK withdrawn to {withdrawAddress.slice(0, 10)}…
+                            {withdrawAddress.slice(-5)}
+                        </p>
+                        <a
+                            href={`https://sepolia.starkscan.co/tx/${tx.transaction_hash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline text-blue-200 hover:text-white"
+                        >
+                            Transaction details
+                        </a>
+                    </div>
+                ),
                 variant: 'success'
             })
 
