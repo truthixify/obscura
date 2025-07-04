@@ -939,7 +939,9 @@ const Index = () => {
                                                 Amount
                                             </Label>
                                             <span
-                                                className="cursor-pointer"
+                                                className={`font-medium ${
+                                                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                                                } cursor-pointer`}
                                                 onClick={handleMaxFund}
                                             >
                                                 Max
@@ -1032,7 +1034,9 @@ const Index = () => {
                                                 Amount
                                             </Label>
                                             <span
-                                                className="cursor-pointer"
+                                                className={`font-medium ${
+                                                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                                                } cursor-pointer`}
                                                 onClick={handleMaxTransfer}
                                             >
                                                 Max
@@ -1146,7 +1150,9 @@ const Index = () => {
                                                 Amount
                                             </Label>
                                             <span
-                                                className="cursor-pointer"
+                                                className={`font-medium ${
+                                                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                                                } cursor-pointer`}
                                                 onClick={handleMaxWithdrawal}
                                             >
                                                 Max
