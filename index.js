@@ -81,6 +81,7 @@ app.get("/api/account", async (req, res) => {
 app.post("/api/build-typed-data", async (req, res) => {
   try {
     const { userAddress, calls } = req.body;
+    console.log(process.env.PAYMASTER_API_KEY, process.env)
 
     const response = await axios.post(
       "https://starknet.api.avnu.fi/paymaster/v1/build-typed-data",
