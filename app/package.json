@@ -9,8 +9,7 @@
         "lint": "eslint .",
         "preview": "vite preview",
         "format": "prettier --write .",
-        "format:check": "prettier --check .",
-        "postinstall": "node scripts/copy-worker.js"
+        "format:check": "prettier --check ."
     },
     "dependencies": {
         "@aztec/bb.js": "=0.86.0-starknet.1",
