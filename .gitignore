@@ -1,2 +1,7 @@
 .env
 node_modules
+app
+contracts
+.yarn
+.pnp.cjs
+.pnp.loader.mjs
