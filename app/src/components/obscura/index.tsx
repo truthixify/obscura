@@ -42,9 +42,6 @@ import { TrackNextIcon } from '@radix-ui/react-icons'
 import { avnuPaymasterProvider } from '@starknet-react/core'
 import { checkGaslessStatus } from '../../lib/avnu'
 
-const apiKey = "f487596d-fd5f-47a7-b558-21da74d70bc9";
-const avnuProvider = avnuPaymasterProvider({ apiKey });
-
 const Index = () => {
     const { data: obscura } = useScaffoldContract({
         contractName: 'Obscura'
@@ -412,7 +409,7 @@ const Index = () => {
 
             const tx = await transaction({
                 obscura,
-                avnuProvider,
+                provider,
                 inputs: selectedUtxos,
                 outputs
             })
@@ -507,7 +504,7 @@ const Index = () => {
 
             const tx = await transaction({
                 obscura,
-                avnuProvider,
+                provider,
                 inputs: selectedUtxos,
                 outputs,
                 recipient: withdrawAddress
