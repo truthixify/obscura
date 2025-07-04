@@ -24,7 +24,7 @@ mongoose
     .catch(err => console.error('MongoDB connection error:', err))
 
 // POST endpoint to add new account
-app.post('/account', async (req, res) => {
+app.post('/api/account', async (req, res) => {
     try {
         const { owner, address } = req.body
         if (!owner || !address) {
@@ -39,7 +39,7 @@ app.post('/account', async (req, res) => {
 })
 
 // GET endpoint to fetch a single data document by ID
-app.get('/account/:id', async (req, res) => {
+app.get('/api/account/:id', async (req, res) => {
     try {
         const account = await Account.findById(req.params.id)
         if (!account) {
@@ -51,7 +51,7 @@ app.get('/account/:id', async (req, res) => {
     }
 })
 
-app.get('/account', async (req, res) => {
+app.get('/api/account', async (req, res) => {
     try {
         const { address, owner } = req.query
 
@@ -74,6 +74,48 @@ app.get('/account', async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: err.message })
     }
+})
+
+app.post('/api/build-typed-data', async (req, res) => {
+  try {
+    const { userAddress, calls } = req.body
+
+    const response = await axios.post('https://starknet.api.avnu.fi/paymaster/v1/build-typed-data', {
+      userAddress,
+      gasTokenAddress: null,
+      maxGasTokenAmount: null,
+      calls,
+    }, {
+      headers: { 'api-key': process.env.PAYMASTER_API_KEY },
+    })
+
+    console.log("Typed Data:", response.data)
+    res.json(response.data)
+  } catch (error) {
+    console.error('Error building typed data:', error.response?.data || error.message)
+    res.status(500).json({ error: 'Failed to build typed data' })
+  }
+})
+
+// POST /api/execute-sponsored
+app.post('/api/execute-sponsored', async (req, res) => {
+  try {
+    const { userAddress, typedData, signature } = req.body
+
+    const response = await axios.post('https://starknet.api.avnu.fi/paymaster/v1/execute', {
+      userAddress,
+      typedData,
+      signature,
+    }, {
+      headers: { 'api-key': process.env.PAYMASTER_API_KEY },
+    })
+
+    console.log("Sponsored Transaction Hash:", response.data.transactionHash)
+    res.json(response.data)
+  } catch (error) {
+    console.error('Error executing sponsored transaction:', error.response?.data || error.message)
+    res.status(500).json({ error: 'Failed to execute transaction' })
+  }
 })
 
 app.listen(port, () => {
