@@ -22,7 +22,7 @@ export default defineConfig({
         viteStaticCopy({
             targets: [
                 {
-                    src: 'node_modules/@aztec/bb.js/dest/browser/main.worker.js',
+                    src: 'public/main.worker.js',
                     dest: '.'
                 }
             ]
