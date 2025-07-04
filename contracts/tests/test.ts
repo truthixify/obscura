@@ -27,7 +27,7 @@ describe('Obscura Test', () => {
             '0x078662e7352d062084b0010068b99288486c2d8b914f6e2a55ce945f8792c8b1',
             '0x000000000000000000000000000000000e1406455b7d66b1690803be066cbe5e'
         )
-        ;({ obscura, strkToken } = await deployTestContract(5, BigInt(10000 * 1e18)))
+        ;({ obscura, strkToken } = await deployTestContract(28, BigInt(10000 * 1e18)))
 
         await initGaraga()
     })

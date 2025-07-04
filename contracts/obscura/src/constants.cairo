@@ -52,7 +52,7 @@ pub const MIN_EXT_AMOUNT: u256 = 5 * 10_u256.pow(17);
 /// - Ensures only valid cryptographic proofs are accepted
 /// - Critical for maintaining the privacy and security of the system
 pub const VERIFIER_CLASSHASH: felt252 =
-    0x03100defca27214e5f78f25e48a5b05e45899c6834cb4d34f48384c18e14dff7;
+    0x01b5fbe104c033025dbb7fb37011781cc9344e881b4828cdaa023a80fecafde4;
 
 /// The number of past Merkle roots stored for history verification.
 /// This allows the system to verify that transactions are based on

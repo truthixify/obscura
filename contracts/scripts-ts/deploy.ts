@@ -40,7 +40,7 @@ const deployScript = async (): Promise<void> => {
     await deployContract({
         contract: 'Obscura',
         constructorArgs: {
-            levels: 5,
+            levels: 28,
             maximum_deposit_amount: BigInt(10000 * 1e18)
         }
     })

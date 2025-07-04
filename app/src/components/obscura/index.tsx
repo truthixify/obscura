@@ -255,7 +255,7 @@ const Index = () => {
         try {
             toast({
                 title: 'Fund Initiated',
-                description: `Funding ${fundAmount} STRK to ${fundAddress.slice(0, 10)}...`
+                description: `Funding ${fundAmount} STRK to ${fundAddress.slice(0, 10)}...${fundAddress.slice(-5)}`
             })
 
             const newUtxo = new Utxo({ amount: BigInt(fundAmount * 1e18), keypair })
@@ -272,7 +272,21 @@ const Index = () => {
             if (tx) {
                 toast({
                     title: 'Fund successful',
-                    description: 'Your deposit is successful.',
+                    description: (
+                        <div>
+                            <p>
+                                {fundAmount} STRK deposited to {fundAddress.slice(0, 10)}…{fundAddress.slice(-5)}
+                            </p>
+                            <a
+                                href={`https://sepolia.starkscan.co/tx/${tx.transaction_hash}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="underline text-blue-200 hover:text-white"
+                            >
+                                Transaction details
+                            </a>
+                        </div>
+                    ),
                     variant: 'success'
                 })
             }
@@ -286,6 +300,7 @@ const Index = () => {
             })
         } finally {
             setIsFunding(false)
+            setIsApproved(false)
         }
     }
 
@@ -331,7 +346,7 @@ const Index = () => {
         try {
             toast({
                 title: 'Transfer Initiated',
-                description: `Transferring ${transferAmount} STRK to ${transferAddress.slice(0, 10)}...`
+                description: `Transferring ${transferAmount} STRK to ${transferAddress.slice(0, 10)}...${transferAddress.slice(-5)}`
             })
 
             const requiredAmount = BigInt(transferAmount * 1e18)
@@ -388,7 +403,7 @@ const Index = () => {
                 return
             }
 
-            await transaction({
+            const tx = await transaction({
                 obscura,
                 provider,
                 inputs: selectedUtxos,
@@ -397,7 +412,21 @@ const Index = () => {
 
             toast({
                 title: 'Transfer successful',
-                description: `${transferAmount} STRK withdrawn to ${transferAddress.slice(0, 10)}...`,
+                description: (
+                        <div>
+                            <p>
+                                {transferAmount} STRK transfered to {transferAddress.slice(0, 10)}…{transferAddress.slice(-5)}
+                            </p>
+                            <a
+                                href={`https://sepolia.starkscan.co/tx/${tx.transaction_hash}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="underline text-blue-200 hover:text-white"
+                            >
+                                Transaction details
+                            </a>
+                        </div>
+                    ),
                 variant: 'success'
             })
         } catch (error) {
@@ -428,7 +457,7 @@ const Index = () => {
         try {
             toast({
                 title: 'Withdrawal Initiated',
-                description: `Withdrawing ${withdrawAmount} STRK to ${withdrawAddress.slice(0, 10)}...`
+                description: `Withdrawing ${withdrawAmount} STRK to ${withdrawAddress.slice(0, 10)}...${withdrawAddress.slice(-5)}`
             })
 
             const requiredAmount = BigInt(withdrawAmount * 1e18)
@@ -468,7 +497,7 @@ const Index = () => {
                 outputs.push(changeUtxo)
             }
 
-            await transaction({
+            const tx = await transaction({
                 obscura,
                 provider,
                 inputs: selectedUtxos,
@@ -478,7 +507,21 @@ const Index = () => {
 
             toast({
                 title: 'Withdrawal successful',
-                description: `${withdrawAmount} STRK withdrawn to ${withdrawAddress.slice(0, 10)}...`,
+                description: (
+                        <div>
+                            <p>
+                                {withdrawAmount} STRK withdrawn to {withdrawAddress.slice(0, 10)}…{withdrawAddress.slice(-5)}
+                            </p>
+                            <a
+                                href={`https://sepolia.starkscan.co/tx/${tx.transaction_hash}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="underline text-blue-200 hover:text-white"
+                            >
+                                Transaction details
+                            </a>
+                        </div>
+                    ),
                 variant: 'success'
             })
 

@@ -6,7 +6,7 @@
 const deployedContracts = {
     sepolia: {
         Obscura: {
-            address: '0x1020394a92110ca0aabb41d7893c7ca0003257063118abebf50e4ba116fe462',
+            address: '0x61885a42757860cc90d19dc36788ba63f41133f56102b0a003e73eb892b6784',
             abi: [
                 {
                     type: 'impl',
@@ -507,7 +507,7 @@ const deployedContracts = {
                     ]
                 }
             ],
-            classHash: '0x10276a33673c122f4d43b294813633bdb3ed7fda6ab9f888801851a8604fb49'
+            classHash: '0x49217b0074bc7da12f236d0c38ef93e9bd4c2f9ba53a8bef93b1b7bd0117b30'
         }
     }
 } as const

@@ -8,7 +8,7 @@ use utils::hasher;
 
 global N_INS: u32 = 2;
 global N_OUTS: u32 = 2;
-global LEVEL: u32 = 5;
+global LEVEL: u32 = 28;
 
 fn main(
     root: pub Field,

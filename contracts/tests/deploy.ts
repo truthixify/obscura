@@ -18,7 +18,7 @@ export const deployTestContract = async (
     const provider = new RpcProvider({ nodeUrl: process.env.RPC_URL_DEVNET })
     const privateKey = process.env.PRIVATE_KEY_DEVNET
     const accountAddress = process.env.ACCOUNT_ADDRESS_DEVNET
-    const classHash = '0x010276a33673c122f4d43b294813633bdb3ed7fda6ab9f888801851a8604fb49' // Replace with your declared class hash
+    const classHash = '0x049217b0074bc7da12f236d0c38ef93e9bd4c2f9ba53a8bef93b1b7bd0117b30' // Replace with your declared class hash
     const account = new Account(provider, accountAddress, privateKey)
     const strkTokenAddress = '0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d' // Starknet token address
 

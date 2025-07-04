@@ -5,7 +5,7 @@ import { prove } from './prover'
 import { BigNumberish, RpcProvider, Contract, stark } from 'starknet'
 import { parseNewCommitEvent } from './events_parsing'
 
-const MERKLE_TREE_HEIGHT = 5
+const MERKLE_TREE_HEIGHT = 28
 
 export async function buildMerkleTree({
     obscura,
