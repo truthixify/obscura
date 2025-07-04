@@ -194,11 +194,9 @@ export async function registerAndTransact({
 export async function generateTransactionCall({
     obscura,
     provider,
-    account,
     ...rest
 }: {
-    obscura: Contract
-    account: any
+    obscura: any
     [key: string]: any
 }): Promise<Call[]> {
     const contractCallData: CallData = new CallData(obscura.abi)
@@ -210,11 +208,13 @@ export async function generateTransactionCall({
     })
 
     const calldata = contractCallData.compile('transact', [args, extData])
+    
+    const hexCalldata = CallData.toHex(calldata)
 
     const call: Call = {
         entrypoint: 'transact',
         contractAddress: obscura.address,
-        calldata,
+        calldata: hexCalldata
     }
 
     return [call]

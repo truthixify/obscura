@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import { Button } from '../ui/button'
@@ -24,7 +23,7 @@ import {
 import { useToast } from '../../hooks/use-toast'
 import { Header } from '../header'
 import { useTheme } from 'next-themes'
-import { transaction } from '../../utils/index'
+import { generateTransactionCall, transaction } from '../../utils/index'
 import Utxo from '../../utils/utxo'
 import { useScaffoldContract } from '../../hooks/scaffold-stark/useScaffoldContract'
 import { useAccount, useProvider } from '@starknet-react/core'
@@ -32,15 +31,13 @@ import { Account } from 'starknet'
 import { useBalanceStore } from '../../stores/balance-store'
 import { useKeypairStore } from '../../stores/keypair-store'
 import { generateKeypairFromSignature } from '../../utils/utils'
-import { AccountData, getAccount } from '../../lib/api'
+import { AccountData, buildTypedData, getAccount } from '../../lib/api'
 import { useAccountStore } from '../../stores/account-store'
 import { Keypair } from '../../utils/keypair'
 import SettingsModal from './settings'
 import { useModalStore } from '../../stores/modal-store'
 import { useUtxoStore } from '../../stores/utxo-store'
 import { TrackNextIcon } from '@radix-ui/react-icons'
-import { avnuPaymasterProvider } from '@starknet-react/core'
-import { checkGaslessStatus } from '../../lib/avnu'
 
 const Index = () => {
     const { data: obscura } = useScaffoldContract({
@@ -190,9 +187,6 @@ const Index = () => {
     }
 
     const controlStyles = getControlStyles()
-
-    const status = checkGaslessStatus()
-    // console.log(status)
 
     useEffect(() => {
         if (isAnimated && isArt) {
@@ -407,33 +401,41 @@ const Index = () => {
                 return
             }
 
-            const tx = await transaction({
+            // const tx = await transaction({
+            //     obscura,
+            //     provider,
+            //     inputs: selectedUtxos,
+            //     outputs
+            // })
+            const calls = await generateTransactionCall({
                 obscura,
                 provider,
                 inputs: selectedUtxos,
                 outputs
             })
-
-            toast({
-                title: 'Transfer successful',
-                description: (
-                    <div>
-                        <p>
-                            {transferAmount} STRK transfered to {transferAddress.slice(0, 10)}…
-                            {transferAddress.slice(-5)}
-                        </p>
-                        <a
-                            href={`https://sepolia.starkscan.co/tx/${tx.transaction_hash}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="underline text-blue-200 hover:text-white"
-                        >
-                            Transaction details
-                        </a>
-                    </div>
-                ),
-                variant: 'success'
-            })
+            console.log(calls)
+            const typedData = await buildTypedData(address, calls)
+            console.log(typedData)
+            // toast({
+            //     title: 'Transfer successful',
+            //     description: (
+            //         <div>
+            //             <p>
+            //                 {transferAmount} STRK transfered to {transferAddress.slice(0, 10)}…
+            //                 {transferAddress.slice(-5)}
+            //             </p>
+            //             <a
+            //                 href={`https://sepolia.starkscan.co/tx/${tx.transaction_hash}`}
+            //                 target="_blank"
+            //                 rel="noopener noreferrer"
+            //                 className="underline text-blue-200 hover:text-white"
+            //             >
+            //                 Transaction details
+            //             </a>
+            //         </div>
+            //     ),
+            //     variant: 'success'
+            // })
         } catch (error) {
             setIsTransfering(false)
             console.error('Transfer failed:', error)
