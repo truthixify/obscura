@@ -84,15 +84,15 @@ app.post("/api/build-typed-data", async (req, res) => {
 
     const response = await axios.post(
       "https://starknet.api.avnu.fi/paymaster/v1/build-typed-data",
-      {
+      JSON.stringify({
         userAddress,
         gasTokenAddress: null,
         maxGasTokenAmount: null,
         accountClassHash: null,
         calls,
-      },
+      }),
       {
-        headers: { "api-key": process.env.PAYMASTER_API_KEY },
+        headers: { "api-key": process.env.PAYMASTER_API_KEY, "Content-Type": "application/json", },
       },
     );
 
@@ -103,7 +103,7 @@ app.post("/api/build-typed-data", async (req, res) => {
       "Error building typed data:",
       error.response?.data || error.message,
     );
-    res.status(500).json({ error });
+    res.status(500).json({ error: "Failed to execute transaction" });
   }
 });
 
@@ -120,7 +120,7 @@ app.post("/api/execute-sponsored", async (req, res) => {
         signature,
       },
       {
-        headers: { "api-key": process.env.PAYMASTER_API_KEY },
+        headers: { "api-key": process.env.PAYMASTER_API_KEY, "Content-Type": "application/json", },
       },
     );
 
