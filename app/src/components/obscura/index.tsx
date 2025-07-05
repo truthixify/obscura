@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState, useEffect } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import { Button } from '../ui/button'
@@ -26,8 +27,8 @@ import { useTheme } from 'next-themes'
 import { generateTransactionCall, transaction } from '../../utils/index'
 import Utxo from '../../utils/utxo'
 import { useScaffoldContract } from '../../hooks/scaffold-stark/useScaffoldContract'
-import { useAccount, useProvider } from '@starknet-react/core'
-import { Account } from 'starknet'
+import { useAccount, useProvider, usePaymasterSendTransaction } from '@starknet-react/core'
+import { Account, FeeMode, Calls } from 'starknet'
 import { useBalanceStore } from '../../stores/balance-store'
 import { useKeypairStore } from '../../stores/keypair-store'
 import { generateKeypairFromSignature, signMessage } from '../../utils/utils'
@@ -330,6 +331,15 @@ const Index = () => {
         }
     }
 
+    // const feeMode: FeeMode = {
+    //     mode: "sponsored",// default or sponsored(need api-key)
+    // }
+    // const { sendAsync: paymasterSendTransaction, error } = usePaymasterSendTransaction({
+    //     options: {
+    //         feeMode,
+    //     },
+    // });
+
     const handleTransfer = async () => {
         if (!transferAmount || !transferAddress) {
             toast({
@@ -401,46 +411,53 @@ const Index = () => {
                 return
             }
 
-            // const tx = await transaction({
-            //     obscura,
-            //     provider,
-            //     inputs: selectedUtxos,
-            //     outputs
-            // })
-            const calls = await generateTransactionCall({
+            const tx = await transaction({
                 obscura,
                 provider,
                 inputs: selectedUtxos,
                 outputs
             })
-            console.log(calls)
-            const typedData = await buildTypedData(address, calls)
-            console.log(typedData)
-            const signature = await signMessage(account as Account, typedData)
-            console.log(signature)
-            const exec = await executeSponsoredTransaction(address, typedData, signature)
-            console.log(exec)
-            // obscura.
-            // toast({
-            //     title: 'Transfer successful',
-            //     description: (
-            //         <div>
-            //             <p>
-            //                 {transferAmount} STRK transfered to {transferAddress.slice(0, 10)}…
-            //                 {transferAddress.slice(-5)}
-            //             </p>
-            //             <a
-            //                 href={`https://sepolia.starkscan.co/tx/${tx.transaction_hash}`}
-            //                 target="_blank"
-            //                 rel="noopener noreferrer"
-            //                 className="underline text-blue-200 hover:text-white"
-            //             >
-            //                 Transaction details
-            //             </a>
-            //         </div>
-            //     ),
-            //     variant: 'success'
+
+            // TODO: use paymaster to sign transaction and pay the fee
+            // const calls = await generateTransactionCall({
+            //     obscura,
+            //     provider,
+            //     inputs: selectedUtxos,
+            //     outputs
             // })
+            // console.log(calls)
+            // setCalls(calls)
+            // const typedData = await buildTypedData(address, calls)
+            // console.log(typedData)
+            // const signature = await signMessage(account as Account, typedData)
+            // signature.
+            // console.log(signature)
+            // const exec = await executeSponsoredTransaction(address, typedData, signature)
+            // console.log(exec)
+            
+            // const tx = await paymasterSendTransaction(calls)
+            // console.log(tx)
+
+            toast({
+                title: 'Transfer successful',
+                description: (
+                    <div>
+                        <p>
+                            {transferAmount} STRK transfered to {transferAddress.slice(0, 10)}…
+                            {transferAddress.slice(-5)}
+                        </p>
+                        <a
+                            href={`https://sepolia.starkscan.co/tx/${tx.transaction_hash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline text-blue-200 hover:text-white"
+                        >
+                            Transaction details
+                        </a>
+                    </div>
+                ),
+                variant: 'success'
+            })
         } catch (error) {
             setIsTransfering(false)
             console.error('Transfer failed:', error)

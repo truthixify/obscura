@@ -238,9 +238,9 @@ export async function signMessage(account: Account, messageStructure: TypedData)
     try {
         const signature = (await account.signMessage(messageStructure)) as WeierstrassSignatureType
         
-        (signature as any).forEach(s => num.toHex(s))
+        let signatureHex = (signature as any).map(s => num.toHex(s))
 
-        return signature
+        return signatureHex
     } catch (error) {
         throw error
     }
