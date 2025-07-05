@@ -102,7 +102,7 @@ app.post("/api/build-typed-data", async (req, res) => {
       "Error building typed data:",
       error.response?.data || error.message,
     );
-    res.status(500).json({ error: "Failed to build typed data" });
+    res.status(500).json({ error });
   }
 });
 
