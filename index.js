@@ -78,40 +78,49 @@ app.get("/api/account", async (req, res) => {
   }
 });
 
+// POST /api/build-typed-data
 app.post("/api/build-typed-data", async (req, res) => {
-  try {
-    const { userAddress, calls } = req.body;
+  const { userAddress, calls } = req.body;
 
+  if (!userAddress || !calls) {
+    return res.status(400).json({ error: "Missing userAddress or calls" });
+  }
+
+  try {
     const response = await axios.post(
       "https://starknet.api.avnu.fi/paymaster/v1/build-typed-data",
-      JSON.stringify({
+      {
         userAddress,
         gasTokenAddress: null,
         maxGasTokenAmount: null,
         accountClassHash: null,
         calls,
-      }),
-      {
-        headers: { "api-key": process.env.PAYMASTER_API_KEY, "Content-Type": "application/json", },
       },
+      {
+        headers: {
+          "api-key": process.env.PAYMASTER_API_KEY,
+          "Content-Type": "application/json",
+        },
+      }
     );
 
     console.log("Typed Data:", response.data);
     res.json(response.data);
   } catch (error) {
-    console.error(
-      "Error building typed data:",
-      error.response?.data || error.message,
-    );
-    res.status(500).json({ error: "Failed to execute transaction" });
+    console.error("Error building typed data:", error.response?.data || error.message);
+    res.status(500).json({ error: "Failed to build typed data" });
   }
 });
 
 // POST /api/execute-sponsored
 app.post("/api/execute-sponsored", async (req, res) => {
-  try {
-    const { userAddress, typedData, signature } = req.body;
+  const { userAddress, typedData, signature } = req.body;
 
+  if (!userAddress || !typedData || !signature) {
+    return res.status(400).json({ error: "Missing userAddress, typedData, or signature" });
+  }
+
+  try {
     const response = await axios.post(
       "https://starknet.api.avnu.fi/paymaster/v1/execute",
       {
@@ -120,17 +129,17 @@ app.post("/api/execute-sponsored", async (req, res) => {
         signature,
       },
       {
-        headers: { "api-key": process.env.PAYMASTER_API_KEY, "Content-Type": "application/json", },
-      },
+        headers: {
+          "api-key": process.env.PAYMASTER_API_KEY,
+          "Content-Type": "application/json",
+        },
+      }
     );
 
     console.log("Sponsored Transaction Hash:", response.data.transactionHash);
     res.json(response.data);
   } catch (error) {
-    console.error(
-      "Error executing sponsored transaction:",
-      error.response?.data || error.message,
-    );
+    console.error("Error executing sponsored transaction:", error.response?.data || error.message);
     res.status(500).json({ error: "Failed to execute transaction" });
   }
 });
