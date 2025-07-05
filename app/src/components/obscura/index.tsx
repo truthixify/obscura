@@ -38,6 +38,7 @@ import SettingsModal from './settings'
 import { useModalStore } from '../../stores/modal-store'
 import { useUtxoStore } from '../../stores/utxo-store'
 import { TrackNextIcon } from '@radix-ui/react-icons'
+import { buildTypedDataAvnu } from '../../lib/avnu'
 
 const Index = () => {
     const { data: obscura } = useScaffoldContract({
@@ -414,7 +415,7 @@ const Index = () => {
                 outputs
             })
             console.log(calls)
-            const typedData = await buildTypedData(address, calls)
+            const typedData = await buildTypedDataAvnu(address, calls)
             console.log(typedData)
             // toast({
             //     title: 'Transfer successful',
