@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const Account = require("./models/Account");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const axios = require("axios");
 
 dotenv.config();
 
@@ -99,7 +100,6 @@ app.post("/api/build-typed-data", async (req, res) => {
       {
         headers: {
           "api-key": process.env.PAYMASTER_API_KEY,
-          "Content-Type": "application/json",
         },
       }
     );
@@ -131,7 +131,6 @@ app.post("/api/execute-sponsored", async (req, res) => {
       {
         headers: {
           "api-key": process.env.PAYMASTER_API_KEY,
-          "Content-Type": "application/json",
         },
       }
     );
