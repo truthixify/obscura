@@ -208,7 +208,7 @@ export async function generateTransactionCall({
     })
 
     const calldata = contractCallData.compile('transact', [args, extData])
-    
+
     const hexCalldata = CallData.toHex(calldata)
 
     const call: Call = {

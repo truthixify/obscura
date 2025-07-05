@@ -60,23 +60,12 @@ export async function getAccount(query: AccountQuery = {}): Promise<AccountData>
 
 export async function buildTypedData(userAddress: string, calls: Call[]): Promise<any> {
     try {
-        const res = await axios.post(
-            'https://starknet.api.avnu.fi/paymaster/v1/build-typed-data',
-            {
-                userAddress,
-                gasTokenAddress: null,
-                maxGasTokenAmount: null,
-                calls
-            },
-            {
-                headers: { 'api-key': process.env.NEXT_PUBLIC_PAYMASTER_API_KEY || '' } // use env var from Next.js or fallback
-            }
-        )
-
-        console.log('Typed Data:', res.data)
+        const res = await api.post('/build-typed-data', {
+            userAddress,
+            calls
+        })
         return res.data
     } catch (err: any) {
-        console.error('buildTypedData error:', err.response?.data || err.message)
         throw err.response?.data || new Error('Failed to build typed data')
     }
 }
@@ -87,22 +76,13 @@ export async function executeSponsoredTransaction(
     signature: string[]
 ): Promise<any> {
     try {
-        const res = await axios.post(
-            'https://starknet.api.avnu.fi/paymaster/v1/execute',
-            {
-                userAddress,
-                typedData,
-                signature
-            },
-            {
-                headers: { 'api-key': process.env.NEXT_PUBLIC_PAYMASTER_API_KEY || '' }
-            }
-        )
-
-        console.log('Sponsored Tx Hash:', res.data.transactionHash)
+        const res = await api.post('/execute-sponsored', {
+            userAddress,
+            typedData,
+            signature
+        })
         return res.data
     } catch (err: any) {
-        console.error('executeSponsoredTransaction error:', err.response?.data || err.message)
         throw err.response?.data || new Error('Failed to execute sponsored transaction')
     }
 }
