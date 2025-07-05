@@ -43,7 +43,7 @@ Configure `.env` from `.env.example`.
 ---
 
 ## 🔗 Links
-- 🧑‍💻 Code: [github.com/truthixify/obscura](github.com/truthixify/obscura)
+- 🧑‍💻 Code: [https://github.com/truthixify/obscura](https://github.com/truthixify/obscura)
 - 🌐 App: [https://obscura-app.vercel.app](https://obscura-app.vercel.app)
 - 📹 Demo: [https://www.youtube.com/watch?v=vVEz_tNnDgM](https://www.youtube.com/watch?v=vVEz_tNnDgM)
 
