@@ -127,6 +127,7 @@ app.post("/api/execute-sponsored", async (req, res) => {
         userAddress,
         typedData,
         signature,
+        deploymentData: {class_hash: '', salt: '', unique: '', calldata: [''], sigdata: ['']}
       },
       {
         headers: {
