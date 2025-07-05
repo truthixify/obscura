@@ -88,6 +88,7 @@ app.post("/api/build-typed-data", async (req, res) => {
         userAddress,
         gasTokenAddress: null,
         maxGasTokenAmount: null,
+        accountClassHash: null,
         calls,
       },
       {
