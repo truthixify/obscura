@@ -73,7 +73,7 @@ export async function buildTypedData(userAddress: string, calls: Call[]): Promis
 export async function executeSponsoredTransaction(
     userAddress: string,
     typedData: any,
-    signature: string[]
+    signature: any
 ): Promise<any> {
     try {
         const res = await api.post('/execute-sponsored', {

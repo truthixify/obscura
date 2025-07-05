@@ -233,3 +233,15 @@ export async function generateKeypairFromSignature(account: Account): Promise<Ke
         throw error
     }
 }
+
+export async function signMessage(account: Account, messageStructure: TypedData): Promise<any> {
+    try {
+        const signature = (await account.signMessage(messageStructure)) as WeierstrassSignatureType
+        
+        (signature as any).forEach(s => num.toHex(s))
+
+        return signature
+    } catch (error) {
+        throw error
+    }
+}

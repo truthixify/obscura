@@ -30,15 +30,14 @@ import { useAccount, useProvider } from '@starknet-react/core'
 import { Account } from 'starknet'
 import { useBalanceStore } from '../../stores/balance-store'
 import { useKeypairStore } from '../../stores/keypair-store'
-import { generateKeypairFromSignature } from '../../utils/utils'
-import { AccountData, buildTypedData, getAccount } from '../../lib/api'
+import { generateKeypairFromSignature, signMessage } from '../../utils/utils'
+import { AccountData, buildTypedData, executeSponsoredTransaction, getAccount } from '../../lib/api'
 import { useAccountStore } from '../../stores/account-store'
 import { Keypair } from '../../utils/keypair'
 import SettingsModal from './settings'
 import { useModalStore } from '../../stores/modal-store'
 import { useUtxoStore } from '../../stores/utxo-store'
 import { TrackNextIcon } from '@radix-ui/react-icons'
-import { buildTypedDataAvnu } from '../../lib/avnu'
 
 const Index = () => {
     const { data: obscura } = useScaffoldContract({
@@ -391,9 +390,9 @@ const Index = () => {
                 outputs.push(senderChangeUtxo)
             }
 
-            const account = await getAccount({ address: receiverKeypair.address() })
+            const accounts = await getAccount({ address: receiverKeypair.address() })
 
-            if (!account.owner) {
+            if (!accounts.owner) {
                 toast({
                     title: 'Invalid address',
                     description: 'Could not find account for recipient.',
@@ -415,8 +414,13 @@ const Index = () => {
                 outputs
             })
             console.log(calls)
-            const typedData = await buildTypedDataAvnu(address, calls)
+            const typedData = await buildTypedData(address, calls)
             console.log(typedData)
+            const signature = await signMessage(account as Account, typedData)
+            console.log(signature)
+            const exec = await executeSponsoredTransaction(address, typedData, signature)
+            console.log(exec)
+            // obscura.
             // toast({
             //     title: 'Transfer successful',
             //     description: (
