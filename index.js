@@ -136,5 +136,4 @@ app.post("/api/execute-sponsored", async (req, res) => {
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
-    console.log(process.env.PAYMASTER_API_KEY, process.env)
 });
