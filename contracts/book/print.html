@@ -1,0 +1,1167 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>obscura - Cairo</title>
+        <meta name="robots" content="noindex">
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">obscura - Cairo</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="modules"><a class="header" href="#modules">Modules</a></h1>
+<ul>
+<li>
+<p><a href="./obscura.html"></a></p>
+</li>
+<li>
+<p><a href="./obscura-constants.html">constants</a></p>
+</li>
+<li>
+<p><a href="./obscura-custom_type.html">custom_type</a></p>
+</li>
+<li>
+<p><a href="./obscura-errors.html">errors</a></p>
+</li>
+<li>
+<p><a href="./obscura-events.html">events</a></p>
+</li>
+<li>
+<p><a href="./obscura-interface.html">interface</a></p>
+</li>
+<li>
+<p><a href="./obscura-obscura.html">obscura</a></p>
+</li>
+<li>
+<p><a href="./obscura-structs.html">structs</a></p>
+</li>
+<li>
+<p><a href="./obscura-custom_type-i256.html">i256</a></p>
+</li>
+<li>
+<p><a href="./obscura-custom_type-u1024.html">u1024</a></p>
+</li>
+<li>
+<p><a href="./obscura-obscura-Obscura.html">Obscura</a></p>
+</li>
+<li>
+<p><a href="./obscura-obscura-Obscura-__external.html">__external</a></p>
+</li>
+<li>
+<p><a href="./obscura-obscura-Obscura-__l1_handler.html">__l1_handler</a></p>
+</li>
+<li>
+<p><a href="./obscura-obscura-Obscura-__constructor.html">__constructor</a></p>
+</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="obscura"><a class="header" href="#obscura">obscura</a></h1>
+<h1 id="obscura---privacy-preserving-smart-contractthis-module-contains-the-main-implementation-of-the-obscura-privacy-preserving-smart-contract-obscura-enables-private-transactions-on-starknet-using-zero-knowledge-proofs-and-merkle-trees---overviewthe-obscura-contract-implements-a-privacy-preserving-transaction-system-that-allows-users-to---deposit-and-withdraw-tokens-privately---transfer-tokens-between-accounts-without-revealing-transaction-details---use-zero-knowledge-proofs-to-prove-transaction-validity---maintain-privacy-through-commitment-schemes-and-nullifiers---architecturethe-contract-is-organized-into-several-modules---constants-system-wide-constants-and-configuration-values---custom_type-custom-data-types-including-signed-integers---errors-error-messages-and-constants---events-event-definitions-for-contract-interactions---interface-external-interface-definitions---obscura-main-contract-implementation---structs-data-structure-definitions"><a class="header" href="#obscura---privacy-preserving-smart-contractthis-module-contains-the-main-implementation-of-the-obscura-privacy-preserving-smart-contract-obscura-enables-private-transactions-on-starknet-using-zero-knowledge-proofs-and-merkle-trees---overviewthe-obscura-contract-implements-a-privacy-preserving-transaction-system-that-allows-users-to---deposit-and-withdraw-tokens-privately---transfer-tokens-between-accounts-without-revealing-transaction-details---use-zero-knowledge-proofs-to-prove-transaction-validity---maintain-privacy-through-commitment-schemes-and-nullifiers---architecturethe-contract-is-organized-into-several-modules---constants-system-wide-constants-and-configuration-values---custom_type-custom-data-types-including-signed-integers---errors-error-messages-and-constants---events-event-definitions-for-contract-interactions---interface-external-interface-definitions---obscura-main-contract-implementation---structs-data-structure-definitions">Obscura - Privacy-Preserving Smart ContractThis module contains the main implementation of the Obscura privacy-preserving smart contract. Obscura enables private transactions on Starknet using zero-knowledge proofs and Merkle trees.  ## OverviewThe Obscura contract implements a privacy-preserving transaction system that allows users to: - Deposit and withdraw tokens privately - Transfer tokens between accounts without revealing transaction details - Use zero-knowledge proofs to prove transaction validity - Maintain privacy through commitment schemes and nullifiers  ## ArchitectureThe contract is organized into several modules: - <code>constants</code>: System-wide constants and configuration values - <code>custom_type</code>: Custom data types including signed integers - <code>errors</code>: Error messages and constants - <code>events</code>: Event definitions for contract interactions - <code>interface</code>: External interface definitions - <code>obscura</code>: Main contract implementation - <code>structs</code>: Data structure definitions</a></h1>
+<p>Fully qualified path: <code>obscura</code></p>
+<h2 id="modules-1"><a class="header" href="#modules-1">Modules</a></h2>
+<ul>
+<li>
+<p><a href="./obscura-constants.html">constants</a></p>
+</li>
+<li>
+<p><a href="./obscura-custom_type.html">custom_type</a></p>
+</li>
+<li>
+<p><a href="./obscura-errors.html">errors</a></p>
+</li>
+<li>
+<p><a href="./obscura-events.html">events</a></p>
+</li>
+<li>
+<p><a href="./obscura-interface.html">interface</a></p>
+</li>
+<li>
+<p><a href="./obscura-obscura.html">obscura</a></p>
+</li>
+<li>
+<p><a href="./obscura-structs.html">structs</a></p>
+</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="constants"><a class="header" href="#constants">constants</a></h1>
+<h1 id="constants-modulethis-module-defines-system-wide-constants-used-throughout-the-obscura-privacy-preserving-contract-these-constants-establish-the-mathematical-foundations-and-operational-limits-of-the-system"><a class="header" href="#constants-modulethis-module-defines-system-wide-constants-used-throughout-the-obscura-privacy-preserving-contract-these-constants-establish-the-mathematical-foundations-and-operational-limits-of-the-system">Constants ModuleThis module defines system-wide constants used throughout the Obscura privacy-preserving contract. These constants establish the mathematical foundations and operational limits of the system.</a></h1>
+<p>Fully qualified path: <code>obscura::constants</code></p>
+<h2 id="constants-1"><a class="header" href="#constants-1">Constants</a></h2>
+<ul>
+<li>
+<p><a href="./obscura-constants-FIELD_SIZE.html">FIELD_SIZE</a></p>
+</li>
+<li>
+<p><a href="./obscura-constants-MAX_EXT_AMOUNT.html">MAX_EXT_AMOUNT</a></p>
+</li>
+<li>
+<p><a href="./obscura-constants-MAX_FEE.html">MAX_FEE</a></p>
+</li>
+<li>
+<p><a href="./obscura-constants-MIN_EXT_AMOUNT.html">MIN_EXT_AMOUNT</a></p>
+</li>
+<li>
+<p><a href="./obscura-constants-VERIFIER_CLASSHASH.html">VERIFIER_CLASSHASH</a></p>
+</li>
+<li>
+<p><a href="./obscura-constants-ROOT_HISTORY_SIZE.html">ROOT_HISTORY_SIZE</a></p>
+</li>
+<li>
+<p><a href="./obscura-constants-FELT_STRK_CONTRACT.html">FELT_STRK_CONTRACT</a></p>
+</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="custom_type"><a class="header" href="#custom_type">custom_type</a></h1>
+<h1 id="custom-types-modulethis-module-provides-custom-data-types-that-extend-cairos-built-in-types-for-specific-use-cases-in-the-obscura-privacy-preserving-system---available-typesi256-a-signed-256-bit-integer-implementation-for-handling-negative-amounts---u1024-a-1024-bit-unsigned-integer-for-cryptographic-operations---usagethese-custom-types-are-used-throughout-the-obscura-system-to-handle---negative-amounts-in-deposits-and-withdrawals---large-cryptographic-values-that-exceed-standard-integer-limits---mathematical-operations-requiring-extended-precision"><a class="header" href="#custom-types-modulethis-module-provides-custom-data-types-that-extend-cairos-built-in-types-for-specific-use-cases-in-the-obscura-privacy-preserving-system---available-typesi256-a-signed-256-bit-integer-implementation-for-handling-negative-amounts---u1024-a-1024-bit-unsigned-integer-for-cryptographic-operations---usagethese-custom-types-are-used-throughout-the-obscura-system-to-handle---negative-amounts-in-deposits-and-withdrawals---large-cryptographic-values-that-exceed-standard-integer-limits---mathematical-operations-requiring-extended-precision">Custom Types ModuleThis module provides custom data types that extend Cairo's built-in types for specific use cases in the Obscura privacy-preserving system.  ## Available TypesI256: A signed 256-bit integer implementation for handling negative amounts - U1024: A 1024-bit unsigned integer for cryptographic operations  ## UsageThese custom types are used throughout the Obscura system to handle: - Negative amounts in deposits and withdrawals - Large cryptographic values that exceed standard integer limits - Mathematical operations requiring extended precision</a></h1>
+<p>Fully qualified path: <code>obscura::custom_type</code></p>
+<h2 id="modules-2"><a class="header" href="#modules-2">Modules</a></h2>
+<ul>
+<li>
+<p><a href="./obscura-custom_type-i256.html">i256</a></p>
+</li>
+<li>
+<p><a href="./obscura-custom_type-u1024.html">u1024</a></p>
+</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="errors"><a class="header" href="#errors">errors</a></h1>
+<h1 id="errors-modulethis-module-defines-error-constants-used-throughout-the-obscura-privacy-preserving-smart-contract-these-error-messages-provide-clear-feedback-when-operations-fail-helping-users-understand-what-went-wrong-and-how-to-fix-it---error-categoriesthe-errors-are-organized-into-several-categories---access-control-errors-authorization-and-permission-issues---validation-errors-input-validation-and-constraint-violations---cryptographic-errors-proof-verification-and-security-issues---system-errors-operational-and-state-related-issues"><a class="header" href="#errors-modulethis-module-defines-error-constants-used-throughout-the-obscura-privacy-preserving-smart-contract-these-error-messages-provide-clear-feedback-when-operations-fail-helping-users-understand-what-went-wrong-and-how-to-fix-it---error-categoriesthe-errors-are-organized-into-several-categories---access-control-errors-authorization-and-permission-issues---validation-errors-input-validation-and-constraint-violations---cryptographic-errors-proof-verification-and-security-issues---system-errors-operational-and-state-related-issues">Errors ModuleThis module defines error constants used throughout the Obscura privacy-preserving smart contract. These error messages provide clear feedback when operations fail, helping users understand what went wrong and how to fix it.  ## Error CategoriesThe errors are organized into several categories: - Access Control Errors: Authorization and permission issues - Validation Errors: Input validation and constraint violations - Cryptographic Errors: Proof verification and security issues - System Errors: Operational and state-related issues</a></h1>
+<p>Fully qualified path: <code>obscura::errors</code></p>
+<h2 id="constants-2"><a class="header" href="#constants-2">Constants</a></h2>
+<ul>
+<li>
+<p><a href="./obscura-errors-ERROR_ONLY_OWNER_CAN_BE_REGISTERED.html">ERROR_ONLY_OWNER_CAN_BE_REGISTERED</a></p>
+</li>
+<li>
+<p><a href="./obscura-errors-ERROR_INVALID_MERKLE_ROOT.html">ERROR_INVALID_MERKLE_ROOT</a></p>
+</li>
+<li>
+<p><a href="./obscura-errors-ERROR_INPUT_ALREADY_SPENT.html">ERROR_INPUT_ALREADY_SPENT</a></p>
+</li>
+<li>
+<p><a href="./obscura-errors-ERROR_ZERO_ADDRESS.html">ERROR_ZERO_ADDRESS</a></p>
+</li>
+<li>
+<p><a href="./obscura-errors-ERROR_INVALID_FEE.html">ERROR_INVALID_FEE</a></p>
+</li>
+<li>
+<p><a href="./obscura-errors-ERROR_INVALID_EXT_AMOUNT.html">ERROR_INVALID_EXT_AMOUNT</a></p>
+</li>
+<li>
+<p><a href="./obscura-errors-ERROR_INVALID_TREE_DEPTH.html">ERROR_INVALID_TREE_DEPTH</a></p>
+</li>
+<li>
+<p><a href="./obscura-errors-ERROR_MERKLE_TREE_IS_FULL.html">ERROR_MERKLE_TREE_IS_FULL</a></p>
+</li>
+<li>
+<p><a href="./obscura-errors-ERROR_INCORRECT_EXT_HASH.html">ERROR_INCORRECT_EXT_HASH</a></p>
+</li>
+<li>
+<p><a href="./obscura-errors-ERROR_INVALID_PUBLIC_AMOUNT.html">ERROR_INVALID_PUBLIC_AMOUNT</a></p>
+</li>
+<li>
+<p><a href="./obscura-errors-ERROR_INVALID_TRANSACTION_PROOF.html">ERROR_INVALID_TRANSACTION_PROOF</a></p>
+</li>
+<li>
+<p><a href="./obscura-errors-ERROR_AMOUNT_LARGER_THAN_MAXIMUM_DEPOSIT.html">ERROR_AMOUNT_LARGER_THAN_MAXIMUM_DEPOSIT</a></p>
+</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="events"><a class="header" href="#events">events</a></h1>
+<h1 id="events-modulethis-module-defines-the-events-emitted-by-the-obscura-privacy-preserving-smart-contract-these-events-provide-transparency-and-allow-external-systems-to-track-the-state-of-the-privacy-system-while-maintaining-the-privacy-of-individual-transactions---event-categoriesthe-events-are-organized-into-several-categories---commitment-events-track-new-commitments-added-to-the-merkle-tree---nullifier-events-track-spent-inputs-to-prevent-double-spending---account-events-track-user-registration-and-key-management"><a class="header" href="#events-modulethis-module-defines-the-events-emitted-by-the-obscura-privacy-preserving-smart-contract-these-events-provide-transparency-and-allow-external-systems-to-track-the-state-of-the-privacy-system-while-maintaining-the-privacy-of-individual-transactions---event-categoriesthe-events-are-organized-into-several-categories---commitment-events-track-new-commitments-added-to-the-merkle-tree---nullifier-events-track-spent-inputs-to-prevent-double-spending---account-events-track-user-registration-and-key-management">Events ModuleThis module defines the events emitted by the Obscura privacy-preserving smart contract. These events provide transparency and allow external systems to track the state of the privacy system while maintaining the privacy of individual transactions.  ## Event CategoriesThe events are organized into several categories: - Commitment Events: Track new commitments added to the Merkle tree - Nullifier Events: Track spent inputs to prevent double-spending - Account Events: Track user registration and key management</a></h1>
+<p>Fully qualified path: <code>obscura::events</code></p>
+<h2 id="structs"><a class="header" href="#structs">Structs</a></h2>
+<ul>
+<li>
+<p><a href="./obscura-events-NewCommitment.html">NewCommitment</a></p>
+</li>
+<li>
+<p><a href="./obscura-events-NewNullifier.html">NewNullifier</a></p>
+</li>
+<li>
+<p><a href="./obscura-events-PublicKey.html">PublicKey</a></p>
+</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="interface"><a class="header" href="#interface">interface</a></h1>
+<h1 id="interface-modulethis-module-defines-the-external-interface-for-the-obscura-privacy-preserving-smart-contract-the-interface-provides-the-public-api-that-users-and-other-contracts-can-interact-with-to-perform-privacy-preserving-transactions-and-manage-the-system---core-functionsthe-interface-is-organized-into-several-categories---account-management-user-registration-and-key-management---transaction-processing-privacy-preserving-transaction-execution---system-configuration-administrative-functions-for-system-parameters---query-functions-read-only-functions-for-system-state-and-limits"><a class="header" href="#interface-modulethis-module-defines-the-external-interface-for-the-obscura-privacy-preserving-smart-contract-the-interface-provides-the-public-api-that-users-and-other-contracts-can-interact-with-to-perform-privacy-preserving-transactions-and-manage-the-system---core-functionsthe-interface-is-organized-into-several-categories---account-management-user-registration-and-key-management---transaction-processing-privacy-preserving-transaction-execution---system-configuration-administrative-functions-for-system-parameters---query-functions-read-only-functions-for-system-state-and-limits">Interface ModuleThis module defines the external interface for the Obscura privacy-preserving smart contract. The interface provides the public API that users and other contracts can interact with to perform privacy-preserving transactions and manage the system.  ## Core FunctionsThe interface is organized into several categories: - Account Management: User registration and key management - Transaction Processing: Privacy-preserving transaction execution - System Configuration: Administrative functions for system parameters - Query Functions: Read-only functions for system state and limits</a></h1>
+<p>Fully qualified path: <code>obscura::interface</code></p>
+<h2 id="structs-1"><a class="header" href="#structs-1">Structs</a></h2>
+<ul>
+<li>
+<p><a href="./obscura-interface-IObscuraDispatcher.html">IObscuraDispatcher</a></p>
+</li>
+<li>
+<p><a href="./obscura-interface-IObscuraLibraryDispatcher.html">IObscuraLibraryDispatcher</a></p>
+</li>
+<li>
+<p><a href="./obscura-interface-IObscuraSafeLibraryDispatcher.html">IObscuraSafeLibraryDispatcher</a></p>
+</li>
+<li>
+<p><a href="./obscura-interface-IObscuraSafeDispatcher.html">IObscuraSafeDispatcher</a></p>
+</li>
+</ul>
+<h2 id="traits"><a class="header" href="#traits">Traits</a></h2>
+<ul>
+<li>
+<p><a href="./obscura-interface-IObscura.html">IObscura</a></p>
+</li>
+<li>
+<p><a href="./obscura-interface-IObscuraDispatcherTrait.html">IObscuraDispatcherTrait</a></p>
+</li>
+<li>
+<p><a href="./obscura-interface-IObscuraSafeDispatcherTrait.html">IObscuraSafeDispatcherTrait</a></p>
+</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="obscura-1"><a class="header" href="#obscura-1">obscura</a></h1>
+<h1 id="obscura---privacy-preserving-smart-contract-implementationthis-module-contains-the-main-implementation-of-the-obscura-privacy-preserving-smart-contract-for-starknet-the-contract-enables-private-transactions-using-zero-knowledge-proofs-and-merkle-trees-allowing-users-to-transfer-tokens-without-revealing-transaction-details---overviewthe-obscura-contract-implements-a-privacy-preserving-transaction-system-that-provides---private-deposits-users-can-deposit-tokens-without-revealing-their-identity---private-withdrawals-users-can-withdraw-tokens-to-specific-addresses---private-transfers-internal-transfers-between-users-remain-completely-private---zero-knowledge-proofs-cryptographic-proofs-ensure-transaction-validity---merkle-tree-management-efficient-commitment-storage-and-verification---architecturethe-contract-uses-several-key-cryptographic-primitives---commitments-cryptographic-commitments-to-transaction-outputs---nullifiers-one-time-use-values-that-prevent-double-spending---merkle-trees-efficient-storage-and-verification-of-commitments---zero-knowledge-proofs-prove-transaction-validity-without-revealing-details---security-modelthe-system-maintains-privacy-through---cryptographic-commitments-that-hide-transaction-amounts---nullifiers-that-prevent-double-spending-without-revealing-inputs---zero-knowledge-proofs-that-validate-transactions-cryptographically---encrypted-outputs-that-only-recipients-can-decrypt---usage-flowregistration-users-register-their-public-key-for-encrypted-communication-2-deposits-users-deposit-tokens-and-receive-commitments-3-transfers-users-transfer-tokens-privately-using-zero-knowledge-proofs-4-withdrawals-users-withdraw-tokens-to-external-addresses---dependenciesthe-contract-integrates-with---openzeppelin-cairo-contracts-for-access-control---external-zero-knowledge-proof-verifier---strk-token-contract-for-token-transfers"><a class="header" href="#obscura---privacy-preserving-smart-contract-implementationthis-module-contains-the-main-implementation-of-the-obscura-privacy-preserving-smart-contract-for-starknet-the-contract-enables-private-transactions-using-zero-knowledge-proofs-and-merkle-trees-allowing-users-to-transfer-tokens-without-revealing-transaction-details---overviewthe-obscura-contract-implements-a-privacy-preserving-transaction-system-that-provides---private-deposits-users-can-deposit-tokens-without-revealing-their-identity---private-withdrawals-users-can-withdraw-tokens-to-specific-addresses---private-transfers-internal-transfers-between-users-remain-completely-private---zero-knowledge-proofs-cryptographic-proofs-ensure-transaction-validity---merkle-tree-management-efficient-commitment-storage-and-verification---architecturethe-contract-uses-several-key-cryptographic-primitives---commitments-cryptographic-commitments-to-transaction-outputs---nullifiers-one-time-use-values-that-prevent-double-spending---merkle-trees-efficient-storage-and-verification-of-commitments---zero-knowledge-proofs-prove-transaction-validity-without-revealing-details---security-modelthe-system-maintains-privacy-through---cryptographic-commitments-that-hide-transaction-amounts---nullifiers-that-prevent-double-spending-without-revealing-inputs---zero-knowledge-proofs-that-validate-transactions-cryptographically---encrypted-outputs-that-only-recipients-can-decrypt---usage-flowregistration-users-register-their-public-key-for-encrypted-communication-2-deposits-users-deposit-tokens-and-receive-commitments-3-transfers-users-transfer-tokens-privately-using-zero-knowledge-proofs-4-withdrawals-users-withdraw-tokens-to-external-addresses---dependenciesthe-contract-integrates-with---openzeppelin-cairo-contracts-for-access-control---external-zero-knowledge-proof-verifier---strk-token-contract-for-token-transfers">Obscura - Privacy-Preserving Smart Contract ImplementationThis module contains the main implementation of the Obscura privacy-preserving smart contract for Starknet. The contract enables private transactions using zero-knowledge proofs and Merkle trees, allowing users to transfer tokens without revealing transaction details.  ## OverviewThe Obscura contract implements a privacy-preserving transaction system that provides: - Private Deposits: Users can deposit tokens without revealing their identity - Private Withdrawals: Users can withdraw tokens to specific addresses - Private Transfers: Internal transfers between users remain completely private - Zero-Knowledge Proofs: Cryptographic proofs ensure transaction validity - Merkle Tree Management: Efficient commitment storage and verification  ## ArchitectureThe contract uses several key cryptographic primitives: - Commitments: Cryptographic commitments to transaction outputs - Nullifiers: One-time use values that prevent double-spending - Merkle Trees: Efficient storage and verification of commitments - Zero-Knowledge Proofs: Prove transaction validity without revealing details  ## Security ModelThe system maintains privacy through: - Cryptographic commitments that hide transaction amounts - Nullifiers that prevent double-spending without revealing inputs - Zero-knowledge proofs that validate transactions cryptographically - Encrypted outputs that only recipients can decrypt  ## Usage FlowRegistration: Users register their public key for encrypted communication 2. Deposits: Users deposit tokens and receive commitments 3. Transfers: Users transfer tokens privately using zero-knowledge proofs 4. Withdrawals: Users withdraw tokens to external addresses  ## DependenciesThe contract integrates with: - OpenZeppelin Cairo contracts for access control - External zero-knowledge proof verifier - STRK token contract for token transfers</a></h1>
+<p>Fully qualified path: <code>obscura::obscura</code></p>
+<h2 id="modules-3"><a class="header" href="#modules-3">Modules</a></h2>
+<ul>
+<li><a href="./obscura-obscura-Obscura.html">Obscura</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="structs-2"><a class="header" href="#structs-2">structs</a></h1>
+<h1 id="data-structures-modulethis-module-defines-the-core-data-structures-used-throughout-the-obscura-privacy-preserving-contract-these-structures-represent-the-fundamental-components-of-the-privacy-system-including-merkle-trees-transaction-proofs-and-account-information"><a class="header" href="#data-structures-modulethis-module-defines-the-core-data-structures-used-throughout-the-obscura-privacy-preserving-contract-these-structures-represent-the-fundamental-components-of-the-privacy-system-including-merkle-trees-transaction-proofs-and-account-information">Data Structures ModuleThis module defines the core data structures used throughout the Obscura privacy-preserving contract. These structures represent the fundamental components of the privacy system including Merkle trees, transaction proofs, and account information.</a></h1>
+<p>Fully qualified path: <code>obscura::structs</code></p>
+<h2 id="structs-3"><a class="header" href="#structs-3">Structs</a></h2>
+<ul>
+<li>
+<p><a href="./obscura-structs-MerkleTreeWithHistory.html">MerkleTreeWithHistory</a></p>
+</li>
+<li>
+<p><a href="./obscura-structs-ExtData.html">ExtData</a></p>
+</li>
+<li>
+<p><a href="./obscura-structs-Proof.html">Proof</a></p>
+</li>
+<li>
+<p><a href="./obscura-structs-Account.html">Account</a></p>
+</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="i256"><a class="header" href="#i256">i256</a></h1>
+<h1 id="i256---signed-256-bit-integer-implementationthis-module-provides-a-custom-implementation-of-a-signed-256-bit-integer-type-for-the-obscura-privacy-preserving-system-since-cairo-doesnt-have-native-signed-integers-this-implementation-provides-the-necessary-functionality-for-handling-negative-amounts-in-deposits-and-withdrawals---implementation-detailsthe-i256-type-is-implemented-as-a-struct-containing---value-an-unsigned-256-bit-integer-representing-the-absolute-value---is_negative-a-boolean-flag-indicating-the-sign---mathematical-operationsthe-implementation-provides-standard-arithmetic-operations---addition-and-subtraction-with-proper-sign-handling---negation-for-sign-changes---comparison-operations-less-than-greater-than-etc---conversion-to-and-from-u256---usage-in-obscurai256-is-primarily-used-for---representing-external-amounts-positive-for-deposits-negative-for-withdrawals---fee-calculations-and-public-amount-computations---maintaining-mathematical-consistency-in-zero-knowledge-proofs"><a class="header" href="#i256---signed-256-bit-integer-implementationthis-module-provides-a-custom-implementation-of-a-signed-256-bit-integer-type-for-the-obscura-privacy-preserving-system-since-cairo-doesnt-have-native-signed-integers-this-implementation-provides-the-necessary-functionality-for-handling-negative-amounts-in-deposits-and-withdrawals---implementation-detailsthe-i256-type-is-implemented-as-a-struct-containing---value-an-unsigned-256-bit-integer-representing-the-absolute-value---is_negative-a-boolean-flag-indicating-the-sign---mathematical-operationsthe-implementation-provides-standard-arithmetic-operations---addition-and-subtraction-with-proper-sign-handling---negation-for-sign-changes---comparison-operations-less-than-greater-than-etc---conversion-to-and-from-u256---usage-in-obscurai256-is-primarily-used-for---representing-external-amounts-positive-for-deposits-negative-for-withdrawals---fee-calculations-and-public-amount-computations---maintaining-mathematical-consistency-in-zero-knowledge-proofs">I256 - Signed 256-bit Integer ImplementationThis module provides a custom implementation of a signed 256-bit integer type for the Obscura privacy-preserving system. Since Cairo doesn't have native signed integers, this implementation provides the necessary functionality for handling negative amounts in deposits and withdrawals.  ## Implementation DetailsThe I256 type is implemented as a struct containing: - <code>value</code>: An unsigned 256-bit integer representing the absolute value - <code>is_negative</code>: A boolean flag indicating the sign  ## Mathematical OperationsThe implementation provides standard arithmetic operations: - Addition and subtraction with proper sign handling - Negation for sign changes - Comparison operations (less than, greater than, etc.) - Conversion to and from u256  ## Usage in ObscuraI256 is primarily used for: - Representing external amounts (positive for deposits, negative for withdrawals) - Fee calculations and public amount computations - Maintaining mathematical consistency in zero-knowledge proofs</a></h1>
+<p>Fully qualified path: <code>obscura::custom_type::i256</code></p>
+<h2 id="structs-4"><a class="header" href="#structs-4">Structs</a></h2>
+<ul>
+<li><a href="./obscura-custom_type-i256-I256.html">I256</a></li>
+</ul>
+<h2 id="traits-1"><a class="header" href="#traits-1">Traits</a></h2>
+<ul>
+<li><a href="./obscura-custom_type-i256-I256Trait.html">I256Trait</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="u1024"><a class="header" href="#u1024">u1024</a></h1>
+<h1 id="u1024---1024-bit-unsigned-integer-implementationthis-module-provides-a-custom-implementation-of-a-1024-bit-unsigned-integer-type-for-cryptographic-operations-in-the-obscura-privacy-preserving-system---implementation-detailsthe-u1024-type-is-implemented-as-a-struct-containing-eight-128-bit-limbs---limb0-through-limb7-individual-128-bit-components---total-size-8--128--1024-bits---usageu1024-is-designed-for-cryptographic-operations-that-require---extended-precision-beyond-standard-256-bit-integers---large-number-arithmetic-for-zero-knowledge-proofs---cryptographic-calculations-requiring-1024-bit-precision---notethis-is-a-basic-structure-definition-full-arithmetic-operations-would-need-to-be-implemented-for-complete-functionality"><a class="header" href="#u1024---1024-bit-unsigned-integer-implementationthis-module-provides-a-custom-implementation-of-a-1024-bit-unsigned-integer-type-for-cryptographic-operations-in-the-obscura-privacy-preserving-system---implementation-detailsthe-u1024-type-is-implemented-as-a-struct-containing-eight-128-bit-limbs---limb0-through-limb7-individual-128-bit-components---total-size-8--128--1024-bits---usageu1024-is-designed-for-cryptographic-operations-that-require---extended-precision-beyond-standard-256-bit-integers---large-number-arithmetic-for-zero-knowledge-proofs---cryptographic-calculations-requiring-1024-bit-precision---notethis-is-a-basic-structure-definition-full-arithmetic-operations-would-need-to-be-implemented-for-complete-functionality">U1024 - 1024-bit Unsigned Integer ImplementationThis module provides a custom implementation of a 1024-bit unsigned integer type for cryptographic operations in the Obscura privacy-preserving system.  ## Implementation DetailsThe U1024 type is implemented as a struct containing eight 128-bit limbs: - <code>limb0</code> through <code>limb7</code>: Individual 128-bit components - Total size: 8 × 128 = 1024 bits  ## UsageU1024 is designed for cryptographic operations that require: - Extended precision beyond standard 256-bit integers - Large number arithmetic for zero-knowledge proofs - Cryptographic calculations requiring 1024-bit precision  ## NoteThis is a basic structure definition. Full arithmetic operations would need to be implemented for complete functionality.</a></h1>
+<p>Fully qualified path: <code>obscura::custom_type::u1024</code></p>
+<h2 id="structs-5"><a class="header" href="#structs-5">Structs</a></h2>
+<ul>
+<li><a href="./obscura-custom_type-u1024-U1024.html">U1024</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="obscura-2"><a class="header" href="#obscura-2">Obscura</a></h1>
+<p>Fully qualified path: <code>obscura::obscura::Obscura</code></p>
+<h2 id="modules-4"><a class="header" href="#modules-4">Modules</a></h2>
+<ul>
+<li>
+<p><a href="./obscura-obscura-Obscura-__external.html">__external</a></p>
+</li>
+<li>
+<p><a href="./obscura-obscura-Obscura-__l1_handler.html">__l1_handler</a></p>
+</li>
+<li>
+<p><a href="./obscura-obscura-Obscura-__constructor.html">__constructor</a></p>
+</li>
+</ul>
+<h2 id="free-functions"><a class="header" href="#free-functions">Free functions</a></h2>
+<ul>
+<li>
+<p><a href="./obscura-obscura-Obscura-constructor.html">constructor</a></p>
+</li>
+<li>
+<p><a href="./obscura-obscura-Obscura-unsafe_new_contract_state.html">unsafe_new_contract_state</a></p>
+</li>
+</ul>
+<h2 id="structs-6"><a class="header" href="#structs-6">Structs</a></h2>
+<ul>
+<li><a href="./obscura-obscura-Obscura-ContractState.html">ContractState</a></li>
+</ul>
+<h2 id="enums"><a class="header" href="#enums">Enums</a></h2>
+<ul>
+<li><a href="./obscura-obscura-Obscura-Event.html">Event</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="__external"><a class="header" href="#__external">__external</a></h1>
+<p>Fully qualified path: <code>obscura::obscura::Obscura::__external</code></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="__l1_handler"><a class="header" href="#__l1_handler">__l1_handler</a></h1>
+<p>Fully qualified path: <code>obscura::obscura::Obscura::__l1_handler</code></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="__constructor"><a class="header" href="#__constructor">__constructor</a></h1>
+<p>Fully qualified path: <code>obscura::obscura::Obscura::__constructor</code></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="constants-3"><a class="header" href="#constants-3">Constants</a></h1>
+<ul>
+<li>
+<p><a href="./obscura-constants-FIELD_SIZE.html">FIELD_SIZE</a></p>
+</li>
+<li>
+<p><a href="./obscura-constants-MAX_EXT_AMOUNT.html">MAX_EXT_AMOUNT</a></p>
+</li>
+<li>
+<p><a href="./obscura-constants-MAX_FEE.html">MAX_FEE</a></p>
+</li>
+<li>
+<p><a href="./obscura-constants-MIN_EXT_AMOUNT.html">MIN_EXT_AMOUNT</a></p>
+</li>
+<li>
+<p><a href="./obscura-constants-VERIFIER_CLASSHASH.html">VERIFIER_CLASSHASH</a></p>
+</li>
+<li>
+<p><a href="./obscura-constants-ROOT_HISTORY_SIZE.html">ROOT_HISTORY_SIZE</a></p>
+</li>
+<li>
+<p><a href="./obscura-constants-FELT_STRK_CONTRACT.html">FELT_STRK_CONTRACT</a></p>
+</li>
+<li>
+<p><a href="./obscura-errors-ERROR_ONLY_OWNER_CAN_BE_REGISTERED.html">ERROR_ONLY_OWNER_CAN_BE_REGISTERED</a></p>
+</li>
+<li>
+<p><a href="./obscura-errors-ERROR_INVALID_MERKLE_ROOT.html">ERROR_INVALID_MERKLE_ROOT</a></p>
+</li>
+<li>
+<p><a href="./obscura-errors-ERROR_INPUT_ALREADY_SPENT.html">ERROR_INPUT_ALREADY_SPENT</a></p>
+</li>
+<li>
+<p><a href="./obscura-errors-ERROR_ZERO_ADDRESS.html">ERROR_ZERO_ADDRESS</a></p>
+</li>
+<li>
+<p><a href="./obscura-errors-ERROR_INVALID_FEE.html">ERROR_INVALID_FEE</a></p>
+</li>
+<li>
+<p><a href="./obscura-errors-ERROR_INVALID_EXT_AMOUNT.html">ERROR_INVALID_EXT_AMOUNT</a></p>
+</li>
+<li>
+<p><a href="./obscura-errors-ERROR_INVALID_TREE_DEPTH.html">ERROR_INVALID_TREE_DEPTH</a></p>
+</li>
+<li>
+<p><a href="./obscura-errors-ERROR_MERKLE_TREE_IS_FULL.html">ERROR_MERKLE_TREE_IS_FULL</a></p>
+</li>
+<li>
+<p><a href="./obscura-errors-ERROR_INCORRECT_EXT_HASH.html">ERROR_INCORRECT_EXT_HASH</a></p>
+</li>
+<li>
+<p><a href="./obscura-errors-ERROR_INVALID_PUBLIC_AMOUNT.html">ERROR_INVALID_PUBLIC_AMOUNT</a></p>
+</li>
+<li>
+<p><a href="./obscura-errors-ERROR_INVALID_TRANSACTION_PROOF.html">ERROR_INVALID_TRANSACTION_PROOF</a></p>
+</li>
+<li>
+<p><a href="./obscura-errors-ERROR_AMOUNT_LARGER_THAN_MAXIMUM_DEPOSIT.html">ERROR_AMOUNT_LARGER_THAN_MAXIMUM_DEPOSIT</a></p>
+</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="field_size"><a class="header" href="#field_size">FIELD_SIZE</a></h1>
+<p>The finite field size used in the cryptographic operations. This is the prime field size for the BN254 curve used in zero-knowledge proofs.  # Mathematical Properties - Prime number: 21888242871839275222246405745257275088548364400416034343698204186575808495617 - Used for modular arithmetic in zero-knowledge proof verification - Ensures cryptographic security of the commitment scheme</p>
+<p>Fully qualified path: <code>obscura::constants::FIELD_SIZE</code></p>
+<pre><code class="language-rust">pub const FIELD_SIZE: u256 =
+    21888242871839275222246405745257275088548364400416034343698204186575808495617;</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="max_ext_amount"><a class="header" href="#max_ext_amount">MAX_EXT_AMOUNT</a></h1>
+<p>Maximum allowed external amount for deposits and withdrawals. This limit prevents overflow attacks and ensures system stability.  # Value - 2^248 (approximately 4.5 × 10^74) - Provides sufficient range for practical transaction amounts - Prevents arithmetic overflow in calculations</p>
+<p>Fully qualified path: <code>obscura::constants::MAX_EXT_AMOUNT</code></p>
+<pre><code class="language-rust">pub const MAX_EXT_AMOUNT: u256 = 2_u256.pow(248);</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="max_fee"><a class="header" href="#max_fee">MAX_FEE</a></h1>
+<p>Maximum allowed fee amount for transactions. This limit prevents excessive fee extraction and ensures fair pricing.  # Value - 2^248 (same as MAX_EXT_AMOUNT) - Allows for high-value transactions with reasonable fees - Prevents economic attacks through excessive fees</p>
+<p>Fully qualified path: <code>obscura::constants::MAX_FEE</code></p>
+<pre><code class="language-rust">pub const MAX_FEE: u256 = 2_u256.pow(248);</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="min_ext_amount"><a class="header" href="#min_ext_amount">MIN_EXT_AMOUNT</a></h1>
+<p>Minimum allowed external amount for deposits and withdrawals. This ensures transactions have meaningful economic value.  # Value - 5 × 10^17 (0.5 tokens in wei units) - Prevents dust attacks and spam transactions - Ensures gas costs are justified by transaction value</p>
+<p>Fully qualified path: <code>obscura::constants::MIN_EXT_AMOUNT</code></p>
+<pre><code class="language-rust">pub const MIN_EXT_AMOUNT: u256 = 5 * 10_u256.pow(17);</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="verifier_classhash"><a class="header" href="#verifier_classhash">VERIFIER_CLASSHASH</a></h1>
+<p>The class hash of the zero-knowledge proof verifier contract. This contract is responsible for verifying the cryptographic proofs that validate private transactions.  # Usage - Used in library calls to verify transaction proofs - Ensures only valid cryptographic proofs are accepted - Critical for maintaining the privacy and security of the system</p>
+<p>Fully qualified path: <code>obscura::constants::VERIFIER_CLASSHASH</code></p>
+<pre><code class="language-rust">pub const VERIFIER_CLASSHASH: felt252 =
+    0x01b5fbe104c033025dbb7fb37011781cc9344e881b4828cdaa023a80fecafde4;</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="root_history_size"><a class="header" href="#root_history_size">ROOT_HISTORY_SIZE</a></h1>
+<p>The number of past Merkle roots stored for history verification. This allows the system to verify that transactions are based on recent, valid state while maintaining privacy.  # Value - 100 historical roots - Balances privacy (not too many roots) with security (not too few) - Allows for reasonable transaction finality periods</p>
+<p>Fully qualified path: <code>obscura::constants::ROOT_HISTORY_SIZE</code></p>
+<pre><code class="language-rust">pub const ROOT_HISTORY_SIZE: u32 = 100;</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="felt_strk_contract"><a class="header" href="#felt_strk_contract">FELT_STRK_CONTRACT</a></h1>
+<p>The contract address of the STRK token on Starknet mainnet. This is the native token used for deposits, withdrawals, and fee payments.  # Address - Mainnet STRK token contract - Used for all token transfers in the privacy system - Ensures compatibility with Starknet's native token ecosystem</p>
+<p>Fully qualified path: <code>obscura::constants::FELT_STRK_CONTRACT</code></p>
+<pre><code class="language-rust">pub const FELT_STRK_CONTRACT: felt252 =
+    0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d;</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="error_only_owner_can_be_registered"><a class="header" href="#error_only_owner_can_be_registered">ERROR_ONLY_OWNER_CAN_BE_REGISTERED</a></h1>
+<p>Error message for unauthorized account registration attempts.This error is thrown when someone tries to register an account that doesn't belong to them. Only the account owner can register their own account.  # When Thrown - Caller address doesn't match the account owner address - Attempting to register someone else's account  # Resolution - Ensure the caller is the account owner - Use the correct account address for registration</p>
+<p>Fully qualified path: <code>obscura::errors::ERROR_ONLY_OWNER_CAN_BE_REGISTERED</code></p>
+<pre><code class="language-rust">pub const ERROR_ONLY_OWNER_CAN_BE_REGISTERED: felt252 = &apos;Only owner can be registered&apos;;</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="error_invalid_merkle_root"><a class="header" href="#error_invalid_merkle_root">ERROR_INVALID_MERKLE_ROOT</a></h1>
+<p>Error message for invalid Merkle root in transaction proofs.This error is thrown when a transaction proof references a Merkle root that is not in the recent history of valid roots.  # When Thrown - The root in the proof is not found in the recent history - The root is zero (invalid) - The root is too old and has been rotated out  # Resolution - Use a recent, valid Merkle root - Ensure the proof is based on current state</p>
+<p>Fully qualified path: <code>obscura::errors::ERROR_INVALID_MERKLE_ROOT</code></p>
+<pre><code class="language-rust">pub const ERROR_INVALID_MERKLE_ROOT: felt252 = &apos;Invalid merkle root&apos;;</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="error_input_already_spent"><a class="header" href="#error_input_already_spent">ERROR_INPUT_ALREADY_SPENT</a></h1>
+<p>Error message for attempting to spend already spent inputs.This error is thrown when a transaction tries to use a nullifier that has already been used in a previous transaction.  # When Thrown - Input nullifier has already been spent - Attempting to double-spend an input - Nullifier is already in the spent set  # Resolution - Use fresh, unspent inputs for new transactions - Check input status before creating proofs</p>
+<p>Fully qualified path: <code>obscura::errors::ERROR_INPUT_ALREADY_SPENT</code></p>
+<pre><code class="language-rust">pub const ERROR_INPUT_ALREADY_SPENT: felt252 = &apos;Input is already spent&apos;;</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="error_zero_address"><a class="header" href="#error_zero_address">ERROR_ZERO_ADDRESS</a></h1>
+<p>Error message for invalid recipient addresses.This error is thrown when a withdrawal transaction specifies a zero address as the recipient.  # When Thrown - Recipient address is zero (0x0) - Attempting to withdraw to an invalid address  # Resolution - Use a valid, non-zero recipient address - Ensure the recipient address is properly formatted</p>
+<p>Fully qualified path: <code>obscura::errors::ERROR_ZERO_ADDRESS</code></p>
+<pre><code class="language-rust">pub const ERROR_ZERO_ADDRESS: felt252 = &apos;Invalid cannot be address&apos;;</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="error_invalid_fee"><a class="header" href="#error_invalid_fee">ERROR_INVALID_FEE</a></h1>
+<p>Error message for invalid fee amounts.This error is thrown when a transaction fee exceeds the maximum allowed fee or is otherwise invalid.  # When Thrown - Fee amount exceeds MAX_FEE - Fee calculation results in overflow - Fee is negative or invalid  # Resolution - Use a fee amount within the system limits - Ensure fee calculation is correct</p>
+<p>Fully qualified path: <code>obscura::errors::ERROR_INVALID_FEE</code></p>
+<pre><code class="language-rust">pub const ERROR_INVALID_FEE: felt252 = &apos;Invalid fee&apos;;</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="error_invalid_ext_amount"><a class="header" href="#error_invalid_ext_amount">ERROR_INVALID_EXT_AMOUNT</a></h1>
+<p>Error message for invalid external amounts.This error is thrown when the external amount (deposit/withdrawal) is outside the allowed range or invalid.  # When Thrown - Amount exceeds MAX_EXT_AMOUNT - Amount is below MIN_EXT_AMOUNT - Amount calculation results in overflow  # Resolution - Use an amount within the system limits - Ensure amount calculation is correct</p>
+<p>Fully qualified path: <code>obscura::errors::ERROR_INVALID_EXT_AMOUNT</code></p>
+<pre><code class="language-rust">pub const ERROR_INVALID_EXT_AMOUNT: felt252 = &apos;Invalid ext amount&apos;;</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="error_invalid_tree_depth"><a class="header" href="#error_invalid_tree_depth">ERROR_INVALID_TREE_DEPTH</a></h1>
+<p>Error message for invalid Merkle tree depth.This error is thrown when attempting to create a Merkle tree with an invalid depth (too shallow or too deep).  # When Thrown - Tree depth is 0 (too shallow) - Tree depth is &gt;= 32 (too deep) - Invalid depth parameter during initialization  # Resolution - Use a depth between 1 and 31 - Consider gas costs and storage requirements</p>
+<p>Fully qualified path: <code>obscura::errors::ERROR_INVALID_TREE_DEPTH</code></p>
+<pre><code class="language-rust">pub const ERROR_INVALID_TREE_DEPTH: felt252 = &apos;Invalid tree depth&apos;;</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="error_merkle_tree_is_full"><a class="header" href="#error_merkle_tree_is_full">ERROR_MERKLE_TREE_IS_FULL</a></h1>
+<p>Error message for attempting to insert into a full Merkle tree.This error is thrown when the Merkle tree has reached its maximum capacity and cannot accept new commitments.  # When Thrown - Tree has 2^levels commitments (maximum capacity) - No more space available for new commitments  # Resolution - Wait for commitments to be spent (creating space) - Consider upgrading to a larger tree if needed</p>
+<p>Fully qualified path: <code>obscura::errors::ERROR_MERKLE_TREE_IS_FULL</code></p>
+<pre><code class="language-rust">pub const ERROR_MERKLE_TREE_IS_FULL: felt252 = &apos;Merkle tree is full&apos;;</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="error_incorrect_ext_hash"><a class="header" href="#error_incorrect_ext_hash">ERROR_INCORRECT_EXT_HASH</a></h1>
+<p>Error message for incorrect external data hash.This error is thrown when the hash of the external data doesn't match the hash provided in the zero-knowledge proof.  # When Thrown - External data hash mismatch - Proof was generated with different external data - Data tampering or corruption detected  # Resolution - Ensure external data matches the proof - Regenerate proof with correct external data</p>
+<p>Fully qualified path: <code>obscura::errors::ERROR_INCORRECT_EXT_HASH</code></p>
+<pre><code class="language-rust">pub const ERROR_INCORRECT_EXT_HASH: felt252 = &apos;Incorrect external data hash&apos;;</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="error_invalid_public_amount"><a class="header" href="#error_invalid_public_amount">ERROR_INVALID_PUBLIC_AMOUNT</a></h1>
+<p>Error message for invalid public amount in proof.This error is thrown when the public amount in the zero-knowledge proof doesn't match the calculated public amount from external data.  # When Thrown - Public amount mismatch between proof and calculation - Proof was generated with incorrect amounts - Fee calculation error  # Resolution - Ensure amounts are calculated correctly - Regenerate proof with correct amounts</p>
+<p>Fully qualified path: <code>obscura::errors::ERROR_INVALID_PUBLIC_AMOUNT</code></p>
+<pre><code class="language-rust">pub const ERROR_INVALID_PUBLIC_AMOUNT: felt252 = &apos;Invalid public amount&apos;;</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="error_invalid_transaction_proof"><a class="header" href="#error_invalid_transaction_proof">ERROR_INVALID_TRANSACTION_PROOF</a></h1>
+<p>Error message for invalid transaction proof.This error is thrown when the zero-knowledge proof fails verification by the external proof verifier contract.  # When Thrown - Cryptographic proof verification fails - Proof is malformed or invalid - Proof was generated with incorrect inputs  # Resolution - Regenerate proof with correct inputs - Ensure all proof components are valid</p>
+<p>Fully qualified path: <code>obscura::errors::ERROR_INVALID_TRANSACTION_PROOF</code></p>
+<pre><code class="language-rust">pub const ERROR_INVALID_TRANSACTION_PROOF: felt252 = &apos;Invalid transaction proof&apos;;</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="error_amount_larger_than_maximum_deposit"><a class="header" href="#error_amount_larger_than_maximum_deposit">ERROR_AMOUNT_LARGER_THAN_MAXIMUM_DEPOSIT</a></h1>
+<p>Error message for deposit amounts exceeding the maximum limit.This error is thrown when a deposit amount exceeds the configured maximum deposit amount for the system.  # When Thrown - Deposit amount &gt; maximum_deposit_amount - Attempting to deposit more than allowed  # Resolution - Reduce deposit amount to within limits - Split large deposits into smaller transactions</p>
+<p>Fully qualified path: <code>obscura::errors::ERROR_AMOUNT_LARGER_THAN_MAXIMUM_DEPOSIT</code></p>
+<pre><code class="language-rust">pub const ERROR_AMOUNT_LARGER_THAN_MAXIMUM_DEPOSIT: felt252 = &apos;Deposit amount is too large&apos;;</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="free-functions-1"><a class="header" href="#free-functions-1">Free functions</a></h1>
+<ul>
+<li>
+<p><a href="./obscura-obscura-Obscura-constructor.html">constructor</a></p>
+</li>
+<li>
+<p><a href="./obscura-obscura-Obscura-unsafe_new_contract_state.html">unsafe_new_contract_state</a></p>
+</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="constructor"><a class="header" href="#constructor">constructor</a></h1>
+<p>Constructor function for initializing the Obscura contract.This function sets up the initial state of the privacy system, including the Merkle tree and system parameters.  # Arguments * <code>levels</code> - The depth of the Merkle tree (number of levels) * <code>maximum_deposit_amount</code> - The maximum amount allowed for deposits  # Initialization Steps 1. Sets the contract owner to the caller 2. Initializes the Merkle tree with the specified depth 3. Configures the maximum deposit amount  # Security - Only callable during contract deployment - Sets up the foundational privacy infrastructure</p>
+<p>Fully qualified path: <code>obscura::obscura::Obscura::constructor</code></p>
+<pre><code class="language-rust">pub fn constructor(ref self: ContractState, levels: u32, maximum_deposit_amount: u256)</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="unsafe_new_contract_state"><a class="header" href="#unsafe_new_contract_state">unsafe_new_contract_state</a></h1>
+<p>Fully qualified path: <code>obscura::obscura::Obscura::unsafe_new_contract_state</code></p>
+<pre><code class="language-rust">pub fn unsafe_new_contract_state() -&gt; ContractState</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="structs-7"><a class="header" href="#structs-7">Structs</a></h1>
+<ul>
+<li>
+<p><a href="./obscura-custom_type-i256-I256.html">I256</a></p>
+</li>
+<li>
+<p><a href="./obscura-custom_type-u1024-U1024.html">U1024</a></p>
+</li>
+<li>
+<p><a href="./obscura-events-NewCommitment.html">NewCommitment</a></p>
+</li>
+<li>
+<p><a href="./obscura-events-NewNullifier.html">NewNullifier</a></p>
+</li>
+<li>
+<p><a href="./obscura-events-PublicKey.html">PublicKey</a></p>
+</li>
+<li>
+<p><a href="./obscura-interface-IObscuraDispatcher.html">IObscuraDispatcher</a></p>
+</li>
+<li>
+<p><a href="./obscura-interface-IObscuraLibraryDispatcher.html">IObscuraLibraryDispatcher</a></p>
+</li>
+<li>
+<p><a href="./obscura-interface-IObscuraSafeLibraryDispatcher.html">IObscuraSafeLibraryDispatcher</a></p>
+</li>
+<li>
+<p><a href="./obscura-interface-IObscuraSafeDispatcher.html">IObscuraSafeDispatcher</a></p>
+</li>
+<li>
+<p><a href="./obscura-obscura-Obscura-ContractState.html">ContractState</a></p>
+</li>
+<li>
+<p><a href="./obscura-structs-MerkleTreeWithHistory.html">MerkleTreeWithHistory</a></p>
+</li>
+<li>
+<p><a href="./obscura-structs-ExtData.html">ExtData</a></p>
+</li>
+<li>
+<p><a href="./obscura-structs-Proof.html">Proof</a></p>
+</li>
+<li>
+<p><a href="./obscura-structs-Account.html">Account</a></p>
+</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="i256-1"><a class="header" href="#i256-1">I256</a></h1>
+<p>A signed 256-bit integer implementation for handling negative amounts.This struct represents a signed integer by storing the absolute value and a sign flag, enabling arithmetic operations with negative numbers.  # Fields - <code>value</code>: The absolute value as an unsigned 256-bit integer - <code>is_negative</code>: Boolean flag indicating if the value is negative  # Examples</p>
+<pre><code class="language-cairo">// Positive number: 100
+let positive = I256 { value: 100, is_negative: false };
+
+// Negative number: -100
+let negative = I256 { value: 100, is_negative: true };
+
+// Zero (always positive)
+let zero = I256 { value: 0, is_negative: false };
+</code></pre>
+<p>Fully qualified path: <code>obscura::custom_type::i256::I256</code></p>
+<pre><code class="language-rust">#[derive(Debug, Drop, Clone, Copy, PartialEq, Serde)]
+pub struct I256 {
+    pub value: u256,
+    pub is_negative: bool,
+}</code></pre>
+<h2 id="members"><a class="header" href="#members">Members</a></h2>
+<h3 id="value"><a class="header" href="#value">value</a></h3>
+<p>The absolute value of the integer. This field stores the magnitude regardless of sign.</p>
+<p>Fully qualified path: <code>obscura::custom_type::i256::I256::value</code></p>
+<pre><code class="language-rust">pub value: u256</code></pre>
+<h3 id="is_negative"><a class="header" href="#is_negative">is_negative</a></h3>
+<p>Flag indicating whether the value is negative. When true, the actual value is -value; when false, it's +value.</p>
+<p>Fully qualified path: <code>obscura::custom_type::i256::I256::is_negative</code></p>
+<pre><code class="language-rust">pub is_negative: bool</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="u1024-1"><a class="header" href="#u1024-1">U1024</a></h1>
+<p>A 1024-bit unsigned integer implementation for cryptographic operations.This struct represents a large integer by storing it as eight 128-bit limbs, enabling operations on values that exceed the standard 256-bit limit.  # Fields - <code>limb0</code> through <code>limb7</code>: Individual 128-bit components of the number  # Structure The number is stored in little-endian format: - <code>limb0</code>: Least significant 128 bits - <code>limb7</code>: Most significant 128 bits  # Usage This type is primarily used for: - Cryptographic operations requiring extended precision - Zero-knowledge proof calculations - Large number arithmetic in privacy-preserving systems</p>
+<p>Fully qualified path: <code>obscura::custom_type::u1024::U1024</code></p>
+<pre><code class="language-rust">#[derive(Debug, Drop, Clone, Copy, PartialEq, Serde)]
+pub struct U1024 {
+    limb0: u128,
+    limb1: u128,
+    limb2: u128,
+    limb3: u128,
+    limb4: u128,
+    limb5: u128,
+    limb6: u128,
+    limb7: u128,
+}</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="newcommitment"><a class="header" href="#newcommitment">NewCommitment</a></h1>
+<p>Event emitted when a new commitment is added to the Merkle tree.This event is emitted for each new commitment created during a privacy-preserving transaction. It provides the commitment hash, its index in the tree, and the encrypted output data for the recipient.  # Privacy Considerations - The commitment hash reveals no information about the transaction amount - The encrypted output can only be decrypted by the intended recipient - The index provides ordering information without revealing transaction details  # Usage - External systems can track the growth of the Merkle tree - Recipients can scan for their encrypted outputs using their private key - Provides transparency while maintaining transaction privacy</p>
+<p>Fully qualified path: <code>obscura::events::NewCommitment</code></p>
+<pre><code class="language-rust">#[derive(Drop, starknet::Event)]
+pub struct NewCommitment {
+    pub commitment: u256,
+    pub index: u32,
+    pub encrypted_output: ByteArray,
+}</code></pre>
+<h2 id="members-1"><a class="header" href="#members-1">Members</a></h2>
+<h3 id="commitment"><a class="header" href="#commitment">commitment</a></h3>
+<p>The commitment hash that was added to the Merkle tree. This is a cryptographic commitment to the transaction output.</p>
+<p>Fully qualified path: <code>obscura::events::NewCommitment::commitment</code></p>
+<pre><code class="language-rust">pub commitment: u256</code></pre>
+<h3 id="index"><a class="header" href="#index">index</a></h3>
+<p>The index of the commitment in the Merkle tree. Provides ordering information for tree construction.</p>
+<p>Fully qualified path: <code>obscura::events::NewCommitment::index</code></p>
+<pre><code class="language-rust">pub index: u32</code></pre>
+<h3 id="encrypted_output"><a class="header" href="#encrypted_output">encrypted_output</a></h3>
+<p>The encrypted output data for the transaction recipient. Contains private transaction details encrypted with the recipient's public key.</p>
+<p>Fully qualified path: <code>obscura::events::NewCommitment::encrypted_output</code></p>
+<pre><code class="language-rust">pub encrypted_output: ByteArray</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="newnullifier"><a class="header" href="#newnullifier">NewNullifier</a></h1>
+<p>Event emitted when a nullifier is used to spend an input.This event is emitted for each input nullifier used in a privacy-preserving transaction. It ensures that each input can only be spent once, preventing double-spending attacks.  # Security Purpose - Prevents double-spending by tracking spent inputs - The nullifier reveals no information about the original input - Provides cryptographic proof of input ownership and spending  # Usage - External systems can track spent inputs - Enables efficient double-spending detection - Maintains privacy while ensuring transaction validity</p>
+<p>Fully qualified path: <code>obscura::events::NewNullifier</code></p>
+<pre><code class="language-rust">#[derive(Drop, starknet::Event)]
+pub struct NewNullifier {
+    pub nullifier: u256,
+}</code></pre>
+<h2 id="members-2"><a class="header" href="#members-2">Members</a></h2>
+<h3 id="nullifier"><a class="header" href="#nullifier">nullifier</a></h3>
+<p>The nullifier hash that was used to spend an input. This is a cryptographic proof that the input was owned and spent.</p>
+<p>Fully qualified path: <code>obscura::events::NewNullifier::nullifier</code></p>
+<pre><code class="language-rust">pub nullifier: u256</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="publickey"><a class="header" href="#publickey">PublicKey</a></h1>
+<p>Event emitted when a user registers their public key.This event is emitted when a user registers their account in the privacy system. It provides transparency about user registration while maintaining the privacy of their transactions.  # Registration Process - Users must register before they can receive encrypted outputs - The public key is used for encrypted communication - Only the account owner can register their own account  # Privacy Features - The public key is necessary for encrypted communication - Registration does not reveal transaction history or balances - Enables privacy-preserving communication between users</p>
+<p>Fully qualified path: <code>obscura::events::PublicKey</code></p>
+<pre><code class="language-rust">#[derive(Drop, starknet::Event)]
+pub struct PublicKey {
+    #[key]
+    pub owner: ContractAddress,
+    pub key: ByteArray,
+}</code></pre>
+<h2 id="members-3"><a class="header" href="#members-3">Members</a></h2>
+<h3 id="owner"><a class="header" href="#owner">owner</a></h3>
+<p>The owner's contract address that controls this account. This is the key field used for indexing and querying events.</p>
+<p>Fully qualified path: <code>obscura::events::PublicKey::owner</code></p>
+<pre><code class="language-rust">pub owner: ContractAddress</code></pre>
+<h3 id="key"><a class="header" href="#key">key</a></h3>
+<p>The public key used for encrypted communication. Used to encrypt transaction outputs and verify transaction signatures.</p>
+<p>Fully qualified path: <code>obscura::events::PublicKey::key</code></p>
+<pre><code class="language-rust">pub key: ByteArray</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="iobscuradispatcher"><a class="header" href="#iobscuradispatcher">IObscuraDispatcher</a></h1>
+<p>Fully qualified path: <code>obscura::interface::IObscuraDispatcher</code></p>
+<pre><code class="language-rust">#[derive(Copy, Drop, starknet::Store, Serde)]
+pub struct IObscuraDispatcher {
+    pub contract_address: starknet::ContractAddress,
+}</code></pre>
+<h2 id="members-4"><a class="header" href="#members-4">Members</a></h2>
+<h3 id="contract_address"><a class="header" href="#contract_address">contract_address</a></h3>
+<p>Fully qualified path: <code>obscura::interface::IObscuraDispatcher::contract_address</code></p>
+<pre><code class="language-rust">pub contract_address: starknet::ContractAddress</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="iobscuralibrarydispatcher"><a class="header" href="#iobscuralibrarydispatcher">IObscuraLibraryDispatcher</a></h1>
+<p>Fully qualified path: <code>obscura::interface::IObscuraLibraryDispatcher</code></p>
+<pre><code class="language-rust">#[derive(Copy, Drop, starknet::Store, Serde)]
+pub struct IObscuraLibraryDispatcher {
+    pub class_hash: starknet::ClassHash,
+}</code></pre>
+<h2 id="members-5"><a class="header" href="#members-5">Members</a></h2>
+<h3 id="class_hash"><a class="header" href="#class_hash">class_hash</a></h3>
+<p>Fully qualified path: <code>obscura::interface::IObscuraLibraryDispatcher::class_hash</code></p>
+<pre><code class="language-rust">pub class_hash: starknet::ClassHash</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="iobscurasafelibrarydispatcher"><a class="header" href="#iobscurasafelibrarydispatcher">IObscuraSafeLibraryDispatcher</a></h1>
+<p>Fully qualified path: <code>obscura::interface::IObscuraSafeLibraryDispatcher</code></p>
+<pre><code class="language-rust">#[derive(Copy, Drop, starknet::Store, Serde)]
+pub struct IObscuraSafeLibraryDispatcher {
+    pub class_hash: starknet::ClassHash,
+}</code></pre>
+<h2 id="members-6"><a class="header" href="#members-6">Members</a></h2>
+<h3 id="class_hash-1"><a class="header" href="#class_hash-1">class_hash</a></h3>
+<p>Fully qualified path: <code>obscura::interface::IObscuraSafeLibraryDispatcher::class_hash</code></p>
+<pre><code class="language-rust">pub class_hash: starknet::ClassHash</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="iobscurasafedispatcher"><a class="header" href="#iobscurasafedispatcher">IObscuraSafeDispatcher</a></h1>
+<p>Fully qualified path: <code>obscura::interface::IObscuraSafeDispatcher</code></p>
+<pre><code class="language-rust">#[derive(Copy, Drop, starknet::Store, Serde)]
+pub struct IObscuraSafeDispatcher {
+    pub contract_address: starknet::ContractAddress,
+}</code></pre>
+<h2 id="members-7"><a class="header" href="#members-7">Members</a></h2>
+<h3 id="contract_address-1"><a class="header" href="#contract_address-1">contract_address</a></h3>
+<p>Fully qualified path: <code>obscura::interface::IObscuraSafeDispatcher::contract_address</code></p>
+<pre><code class="language-rust">pub contract_address: starknet::ContractAddress</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="contractstate"><a class="header" href="#contractstate">ContractState</a></h1>
+<p>Fully qualified path: <code>obscura::obscura::Obscura::ContractState</code></p>
+<pre><code class="language-rust">pub struct ContractState {
+    #[substorage(v0)]
+    ownable: OwnableComponent::ComponentState&lt;ContractState&gt;,
+}</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="merkletreewithhistory"><a class="header" href="#merkletreewithhistory">MerkleTreeWithHistory</a></h1>
+<p>A Merkle tree with history for storing and managing commitments in the privacy system.This structure implements a sparse Merkle tree that maintains a history of recent roots to enable privacy-preserving transaction verification while preventing double-spending.  # Components - <code>levels</code>: The depth of the Merkle tree (number of levels) - <code>filled_subtrees</code>: Intermediate hashes of subtree roots at each level - <code>roots</code>: Historical Merkle roots for verification - <code>current_root_index</code>: Index of the current active root - <code>next_index</code>: Next available index for inserting new leaves - <code>zeros</code>: Precomputed zero hashes for empty nodes at each level  # Privacy Features - Maintains commitment history without revealing individual transactions - Enables zero-knowledge proof verification against recent state - Prevents double-spending through nullifier tracking</p>
+<p>Fully qualified path: <code>obscura::structs::MerkleTreeWithHistory</code></p>
+<pre><code class="language-rust">#[starknet::storage_node]
+pub struct MerkleTreeWithHistory {
+    pub levels: u32,
+    pub filled_subtrees: Vec&lt;u256&gt;,
+    pub roots: Vec&lt;u256&gt;,
+    pub current_root_index: u32,
+    pub next_index: u32,
+    pub zeros: Vec&lt;u256&gt;,
+}</code></pre>
+<h2 id="members-8"><a class="header" href="#members-8">Members</a></h2>
+<h3 id="levels"><a class="header" href="#levels">levels</a></h3>
+<p>The depth of the Merkle tree (number of levels). Determines the maximum number of commitments that can be stored.</p>
+<p>Fully qualified path: <code>obscura::structs::MerkleTreeWithHistory::levels</code></p>
+<pre><code class="language-rust">pub levels: u32</code></pre>
+<h3 id="filled_subtrees"><a class="header" href="#filled_subtrees">filled_subtrees</a></h3>
+<p>Stores intermediate hashes of subtree roots at each level. Used for efficient Merkle tree updates and proof generation.</p>
+<p>Fully qualified path: <code>obscura::structs::MerkleTreeWithHistory::filled_subtrees</code></p>
+<pre><code class="language-rust">pub filled_subtrees: Vec&lt;u256&gt;</code></pre>
+<h3 id="roots"><a class="header" href="#roots">roots</a></h3>
+<p>Stores the historical Merkle roots for transaction verification. Allows verification against recent state while maintaining privacy.</p>
+<p>Fully qualified path: <code>obscura::structs::MerkleTreeWithHistory::roots</code></p>
+<pre><code class="language-rust">pub roots: Vec&lt;u256&gt;</code></pre>
+<h3 id="current_root_index"><a class="header" href="#current_root_index">current_root_index</a></h3>
+<p>Tracks the index of the current Merkle root in the circular buffer. Used for efficient root rotation and history management.</p>
+<p>Fully qualified path: <code>obscura::structs::MerkleTreeWithHistory::current_root_index</code></p>
+<pre><code class="language-rust">pub current_root_index: u32</code></pre>
+<h3 id="next_index"><a class="header" href="#next_index">next_index</a></h3>
+<p>Tracks the next available index for inserting a new leaf. Ensures sequential insertion and proper tree structure.</p>
+<p>Fully qualified path: <code>obscura::structs::MerkleTreeWithHistory::next_index</code></p>
+<pre><code class="language-rust">pub next_index: u32</code></pre>
+<h3 id="zeros"><a class="header" href="#zeros">zeros</a></h3>
+<p>Precomputed zero hashes for empty nodes at each level. Optimizes Merkle tree operations by avoiding repeated hash calculations.</p>
+<p>Fully qualified path: <code>obscura::structs::MerkleTreeWithHistory::zeros</code></p>
+<pre><code class="language-rust">pub zeros: Vec&lt;u256&gt;</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="extdata"><a class="header" href="#extdata">ExtData</a></h1>
+<p>External data associated with a privacy-preserving transaction.This structure contains the public information that must be revealed for a transaction to be processed, while keeping the actual amounts and recipients private through zero-knowledge proofs.  # Privacy Model - <code>recipient</code> and <code>ext_amount</code> are public for deposit/withdrawal operations - Internal transfers remain completely private - <code>encrypted_output</code> contains private transaction details</p>
+<p>Fully qualified path: <code>obscura::structs::ExtData</code></p>
+<pre><code class="language-rust">#[derive(Debug, Drop, PartialEq, Serde)]
+pub struct ExtData {
+    pub recipient: ContractAddress,
+    pub ext_amount: I256,
+    pub relayer: ContractAddress,
+    pub fee: u256,
+    pub encrypted_output1: ByteArray,
+    pub encrypted_output2: ByteArray,
+}</code></pre>
+<h2 id="members-9"><a class="header" href="#members-9">Members</a></h2>
+<h3 id="recipient"><a class="header" href="#recipient">recipient</a></h3>
+<p>The recipient address for withdrawals or the contract address for deposits. Must be a valid Starknet contract address.</p>
+<p>Fully qualified path: <code>obscura::structs::ExtData::recipient</code></p>
+<pre><code class="language-rust">pub recipient: ContractAddress</code></pre>
+<h3 id="ext_amount"><a class="header" href="#ext_amount">ext_amount</a></h3>
+<p>The external amount for deposit (positive) or withdrawal (negative). This value is public and used for token transfers.</p>
+<p>Fully qualified path: <code>obscura::structs::ExtData::ext_amount</code></p>
+<pre><code class="language-rust">pub ext_amount: I256</code></pre>
+<h3 id="relayer"><a class="header" href="#relayer">relayer</a></h3>
+<p>The relayer address that will receive the transaction fee. Incentivizes transaction processing and network maintenance.</p>
+<p>Fully qualified path: <code>obscura::structs::ExtData::relayer</code></p>
+<pre><code class="language-rust">pub relayer: ContractAddress</code></pre>
+<h3 id="fee"><a class="header" href="#fee">fee</a></h3>
+<p>The fee amount paid to the relayer for processing the transaction. Must be within the system's fee limits.</p>
+<p>Fully qualified path: <code>obscura::structs::ExtData::fee</code></p>
+<pre><code class="language-rust">pub fee: u256</code></pre>
+<h3 id="encrypted_output1"><a class="header" href="#encrypted_output1">encrypted_output1</a></h3>
+<p>Encrypted output data for the first commitment. Contains private transaction details that only the recipient can decrypt.</p>
+<p>Fully qualified path: <code>obscura::structs::ExtData::encrypted_output1</code></p>
+<pre><code class="language-rust">pub encrypted_output1: ByteArray</code></pre>
+<h3 id="encrypted_output2"><a class="header" href="#encrypted_output2">encrypted_output2</a></h3>
+<p>Encrypted output data for the second commitment. Contains private transaction details that only the recipient can decrypt.</p>
+<p>Fully qualified path: <code>obscura::structs::ExtData::encrypted_output2</code></p>
+<pre><code class="language-rust">pub encrypted_output2: ByteArray</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="proof"><a class="header" href="#proof">Proof</a></h1>
+<p>Zero-knowledge proof data for validating a privacy-preserving transaction.This structure contains all the cryptographic proof elements needed to verify that a transaction is valid without revealing private information.  # Cryptographic Components - <code>proof</code>: The zero-knowledge proof demonstrating transaction validity - <code>root</code>: The Merkle root that the transaction is based on - <code>input_nullifiers</code>: Nullifiers proving input ownership and preventing double-spending - <code>output_commitments</code>: New commitments for the transaction outputs - <code>public_amount</code>: The public amount that must be consistent with external data - <code>ext_data_hash</code>: Hash of external data for consistency verification</p>
+<p>Fully qualified path: <code>obscura::structs::Proof</code></p>
+<pre><code class="language-rust">#[derive(Debug, Drop, PartialEq, Serde)]
+pub struct Proof {
+    pub proof: Span&lt;felt252&gt;,
+    pub root: u256,
+    pub input_nullifiers: Array&lt;u256&gt;,
+    pub output_commitments: Array&lt;u256&gt;,
+    pub public_amount: u256,
+    pub ext_data_hash: u256,
+}</code></pre>
+<h2 id="members-10"><a class="header" href="#members-10">Members</a></h2>
+<h3 id="proof-1"><a class="header" href="#proof-1">proof</a></h3>
+<p>The zero-knowledge proof demonstrating the validity of the transaction. Verified by the external proof verifier contract.</p>
+<p>Fully qualified path: <code>obscura::structs::Proof::proof</code></p>
+<pre><code class="language-rust">pub proof: Span&lt;felt252&gt;</code></pre>
+<h3 id="root"><a class="header" href="#root">root</a></h3>
+<p>The Merkle root that the transaction inputs are based on. Must be a known root from the recent history.</p>
+<p>Fully qualified path: <code>obscura::structs::Proof::root</code></p>
+<pre><code class="language-rust">pub root: u256</code></pre>
+<h3 id="input_nullifiers"><a class="header" href="#input_nullifiers">input_nullifiers</a></h3>
+<p>Nullifiers for the input commitments, proving ownership and preventing double-spending. Each nullifier can only be used once and reveals no information about the input.</p>
+<p>Fully qualified path: <code>obscura::structs::Proof::input_nullifiers</code></p>
+<pre><code class="language-rust">pub input_nullifiers: Array&lt;u256&gt;</code></pre>
+<h3 id="output_commitments"><a class="header" href="#output_commitments">output_commitments</a></h3>
+<p>New commitments for the transaction outputs. These will be inserted into the Merkle tree after verification.</p>
+<p>Fully qualified path: <code>obscura::structs::Proof::output_commitments</code></p>
+<pre><code class="language-rust">pub output_commitments: Array&lt;u256&gt;</code></pre>
+<h3 id="public_amount"><a class="header" href="#public_amount">public_amount</a></h3>
+<p>The public amount that must be consistent with the external data. Calculated as ext_amount - fee and used for zero-knowledge proof verification.</p>
+<p>Fully qualified path: <code>obscura::structs::Proof::public_amount</code></p>
+<pre><code class="language-rust">pub public_amount: u256</code></pre>
+<h3 id="ext_data_hash"><a class="header" href="#ext_data_hash">ext_data_hash</a></h3>
+<p>Hash of the external data for consistency verification. Ensures the proof corresponds to the provided external data.</p>
+<p>Fully qualified path: <code>obscura::structs::Proof::ext_data_hash</code></p>
+<pre><code class="language-rust">pub ext_data_hash: u256</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="account"><a class="header" href="#account">Account</a></h1>
+<p>Account information for user registration in the privacy system.This structure contains the public information needed to identify and communicate with users in the privacy-preserving system.  # Registration Process - Users register their public key with the contract - The public key is used for encrypted communication - Only the owner can register their own account</p>
+<p>Fully qualified path: <code>obscura::structs::Account</code></p>
+<pre><code class="language-rust">#[derive(Debug, Drop, PartialEq, Serde)]
+pub struct Account {
+    pub owner: ContractAddress,
+    pub public_key: ByteArray,
+}</code></pre>
+<h2 id="members-11"><a class="header" href="#members-11">Members</a></h2>
+<h3 id="owner-1"><a class="header" href="#owner-1">owner</a></h3>
+<p>The owner's contract address that controls this account. Must match the caller's address during registration.</p>
+<p>Fully qualified path: <code>obscura::structs::Account::owner</code></p>
+<pre><code class="language-rust">pub owner: ContractAddress</code></pre>
+<h3 id="public_key"><a class="header" href="#public_key">public_key</a></h3>
+<p>The public key used for encrypted communication and transaction verification. Used to encrypt transaction outputs and verify transaction signatures.</p>
+<p>Fully qualified path: <code>obscura::structs::Account::public_key</code></p>
+<pre><code class="language-rust">pub public_key: ByteArray</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="enums-1"><a class="header" href="#enums-1">Enums</a></h1>
+<ul>
+<li><a href="./obscura-obscura-Obscura-Event.html">Event</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="event"><a class="header" href="#event">Event</a></h1>
+<p>Event definitions for the Obscura contract.These events provide transparency about contract operations while maintaining the privacy of individual transactions.</p>
+<p>Fully qualified path: <code>obscura::obscura::Obscura::Event</code></p>
+<pre><code class="language-rust">#[event]
+#[derive(Drop, starknet::Event)]
+pub enum Event {
+    NewCommitment: NewCommitment,
+    NewNullifier: NewNullifier,
+    PublicKey: PublicKey,
+    #[flat]
+    OwnableEvent: OwnableComponent::Event,
+}</code></pre>
+<h2 id="variants"><a class="header" href="#variants">Variants</a></h2>
+<h3 id="newcommitment-1"><a class="header" href="#newcommitment-1">NewCommitment</a></h3>
+<p>Emitted when a new commitment is added to the Merkle tree.</p>
+<p>Fully qualified path: <code>obscura::obscura::Obscura::Event::NewCommitment</code></p>
+<pre><code class="language-rust">NewCommitment : NewCommitment</code></pre>
+<h3 id="newnullifier-1"><a class="header" href="#newnullifier-1">NewNullifier</a></h3>
+<p>Emitted when a nullifier is used to spend an input.</p>
+<p>Fully qualified path: <code>obscura::obscura::Obscura::Event::NewNullifier</code></p>
+<pre><code class="language-rust">NewNullifier : NewNullifier</code></pre>
+<h3 id="publickey-1"><a class="header" href="#publickey-1">PublicKey</a></h3>
+<p>Emitted when a user registers their public key.</p>
+<p>Fully qualified path: <code>obscura::obscura::Obscura::Event::PublicKey</code></p>
+<pre><code class="language-rust">PublicKey : PublicKey</code></pre>
+<h3 id="ownableevent"><a class="header" href="#ownableevent">OwnableEvent</a></h3>
+<p>Ownable component events for access control.</p>
+<p>Fully qualified path: <code>obscura::obscura::Obscura::Event::OwnableEvent</code></p>
+<pre><code class="language-rust">#[flat]
+OwnableEvent : OwnableComponent :: Event</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="traits-2"><a class="header" href="#traits-2">Traits</a></h1>
+<ul>
+<li>
+<p><a href="./obscura-custom_type-i256-I256Trait.html">I256Trait</a></p>
+</li>
+<li>
+<p><a href="./obscura-interface-IObscura.html">IObscura</a></p>
+</li>
+<li>
+<p><a href="./obscura-interface-IObscuraDispatcherTrait.html">IObscuraDispatcherTrait</a></p>
+</li>
+<li>
+<p><a href="./obscura-interface-IObscuraSafeDispatcherTrait.html">IObscuraSafeDispatcherTrait</a></p>
+</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="i256trait"><a class="header" href="#i256trait">I256Trait</a></h1>
+<p>Trait providing common operations for I256 values.This trait defines basic operations like creating a zero value and can be extended with additional utility functions.</p>
+<p>Fully qualified path: <code>obscura::custom_type::i256::I256Trait</code></p>
+<pre><code class="language-rust">pub trait I256Trait</code></pre>
+<h2 id="trait-functions"><a class="header" href="#trait-functions">Trait functions</a></h2>
+<h3 id="zero"><a class="header" href="#zero">zero</a></h3>
+<p>Creates a new I256 representing zero.  # Returns * An I256 with value 0 and is_negative = false  # Note Zero is always represented as positive to maintain consistency.</p>
+<p>Fully qualified path: <code>obscura::custom_type::i256::I256Trait::zero</code></p>
+<pre><code class="language-rust">fn zero() -&gt; I256</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="iobscura"><a class="header" href="#iobscura">IObscura</a></h1>
+<p>External interface for the Obscura privacy-preserving smart contract.This trait defines all the public functions that can be called on the Obscura contract. It provides a complete API for privacy-preserving transactions, account management, and system configuration.</p>
+<p>Fully qualified path: <code>obscura::interface::IObscura</code></p>
+<pre><code class="language-rust">pub trait IObscura&lt;TContractState&gt;</code></pre>
+<h2 id="trait-functions-1"><a class="header" href="#trait-functions-1">Trait functions</a></h2>
+<h3 id="register"><a class="header" href="#register">register</a></h3>
+<p>Registers a new account in the privacy system.This function allows users to register their public key for encrypted communication. Only the owner of the account can register it, ensuring proper key management.  # Arguments * <code>account</code> - The account information containing owner address and public key  # Events Emits a <code>PublicKey</code> event with the registered account information.  # Security - Only the account owner can register their own account - Public key is stored for encrypted communication</p>
+<p>Fully qualified path: <code>obscura::interface::IObscura::register</code></p>
+<pre><code class="language-rust">fn register(ref self: TContractState, account: Account)</code></pre>
+<h3 id="transact"><a class="header" href="#transact">transact</a></h3>
+<p>Executes a privacy-preserving transaction using zero-knowledge proofs.This is the core function for privacy-preserving transactions. It verifies zero-knowledge proofs, processes token transfers, and updates the Merkle tree.  # Arguments * <code>args</code> - The zero-knowledge proof and transaction data * <code>ext_data</code> - External data for deposits/withdrawals and fee handling  # Process 1. Verifies the zero-knowledge proof is valid 2. Checks that input nullifiers haven't been spent 3. Processes external token transfers (deposits/withdrawals) 4. Updates the Merkle tree with new commitments 5. Emits events for commitments and nullifiers  # Security - All cryptographic proofs are verified externally - Double-spending is prevented through nullifier tracking - External data consistency is enforced</p>
+<p>Fully qualified path: <code>obscura::interface::IObscura::transact</code></p>
+<pre><code class="language-rust">fn transact(ref self: TContractState, args: Proof, ext_data: ExtData)</code></pre>
+<h3 id="register_and_transact"><a class="header" href="#register_and_transact">register_and_transact</a></h3>
+<p>Combines account registration and transaction execution in a single call.This convenience function allows new users to register and immediately perform their first privacy-preserving transaction.  # Arguments * <code>account</code> - The account information to register * <code>args</code> - The zero-knowledge proof and transaction data * <code>ext_data</code> - External data for deposits/withdrawals and fee handling  # Process 1. Registers the account (equivalent to calling <code>register</code>) 2. Executes the transaction (equivalent to calling <code>transact</code>)  # Use Case - Optimizes gas usage for new users - Reduces the number of required transactions</p>
+<p>Fully qualified path: <code>obscura::interface::IObscura::register_and_transact</code></p>
+<pre><code class="language-rust">fn register_and_transact(ref self: TContractState, account: Account, args: Proof, ext_data: ExtData)</code></pre>
+<h3 id="configure_limits"><a class="header" href="#configure_limits">configure_limits</a></h3>
+<p>Configures system limits and parameters (owner-only function).This administrative function allows the contract owner to update system parameters such as maximum deposit amounts.  # Arguments * <code>maximum_deposit_amount</code> - The new maximum amount allowed for deposits  # Access Control - Only the contract owner can call this function - Used for system maintenance and parameter updates</p>
+<p>Fully qualified path: <code>obscura::interface::IObscura::configure_limits</code></p>
+<pre><code class="language-rust">fn configure_limits(ref self: TContractState, maximum_deposit_amount: u256)</code></pre>
+<h3 id="calculate_public_amount"><a class="header" href="#calculate_public_amount">calculate_public_amount</a></h3>
+<p>Calculates the public amount for zero-knowledge proof verification.This function computes the public amount that must be consistent with the external data and zero-knowledge proof for transaction validation.  # Arguments * <code>ext_amount</code> - The external amount (positive for deposits, negative for withdrawals) * <code>fee</code> - The transaction fee paid to the relayer  # Returns * The calculated public amount for proof verification  # Formula public_amount = ext_amount - fee (with proper field arithmetic)</p>
+<p>Fully qualified path: <code>obscura::interface::IObscura::calculate_public_amount</code></p>
+<pre><code class="language-rust">fn calculate_public_amount(self: @TContractState, ext_amount: I256, fee: u256) -&gt; u256</code></pre>
+<h3 id="is_spent"><a class="header" href="#is_spent">is_spent</a></h3>
+<p>Checks if a nullifier has already been spent.This function verifies whether a specific nullifier has been used in a previous transaction, preventing double-spending.  # Arguments * <code>nullifier_hash</code> - The nullifier hash to check  # Returns * <code>true</code> if the nullifier has been spent, <code>false</code> otherwise  # Security - Critical for preventing double-spending attacks - Used during transaction verification</p>
+<p>Fully qualified path: <code>obscura::interface::IObscura::is_spent</code></p>
+<pre><code class="language-rust">fn is_spent(self: @TContractState, nullifier_hash: u256) -&gt; bool</code></pre>
+<h3 id="field_size-1"><a class="header" href="#field_size-1">field_size</a></h3>
+<p>Returns the finite field size used in cryptographic operations.This function provides access to the system's mathematical foundation for external verification and compatibility checks.  # Returns * The field size constant used in zero-knowledge proofs</p>
+<p>Fully qualified path: <code>obscura::interface::IObscura::field_size</code></p>
+<pre><code class="language-rust">fn field_size(self: @TContractState) -&gt; u256</code></pre>
+<h3 id="max_ext_amount-1"><a class="header" href="#max_ext_amount-1">max_ext_amount</a></h3>
+<p>Returns the maximum allowed external amount for transactions.This function provides the current system limit for deposits and withdrawals to ensure compliance.  # Returns * The maximum external amount constant</p>
+<p>Fully qualified path: <code>obscura::interface::IObscura::max_ext_amount</code></p>
+<pre><code class="language-rust">fn max_ext_amount(self: @TContractState) -&gt; u256</code></pre>
+<h3 id="min_ext_amount-1"><a class="header" href="#min_ext_amount-1">min_ext_amount</a></h3>
+<p>Returns the minimum allowed external amount for transactions.This function provides the current system minimum for deposits and withdrawals to prevent dust attacks.  # Returns * The minimum external amount constant</p>
+<p>Fully qualified path: <code>obscura::interface::IObscura::min_ext_amount</code></p>
+<pre><code class="language-rust">fn min_ext_amount(self: @TContractState) -&gt; u256</code></pre>
+<h3 id="max_fee-1"><a class="header" href="#max_fee-1">max_fee</a></h3>
+<p>Returns the maximum allowed fee amount for transactions.This function provides the current system limit for transaction fees to prevent economic attacks.  # Returns * The maximum fee constant</p>
+<p>Fully qualified path: <code>obscura::interface::IObscura::max_fee</code></p>
+<pre><code class="language-rust">fn max_fee(self: @TContractState) -&gt; u256</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="iobscuradispatchertrait"><a class="header" href="#iobscuradispatchertrait">IObscuraDispatcherTrait</a></h1>
+<p>Fully qualified path: <code>obscura::interface::IObscuraDispatcherTrait</code></p>
+<pre><code class="language-rust">pub trait IObscuraDispatcherTrait&lt;T&gt;</code></pre>
+<h2 id="trait-functions-2"><a class="header" href="#trait-functions-2">Trait functions</a></h2>
+<h3 id="register-1"><a class="header" href="#register-1">register</a></h3>
+<p>Registers a new account in the privacy system.This function allows users to register their public key for encrypted communication. Only the owner of the account can register it, ensuring proper key management.  # Arguments * <code>account</code> - The account information containing owner address and public key  # Events Emits a <code>PublicKey</code> event with the registered account information.  # Security - Only the account owner can register their own account - Public key is stored for encrypted communication</p>
+<p>Fully qualified path: <code>obscura::interface::IObscuraDispatcherTrait::register</code></p>
+<pre><code class="language-rust">fn register(self: T, account: Account)</code></pre>
+<h3 id="transact-1"><a class="header" href="#transact-1">transact</a></h3>
+<p>Executes a privacy-preserving transaction using zero-knowledge proofs.This is the core function for privacy-preserving transactions. It verifies zero-knowledge proofs, processes token transfers, and updates the Merkle tree.  # Arguments * <code>args</code> - The zero-knowledge proof and transaction data * <code>ext_data</code> - External data for deposits/withdrawals and fee handling  # Process 1. Verifies the zero-knowledge proof is valid 2. Checks that input nullifiers haven't been spent 3. Processes external token transfers (deposits/withdrawals) 4. Updates the Merkle tree with new commitments 5. Emits events for commitments and nullifiers  # Security - All cryptographic proofs are verified externally - Double-spending is prevented through nullifier tracking - External data consistency is enforced</p>
+<p>Fully qualified path: <code>obscura::interface::IObscuraDispatcherTrait::transact</code></p>
+<pre><code class="language-rust">fn transact(self: T, args: Proof, ext_data: ExtData)</code></pre>
+<h3 id="register_and_transact-1"><a class="header" href="#register_and_transact-1">register_and_transact</a></h3>
+<p>Combines account registration and transaction execution in a single call.This convenience function allows new users to register and immediately perform their first privacy-preserving transaction.  # Arguments * <code>account</code> - The account information to register * <code>args</code> - The zero-knowledge proof and transaction data * <code>ext_data</code> - External data for deposits/withdrawals and fee handling  # Process 1. Registers the account (equivalent to calling <code>register</code>) 2. Executes the transaction (equivalent to calling <code>transact</code>)  # Use Case - Optimizes gas usage for new users - Reduces the number of required transactions</p>
+<p>Fully qualified path: <code>obscura::interface::IObscuraDispatcherTrait::register_and_transact</code></p>
+<pre><code class="language-rust">fn register_and_transact(self: T, account: Account, args: Proof, ext_data: ExtData)</code></pre>
+<h3 id="configure_limits-1"><a class="header" href="#configure_limits-1">configure_limits</a></h3>
+<p>Configures system limits and parameters (owner-only function).This administrative function allows the contract owner to update system parameters such as maximum deposit amounts.  # Arguments * <code>maximum_deposit_amount</code> - The new maximum amount allowed for deposits  # Access Control - Only the contract owner can call this function - Used for system maintenance and parameter updates</p>
+<p>Fully qualified path: <code>obscura::interface::IObscuraDispatcherTrait::configure_limits</code></p>
+<pre><code class="language-rust">fn configure_limits(self: T, maximum_deposit_amount: u256)</code></pre>
+<h3 id="calculate_public_amount-1"><a class="header" href="#calculate_public_amount-1">calculate_public_amount</a></h3>
+<p>Calculates the public amount for zero-knowledge proof verification.This function computes the public amount that must be consistent with the external data and zero-knowledge proof for transaction validation.  # Arguments * <code>ext_amount</code> - The external amount (positive for deposits, negative for withdrawals) * <code>fee</code> - The transaction fee paid to the relayer  # Returns * The calculated public amount for proof verification  # Formula public_amount = ext_amount - fee (with proper field arithmetic)</p>
+<p>Fully qualified path: <code>obscura::interface::IObscuraDispatcherTrait::calculate_public_amount</code></p>
+<pre><code class="language-rust">fn calculate_public_amount(self: T, ext_amount: I256, fee: u256) -&gt; u256</code></pre>
+<h3 id="is_spent-1"><a class="header" href="#is_spent-1">is_spent</a></h3>
+<p>Checks if a nullifier has already been spent.This function verifies whether a specific nullifier has been used in a previous transaction, preventing double-spending.  # Arguments * <code>nullifier_hash</code> - The nullifier hash to check  # Returns * <code>true</code> if the nullifier has been spent, <code>false</code> otherwise  # Security - Critical for preventing double-spending attacks - Used during transaction verification</p>
+<p>Fully qualified path: <code>obscura::interface::IObscuraDispatcherTrait::is_spent</code></p>
+<pre><code class="language-rust">fn is_spent(self: T, nullifier_hash: u256) -&gt; bool</code></pre>
+<h3 id="field_size-2"><a class="header" href="#field_size-2">field_size</a></h3>
+<p>Returns the finite field size used in cryptographic operations.This function provides access to the system's mathematical foundation for external verification and compatibility checks.  # Returns * The field size constant used in zero-knowledge proofs</p>
+<p>Fully qualified path: <code>obscura::interface::IObscuraDispatcherTrait::field_size</code></p>
+<pre><code class="language-rust">fn field_size(self: T) -&gt; u256</code></pre>
+<h3 id="max_ext_amount-2"><a class="header" href="#max_ext_amount-2">max_ext_amount</a></h3>
+<p>Returns the maximum allowed external amount for transactions.This function provides the current system limit for deposits and withdrawals to ensure compliance.  # Returns * The maximum external amount constant</p>
+<p>Fully qualified path: <code>obscura::interface::IObscuraDispatcherTrait::max_ext_amount</code></p>
+<pre><code class="language-rust">fn max_ext_amount(self: T) -&gt; u256</code></pre>
+<h3 id="min_ext_amount-2"><a class="header" href="#min_ext_amount-2">min_ext_amount</a></h3>
+<p>Returns the minimum allowed external amount for transactions.This function provides the current system minimum for deposits and withdrawals to prevent dust attacks.  # Returns * The minimum external amount constant</p>
+<p>Fully qualified path: <code>obscura::interface::IObscuraDispatcherTrait::min_ext_amount</code></p>
+<pre><code class="language-rust">fn min_ext_amount(self: T) -&gt; u256</code></pre>
+<h3 id="max_fee-2"><a class="header" href="#max_fee-2">max_fee</a></h3>
+<p>Returns the maximum allowed fee amount for transactions.This function provides the current system limit for transaction fees to prevent economic attacks.  # Returns * The maximum fee constant</p>
+<p>Fully qualified path: <code>obscura::interface::IObscuraDispatcherTrait::max_fee</code></p>
+<pre><code class="language-rust">fn max_fee(self: T) -&gt; u256</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="iobscurasafedispatchertrait"><a class="header" href="#iobscurasafedispatchertrait">IObscuraSafeDispatcherTrait</a></h1>
+<p>Fully qualified path: <code>obscura::interface::IObscuraSafeDispatcherTrait</code></p>
+<pre><code class="language-rust">pub trait IObscuraSafeDispatcherTrait&lt;T&gt;</code></pre>
+<h2 id="trait-functions-3"><a class="header" href="#trait-functions-3">Trait functions</a></h2>
+<h3 id="register-2"><a class="header" href="#register-2">register</a></h3>
+<p>Registers a new account in the privacy system.This function allows users to register their public key for encrypted communication. Only the owner of the account can register it, ensuring proper key management.  # Arguments * <code>account</code> - The account information containing owner address and public key  # Events Emits a <code>PublicKey</code> event with the registered account information.  # Security - Only the account owner can register their own account - Public key is stored for encrypted communication</p>
+<p>Fully qualified path: <code>obscura::interface::IObscuraSafeDispatcherTrait::register</code></p>
+<pre><code class="language-rust">fn register(self: T, account: Account) -&gt; starknet::SyscallResult&lt;()&gt;</code></pre>
+<h3 id="transact-2"><a class="header" href="#transact-2">transact</a></h3>
+<p>Executes a privacy-preserving transaction using zero-knowledge proofs.This is the core function for privacy-preserving transactions. It verifies zero-knowledge proofs, processes token transfers, and updates the Merkle tree.  # Arguments * <code>args</code> - The zero-knowledge proof and transaction data * <code>ext_data</code> - External data for deposits/withdrawals and fee handling  # Process 1. Verifies the zero-knowledge proof is valid 2. Checks that input nullifiers haven't been spent 3. Processes external token transfers (deposits/withdrawals) 4. Updates the Merkle tree with new commitments 5. Emits events for commitments and nullifiers  # Security - All cryptographic proofs are verified externally - Double-spending is prevented through nullifier tracking - External data consistency is enforced</p>
+<p>Fully qualified path: <code>obscura::interface::IObscuraSafeDispatcherTrait::transact</code></p>
+<pre><code class="language-rust">fn transact(self: T, args: Proof, ext_data: ExtData) -&gt; starknet::SyscallResult&lt;()&gt;</code></pre>
+<h3 id="register_and_transact-2"><a class="header" href="#register_and_transact-2">register_and_transact</a></h3>
+<p>Combines account registration and transaction execution in a single call.This convenience function allows new users to register and immediately perform their first privacy-preserving transaction.  # Arguments * <code>account</code> - The account information to register * <code>args</code> - The zero-knowledge proof and transaction data * <code>ext_data</code> - External data for deposits/withdrawals and fee handling  # Process 1. Registers the account (equivalent to calling <code>register</code>) 2. Executes the transaction (equivalent to calling <code>transact</code>)  # Use Case - Optimizes gas usage for new users - Reduces the number of required transactions</p>
+<p>Fully qualified path: <code>obscura::interface::IObscuraSafeDispatcherTrait::register_and_transact</code></p>
+<pre><code class="language-rust">fn register_and_transact(
+    self: T, account: Account, args: Proof, ext_data: ExtData,
+) -&gt; starknet::SyscallResult&lt;()&gt;</code></pre>
+<h3 id="configure_limits-2"><a class="header" href="#configure_limits-2">configure_limits</a></h3>
+<p>Configures system limits and parameters (owner-only function).This administrative function allows the contract owner to update system parameters such as maximum deposit amounts.  # Arguments * <code>maximum_deposit_amount</code> - The new maximum amount allowed for deposits  # Access Control - Only the contract owner can call this function - Used for system maintenance and parameter updates</p>
+<p>Fully qualified path: <code>obscura::interface::IObscuraSafeDispatcherTrait::configure_limits</code></p>
+<pre><code class="language-rust">fn configure_limits(self: T, maximum_deposit_amount: u256) -&gt; starknet::SyscallResult&lt;()&gt;</code></pre>
+<h3 id="calculate_public_amount-2"><a class="header" href="#calculate_public_amount-2">calculate_public_amount</a></h3>
+<p>Calculates the public amount for zero-knowledge proof verification.This function computes the public amount that must be consistent with the external data and zero-knowledge proof for transaction validation.  # Arguments * <code>ext_amount</code> - The external amount (positive for deposits, negative for withdrawals) * <code>fee</code> - The transaction fee paid to the relayer  # Returns * The calculated public amount for proof verification  # Formula public_amount = ext_amount - fee (with proper field arithmetic)</p>
+<p>Fully qualified path: <code>obscura::interface::IObscuraSafeDispatcherTrait::calculate_public_amount</code></p>
+<pre><code class="language-rust">fn calculate_public_amount(self: T, ext_amount: I256, fee: u256) -&gt; starknet::SyscallResult&lt;u256&gt;</code></pre>
+<h3 id="is_spent-2"><a class="header" href="#is_spent-2">is_spent</a></h3>
+<p>Checks if a nullifier has already been spent.This function verifies whether a specific nullifier has been used in a previous transaction, preventing double-spending.  # Arguments * <code>nullifier_hash</code> - The nullifier hash to check  # Returns * <code>true</code> if the nullifier has been spent, <code>false</code> otherwise  # Security - Critical for preventing double-spending attacks - Used during transaction verification</p>
+<p>Fully qualified path: <code>obscura::interface::IObscuraSafeDispatcherTrait::is_spent</code></p>
+<pre><code class="language-rust">fn is_spent(self: T, nullifier_hash: u256) -&gt; starknet::SyscallResult&lt;bool&gt;</code></pre>
+<h3 id="field_size-3"><a class="header" href="#field_size-3">field_size</a></h3>
+<p>Returns the finite field size used in cryptographic operations.This function provides access to the system's mathematical foundation for external verification and compatibility checks.  # Returns * The field size constant used in zero-knowledge proofs</p>
+<p>Fully qualified path: <code>obscura::interface::IObscuraSafeDispatcherTrait::field_size</code></p>
+<pre><code class="language-rust">fn field_size(self: T) -&gt; starknet::SyscallResult&lt;u256&gt;</code></pre>
+<h3 id="max_ext_amount-3"><a class="header" href="#max_ext_amount-3">max_ext_amount</a></h3>
+<p>Returns the maximum allowed external amount for transactions.This function provides the current system limit for deposits and withdrawals to ensure compliance.  # Returns * The maximum external amount constant</p>
+<p>Fully qualified path: <code>obscura::interface::IObscuraSafeDispatcherTrait::max_ext_amount</code></p>
+<pre><code class="language-rust">fn max_ext_amount(self: T) -&gt; starknet::SyscallResult&lt;u256&gt;</code></pre>
+<h3 id="min_ext_amount-3"><a class="header" href="#min_ext_amount-3">min_ext_amount</a></h3>
+<p>Returns the minimum allowed external amount for transactions.This function provides the current system minimum for deposits and withdrawals to prevent dust attacks.  # Returns * The minimum external amount constant</p>
+<p>Fully qualified path: <code>obscura::interface::IObscuraSafeDispatcherTrait::min_ext_amount</code></p>
+<pre><code class="language-rust">fn min_ext_amount(self: T) -&gt; starknet::SyscallResult&lt;u256&gt;</code></pre>
+<h3 id="max_fee-3"><a class="header" href="#max_fee-3">max_fee</a></h3>
+<p>Returns the maximum allowed fee amount for transactions.This function provides the current system limit for transaction fees to prevent economic attacks.  # Returns * The maximum fee constant</p>
+<p>Fully qualified path: <code>obscura::interface::IObscuraSafeDispatcherTrait::max_fee</code></p>
+<pre><code class="language-rust">fn max_fee(self: T) -&gt; starknet::SyscallResult&lt;u256&gt;</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+            </nav>
+
+        </div>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        <script>
+            const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsAddress = wsProtocol + "//" + location.host + "/" + "__livereload";
+            const socket = new WebSocket(wsAddress);
+            socket.onmessage = function (event) {
+                if (event.data === "reload") {
+                    socket.close();
+                    location.reload();
+                }
+            };
+
+            window.onbeforeunload = function() {
+                socket.close();
+            }
+        </script>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+        <script>
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+
+    </div>
+    </body>
+</html>
