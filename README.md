@@ -44,7 +44,7 @@ Configure `.env` from `.env.example`.
 
 ## 🔗 Links
 - 🧑‍💻 Code: [https://github.com/truthixify/obscura](https://github.com/truthixify/obscura)
-- MDBOOK documentation: [https://truthixify.github.io/obscura/](https://truthixify.github.io/obscura/)
+- 📖 MDBOOK documentation: [https://truthixify.github.io/obscura/](https://truthixify.github.io/obscura/)
 - 🌐 App: [https://obscura-app.vercel.app](https://obscura-app.vercel.app)
 - 📹 Demo: [https://www.youtube.com/watch?v=vVEz_tNnDgM](https://www.youtube.com/watch?v=vVEz_tNnDgM)
 
