@@ -12,6 +12,7 @@
 //! - **Validation Errors**: Input validation and constraint violations
 //! - **Cryptographic Errors**: Proof verification and security issues
 //! - **System Errors**: Operational and state-related issues
+//! - **Token Management Errors**: Multitoken system validation and management issues
 
 /// Error message for unauthorized account registration attempts.
 ///
@@ -69,7 +70,7 @@ pub const ERROR_INPUT_ALREADY_SPENT: felt252 = 'Input is already spent';
 /// # Resolution
 /// - Use a valid, non-zero recipient address
 /// - Ensure the recipient address is properly formatted
-pub const ERROR_ZERO_ADDRESS: felt252 = 'Invalid cannot be address';
+pub const ERROR_ZERO_ADDRESS: felt252 = 'Address cannot be zero';
 
 /// Error message for invalid fee amounts.
 ///
@@ -188,3 +189,79 @@ pub const ERROR_INVALID_TRANSACTION_PROOF: felt252 = 'Invalid transaction proof'
 /// - Reduce deposit amount to within limits
 /// - Split large deposits into smaller transactions
 pub const ERROR_AMOUNT_LARGER_THAN_MAXIMUM_DEPOSIT: felt252 = 'Deposit amount is too large';
+
+/// Error message for attempting to add a token that is already whitelisted.
+///
+/// This error is thrown when trying to add an ERC20 token to the whitelist
+/// that has already been added previously.
+///
+/// # When Thrown
+/// - Token address is already in the whitelist
+/// - Attempting to add a duplicate token
+/// - Token is already marked as allowed
+///
+/// # Resolution
+/// - Check if the token is already supported before adding
+/// - Use the `is_token_allowed` function to verify token status
+pub const ERROR_TOKEN_ALREADY_WHITELISTED: felt252 = 'Token already whitelisted';
+
+/// Error message for attempting to use or remove a token that is not whitelisted.
+///
+/// This error is thrown when trying to use a token in transactions or
+/// remove a token that is not currently in the whitelist.
+///
+/// # When Thrown
+/// - Token address is not in the whitelist
+/// - Attempting to transact with an unsupported token
+/// - Trying to remove a token that was never added
+///
+/// # Resolution
+/// - Ensure the token is whitelisted before use
+/// - Check supported tokens using `get_all_tokens` or `is_token_allowed`
+/// - Add the token to the whitelist if needed (owner-only)
+pub const ERROR_TOKEN_NOT_WHITELISTED: felt252 = 'Token not in whitelist';
+
+/// Error message for operations with zero amounts.
+///
+/// This error is thrown when attempting to perform token operations
+/// (such as rescue) with a zero amount, which is not meaningful.
+///
+/// # When Thrown
+/// - Rescue amount is zero
+/// - Token transfer amount is zero
+/// - Invalid amount parameter in token operations
+///
+/// # Resolution
+/// - Use a positive, non-zero amount for token operations
+/// - Ensure amount calculations are correct
+pub const ERROR_AMOUNT_CANNOT_BE_ZERO: felt252 = 'Amount cannot be zero';
+
+/// Error message for attempting to remove no tokens.
+///
+/// This error is thrown when trying to remove no tokens from the whitelist.
+///
+/// # When Thrown
+/// - No tokens specified for removal
+/// - Attempting to remove an empty list of tokens
+/// - Empty token array provided
+///
+/// # Resolution
+/// - Specify at least one token for removal
+/// - Ensure the token array is not empty
+/// - Check the list of tokens to remove before calling the function
+pub const ERROR_NO_TOKENS_TO_REMOVE: felt252 = 'No tokens to remove';
+
+/// Error message for attempting to add too many tokens.
+///
+/// This error is thrown when trying to add more tokens than the maximum allowed.
+///
+/// # When Thrown
+/// - Number of tokens to add exceeds MAX_TOKENS
+/// - Attempting to add more than the maximum allowed tokens
+/// - Token count exceeds the system limit
+///
+/// # Resolution
+/// - Reduce the number of tokens to add
+/// - Consider adding tokens in batches
+/// - Check the maximum token limit before adding
+pub const ERROR_MAX_TOKENS_REACHED: felt252 = 'Maximum tokens reached';

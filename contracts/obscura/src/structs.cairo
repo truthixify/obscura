@@ -1,9 +1,9 @@
 //! # Data Structures Module
 //!
 //! This module defines the core data structures used throughout the Obscura privacy-preserving
-//! contract.
+//! contract with multitoken support.
 //! These structures represent the fundamental components of the privacy system including Merkle
-//! trees, transaction proofs, and account information.
+//! trees, transaction proofs, account information, and multitoken management.
 
 use starknet::ContractAddress;
 use starknet::storage::Vec;
@@ -48,29 +48,31 @@ pub struct MerkleTreeWithHistory {
     pub zeros: Vec<u256>,
 }
 
-/// External data associated with a privacy-preserving transaction.
+/// External data associated with a privacy-preserving transaction with multitoken support.
 ///
 /// This structure contains the public information that must be revealed
 /// for a transaction to be processed, while keeping the actual amounts
-/// and recipients private through zero-knowledge proofs.
+/// and recipients private through zero-knowledge proofs. The transaction
+/// can involve any whitelisted ERC20 token.
 ///
 /// # Privacy Model
 /// - `recipient` and `ext_amount` are public for deposit/withdrawal operations
 /// - Internal transfers remain completely private
 /// - `encrypted_output` contains private transaction details
+/// - Token selection is handled separately via the transaction function parameter
 #[derive(Debug, Drop, PartialEq, Serde)]
 pub struct ExtData {
     /// The recipient address for withdrawals or the contract address for deposits.
     /// Must be a valid Starknet contract address.
     pub recipient: ContractAddress,
     /// The external amount for deposit (positive) or withdrawal (negative).
-    /// This value is public and used for token transfers.
+    /// This value is public and used for token transfers of the specified ERC20 token.
     pub ext_amount: I256,
     /// The relayer address that will receive the transaction fee.
     /// Incentivizes transaction processing and network maintenance.
     pub relayer: ContractAddress,
     /// The fee amount paid to the relayer for processing the transaction.
-    /// Must be within the system's fee limits.
+    /// Must be within the system's fee limits and paid in the same token as the transaction.
     pub fee: u256,
     /// Encrypted output data for the first commitment.
     /// Contains private transaction details that only the recipient can decrypt.
@@ -80,10 +82,12 @@ pub struct ExtData {
     pub encrypted_output2: ByteArray,
 }
 
-/// Zero-knowledge proof data for validating a privacy-preserving transaction.
+/// Zero-knowledge proof data for validating a privacy-preserving transaction with multitoken
+/// support.
 ///
 /// This structure contains all the cryptographic proof elements needed to
 /// verify that a transaction is valid without revealing private information.
+/// The proof is token-agnostic and works with any whitelisted ERC20 token.
 ///
 /// # Cryptographic Components
 /// - `proof`: The zero-knowledge proof demonstrating transaction validity
@@ -92,6 +96,11 @@ pub struct ExtData {
 /// - `output_commitments`: New commitments for the transaction outputs
 /// - `public_amount`: The public amount that must be consistent with external data
 /// - `ext_data_hash`: Hash of external data for consistency verification
+///
+/// # Multitoken Compatibility
+/// - The proof structure is independent of the specific token being used
+/// - Token validation occurs at the contract level through the whitelist system
+/// - Same proof format works for all supported ERC20 tokens
 #[derive(Debug, Drop, PartialEq, Serde)]
 pub struct Proof {
     /// The zero-knowledge proof demonstrating the validity of the transaction.

@@ -1,7 +1,7 @@
 //! # Constants Module
 //!
 //! This module defines system-wide constants used throughout the Obscura privacy-preserving
-//! contract.
+//! contract with multitoken support.
 //! These constants establish the mathematical foundations and operational limits of the system.
 
 use core::num::traits::Pow;
@@ -65,11 +65,13 @@ pub const VERIFIER_CLASSHASH: felt252 =
 pub const ROOT_HISTORY_SIZE: u32 = 100;
 
 /// The contract address of the STRK token on Starknet mainnet.
-/// This is the native token used for deposits, withdrawals, and fee payments.
+/// This serves as a reference token address, though the multitoken system
+/// now supports any whitelisted ERC20 token for deposits, withdrawals, and fee payments.
 ///
 /// # Address
 /// - Mainnet STRK token contract
-/// - Used for all token transfers in the privacy system
+/// - Can be used as one of many supported tokens in the multitoken system
 /// - Ensures compatibility with Starknet's native token ecosystem
+/// - Other ERC20 tokens can be added to the whitelist by the contract owner
 pub const FELT_STRK_CONTRACT: felt252 =
     0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d;

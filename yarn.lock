@@ -2234,6 +2234,7 @@ __metadata:
     "@types/yargs": ^17.0.32
     dotenv: ^16.3.1
     envfile: ^6.18.0
+    garaga: =0.18.0
     globals: ^15.8.0
     jest: ^30.0.0
     prettier: ^2.8.8

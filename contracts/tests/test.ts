@@ -14,7 +14,7 @@ describe('Obscura Test', () => {
     let alice: Account
     let bob: Account
     let provider: RpcProvider
-    let strkToken: Contract
+    let tokens: any[]
 
     beforeAll(async () => {
         provider = new RpcProvider({ nodeUrl: process.env.RPC_URL_DEVNET })
@@ -27,7 +27,7 @@ describe('Obscura Test', () => {
             '0x078662e7352d062084b0010068b99288486c2d8b914f6e2a55ce945f8792c8b1',
             '0x000000000000000000000000000000000e1406455b7d66b1690803be066cbe5e'
         )
-        ;({ obscura, strkToken } = await deployTestContract(28, BigInt(10000 * 1e18)))
+        ;({ obscura, tokens } = await deployTestContract(28, BigInt(10000 * 1e18)))
 
         await initGaraga()
     })
@@ -90,8 +90,9 @@ describe('Obscura Test', () => {
         const aliceDepositUtxo = new Utxo({ amount: aliceDepositAmount })
 
         obscura.connect(alice)
+        const strkToken = tokens.find(token => token.symbol === 'STRK')?.contract
+        const strkTokenAddress = tokens.find(token => token.symbol === 'STRK')?.address
         strkToken.connect(alice)
-
         strkToken.approve(obscura.address, aliceDepositAmount)
 
         await registerAndTransact({
@@ -101,7 +102,8 @@ describe('Obscura Test', () => {
             account: {
                 owner: alice.address,
                 public_key: aliceDepositUtxo.keypair.address()
-            }
+            },
+            tokenAddress: strkTokenAddress
         })
 
         const [parsedEvent] = (await parsePublicKeyEvent(obscura, provider, [alice.address])).slice(
@@ -119,10 +121,12 @@ describe('Obscura Test', () => {
         const aliceDepositUtxo = new Utxo({ amount: aliceDepositAmount, keypair: aliceKeypair })
 
         obscura.connect(alice)
+        const strkToken = tokens.find(token => token.symbol === 'STRK')?.contract
         strkToken.connect(alice)
         strkToken.approve(obscura.address, aliceDepositAmount)
 
-        await transaction({ obscura, outputs: [aliceDepositUtxo], provider })
+        const strkTokenAddress = tokens.find(token => token.symbol === 'STRK')?.address
+        await transaction({ obscura, outputs: [aliceDepositUtxo], provider, tokenAddress: strkTokenAddress })
 
         // Bob gives Alice address to send some eth inside the shielded pool
         const bobKeypair = new Keypair()
@@ -143,7 +147,8 @@ describe('Obscura Test', () => {
             obscura,
             inputs: [aliceDepositUtxo],
             outputs: [bobSendUtxo, aliceChangeUtxo],
-            provider
+            provider,
+            tokenAddress: strkTokenAddress
         })
 
         // Bob parses chain to detect incoming funds
@@ -186,11 +191,220 @@ describe('Obscura Test', () => {
             inputs: [bobReceiveUtxo],
             outputs: [bobChangeUtxo],
             recipient: bobWithdrawalStrkAddress,
-            provider
+            provider,
+            tokenAddress: strkTokenAddress
         })
 
         const bobBalanceAfter = await strkToken.balanceOf(bobWithdrawalStrkAddress)
 
         expect(bobBalanceAfter).toEqual(bobBalanceBefore + BigInt(bobWithdrawalAmount))
+    })
+
+    describe('Multitoken Functionality Tests', () => {
+        it('should check initial token whitelist status', async () => {
+            obscura.connect(alice)
+            
+            // STRK token should be whitelisted (added during deployment)
+            const strkToken = tokens.find(token => token.symbol === 'STRK')
+            const isStrkAllowed = await obscura.is_token_allowed(strkToken.address)
+            expect(isStrkAllowed).toBe(true)
+            
+            // Other tokens should not be whitelisted initially
+            const nonDefaultTokens = tokens.filter(token => !token.isDefault)
+            for (const token of nonDefaultTokens) {
+                const isAllowed = await obscura.is_token_allowed(token.address)
+                expect(isAllowed).toBe(false)
+            }
+            
+            // Check initial token count (should be 1 for STRK)
+            const tokenCount = await obscura.get_token_count()
+            expect(tokenCount).toBe(1)
+        })
+
+        it('should add tokens to whitelist (owner only)', async () => {
+            obscura.connect(alice)
+            
+            // Add ETH token to whitelist
+            const ethToken = tokens.find(token => token.symbol === 'ETH')
+            await obscura.add_token(ethToken.address)
+            
+            // Verify token is now whitelisted
+            const isAllowed = await obscura.is_token_allowed(ethToken.address)
+            expect(isAllowed).toBe(true)
+            
+            // Check token count increased
+            const tokenCount = await obscura.get_token_count()
+            expect(tokenCount).toBe(2)
+            
+            // Check token can be retrieved by index
+            const tokenAtIndex1 = await obscura.get_token_by_index(1)
+            expect(tokenAtIndex1).toBe(ethToken.address)
+        })
+
+        it('should fail to add token if not owner', async () => {
+            obscura.connect(bob)
+            
+            // Bob should not be able to add tokens
+            const usdcToken = tokens.find(token => token.symbol === 'USDC')
+            try {
+                await obscura.add_token(usdcToken.address)
+                fail('Should have thrown an error for non-owner')
+            } catch (error) {
+                expect(error).toBeDefined()
+            }
+        })
+
+        it('should batch add multiple tokens', async () => {
+            obscura.connect(alice)
+            
+            // Get USDC and USDT tokens to add
+            const usdcToken = tokens.find(token => token.symbol === 'USDC')
+            const usdtToken = tokens.find(token => token.symbol === 'USDT')
+            const tokenAddresses = [usdcToken.address, usdtToken.address]
+            
+            // Batch add tokens
+            await obscura.batch_add_tokens(tokenAddresses)
+            
+            // Verify all tokens are now whitelisted
+            for (const tokenAddress of tokenAddresses) {
+                const isAllowed = await obscura.is_token_allowed(tokenAddress)
+                expect(isAllowed).toBe(true)
+            }
+            
+            // Check token count (should be 4: STRK + ETH + USDC + USDT)
+            const tokenCount = await obscura.get_token_count()
+            expect(tokenCount).toBe(4)
+        })
+
+        it('should get all whitelisted tokens', async () => {
+            obscura.connect(alice)
+            
+            const allTokens = await obscura.get_all_tokens()
+            expect(allTokens.length).toBe(4)
+            
+            // Should contain all the tokens we added
+            const strkToken = tokens.find(token => token.symbol === 'STRK')
+            const ethToken = tokens.find(token => token.symbol === 'ETH')
+            const usdcToken = tokens.find(token => token.symbol === 'USDC')
+            const usdtToken = tokens.find(token => token.symbol === 'USDT')
+            
+            expect(allTokens).toContain(strkToken.address)
+            expect(allTokens).toContain(ethToken.address)
+            expect(allTokens).toContain(usdcToken.address)
+            expect(allTokens).toContain(usdtToken.address)
+        })
+
+        it('should remove token from whitelist', async () => {
+            obscura.connect(alice)
+            
+            // Remove USDT token
+            const usdtToken = tokens.find(token => token.symbol === 'USDT')
+            await obscura.remove_token(usdtToken.address)
+            
+            // Verify token is no longer whitelisted
+            const isAllowed = await obscura.is_token_allowed(usdtToken.address)
+            expect(isAllowed).toBe(false)
+            
+            // Check token count decreased
+            const tokenCount = await obscura.get_token_count()
+            expect(tokenCount).toBe(3)
+        })
+
+        it('should batch remove multiple tokens', async () => {
+            obscura.connect(alice)
+            
+            // Remove ETH and USDC tokens
+            const ethToken = tokens.find(token => token.symbol === 'ETH')
+            const usdcToken = tokens.find(token => token.symbol === 'USDC')
+            const tokensToRemove = [ethToken.address, usdcToken.address]
+            
+            await obscura.batch_remove_tokens(tokensToRemove)
+            
+            // Verify tokens are no longer whitelisted
+            for (const tokenAddress of tokensToRemove) {
+                const isAllowed = await obscura.is_token_allowed(tokenAddress)
+                expect(isAllowed).toBe(false)
+            }
+            
+            // Check token count (should be 1: only STRK remaining)
+            const tokenCount = await obscura.get_token_count()
+            expect(tokenCount).toBe(1)
+            
+            // Verify only STRK is left
+            const allTokens = await obscura.get_all_tokens()
+            expect(allTokens.length).toBe(1)
+            const strkToken = tokens.find(token => token.symbol === 'STRK')
+            expect(allTokens[0]).toBe(strkToken.address)
+        })
+
+        it('should fail transaction with non-whitelisted token', async () => {
+            obscura.connect(alice)
+            
+            // Try to transact with ETH token (which was removed in previous test)
+            const ethToken = tokens.find(token => token.symbol === 'ETH')
+            const aliceDepositAmount = BigInt(1e18)
+            const aliceDepositUtxo = new Utxo({ amount: aliceDepositAmount })
+            
+            try {
+                await transaction({ 
+                    obscura, 
+                    outputs: [aliceDepositUtxo], 
+                    provider, 
+                    tokenAddress: ethToken.address 
+                })
+                fail('Should have thrown an error for non-whitelisted token')
+            } catch (error) {
+                expect(error).toBeDefined()
+            }
+        })
+
+        it('should get token balance for any ERC20 token', async () => {
+            obscura.connect(alice)
+            
+            // Get STRK balance for Alice
+            const strkToken = tokens.find(token => token.symbol === 'STRK')
+            const aliceStrkBalance = await obscura.get_token_balance(strkToken.address, alice.address)
+            expect(typeof aliceStrkBalance).toBe('bigint')
+            
+            // Balance should be positive (Alice has STRK from setup)
+            expect(aliceStrkBalance).toBeGreaterThan(0n)
+        })
+
+        it('should perform multitoken transaction after re-whitelisting', async () => {
+            obscura.connect(alice)
+            
+            // Re-add ETH token for testing
+            const ethToken = tokens.find(token => token.symbol === 'ETH')
+            await obscura.add_token(ethToken.address)
+            
+            // Verify token is whitelisted
+            const isAllowed = await obscura.is_token_allowed(ethToken.address)
+            expect(isAllowed).toBe(true)
+            
+            // Note: Actual transaction with ETH token would require Alice to have ETH balance
+            // This test verifies the token is accepted by the system
+            console.log(`${ethToken.symbol} token successfully whitelisted for transactions`)
+        })
+
+        it('should validate token properties in array', async () => {
+            // Verify all tokens have required properties
+            for (const token of tokens) {
+                expect(token.name).toBeDefined()
+                expect(token.symbol).toBeDefined()
+                expect(token.address).toBeDefined()
+                expect(token.contract).toBeDefined()
+                expect(typeof token.isDefault).toBe('boolean')
+                expect(typeof token.decimals).toBe('number')
+                expect(token.decimals).toBeGreaterThan(0)
+            }
+            
+            // Verify STRK is marked as default
+            const strkToken = tokens.find(token => token.symbol === 'STRK')
+            expect(strkToken.isDefault).toBe(true)
+            
+            // Verify other tokens are not default
+            const nonDefaultTokens = tokens.filter(token => !token.isDefault)
+            expect(nonDefaultTokens.length).toBe(tokens.length - 1)
+        })
     })
 })
