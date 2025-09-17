@@ -1,15 +1,15 @@
-import { RpcProvider, Contract, Account, Calldata, CallData } from 'starknet'
+import { RpcProvider, Contract, Account, Calldata, CallData, hash } from 'starknet'
 import { getCompiledCode } from './utils'
 import dotenv from 'dotenv'
 
 dotenv.config()
 
 /**
- * @notice Deploys the test contract.
+ * @notice Deploys the test contract and mock ERC20 tokens.
  * @dev Deploys the test contract with the specified number of levels and maximum deposit amount.
  * @param levels The number of levels in the contract.
  * @param maximum_deposit_amount The maximum deposit amount in the contract.
- * @returns An object containing the deployed contract and the Starknet token contract.
+ * @returns An object containing the deployed contract and token contracts.
  */
 interface TokenInfo {
     name: string
@@ -20,6 +20,58 @@ interface TokenInfo {
     decimals: number
 }
 
+interface MockTokenConfig {
+    name: string
+    symbol: string
+    decimals: number
+    initialSupply: bigint
+}
+
+
+
+/**
+ * @notice Deploys a mock ERC20 token using pre-declared class hash
+ * @param provider RPC provider
+ * @param account Account to deploy from
+ * @param classHash Pre-declared class hash
+ * @param tokenSierraCode Compiled token contract code (for ABI)
+ * @param config Token configuration
+ * @returns Deployed token contract
+ */
+async function deployMockToken(
+    provider: RpcProvider,
+    account: Account,
+    classHash: string,
+    tokenSierraCode: any,
+    config: MockTokenConfig
+): Promise<Contract> {
+    const tokenCallData = new CallData(tokenSierraCode.abi)
+    const constructorCalldata = tokenCallData.compile('constructor', {
+        owner: account.address,
+        name: config.name,
+        symbol: config.symbol
+    })
+
+    const deployResponse = await account.deployContract({
+        classHash,
+        constructorCalldata
+    })
+
+    await provider.waitForTransaction(deployResponse.transaction_hash)
+
+    const tokenContract = new Contract(tokenSierraCode.abi, deployResponse.address, provider)
+    tokenContract.connect(account)
+
+    // Mint initial supply to the deployer
+    if (config.initialSupply > 0n) {
+        const mintTx = await tokenContract.mint(account.address, config.initialSupply)
+        await provider.waitForTransaction(mintTx.transaction_hash)
+    }
+
+    console.log(`✅ Deployed ${config.symbol} token at: ${deployResponse.address}`)
+    return tokenContract
+}
+
 export const deployTestContract = async (
     levels: number,
     maximum_deposit_amount: bigint
@@ -27,70 +79,103 @@ export const deployTestContract = async (
     const provider = new RpcProvider({ nodeUrl: process.env.RPC_URL_DEVNET })
     const privateKey = process.env.PRIVATE_KEY_DEVNET
     const accountAddress = process.env.ACCOUNT_ADDRESS_DEVNET
-    const classHash = '0x43320c4e0711cdeedb0a2ab8af145b34b10ed6f369d04895e8f0eddc2f9b1a9' // Replace with your declared class hash
     const account = new Account(provider, accountAddress, privateKey)
-    // All token addresses for testing multitoken functionality
-    const tokenConfigs = [
+
+    // Mock tokens to deploy for testing (reduced supply for faster deployment)
+    const mockTokenConfigs: MockTokenConfig[] = [
         {
+            name: 'Ethereum',
+            symbol: 'ETH',
+            decimals: 18,
+            initialSupply: BigInt(10000) * BigInt(10 ** 18) // 10K tokens
+        },
+        {
+            name: 'USD Coin',
+            symbol: 'USDC',
+            decimals: 6,
+            initialSupply: BigInt(10000) * BigInt(10 ** 6) // 10K tokens
+        },
+        {
+            name: 'Tether USD',
+            symbol: 'USDT',
+            decimals: 6,
+            initialSupply: BigInt(10000) * BigInt(10 ** 6) // 10K tokens
+        }
+    ]
+
+    let sierraCode: any
+    let casmCode: any
+    let tokenSierraCode: any
+    let tokenCasmCode: any
+    let deployedTokens: TokenInfo[] = []
+
+    try {
+        ; ({ sierraCode, casmCode } = await getCompiledCode('obscura_Obscura'))
+            ; ({ sierraCode: tokenSierraCode, casmCode: tokenCasmCode } = await getCompiledCode('token_Token'))
+
+        console.log('🚀 Deploying mock ERC20 tokens...')
+
+        // Compute token contract class hash
+        const tokenClassHash = hash.computeContractClassHash(tokenSierraCode)
+        console.log(`🔍 Checking if token contract is already declared: ${tokenClassHash}`)
+
+        try {
+            await provider.getClassByHash(tokenClassHash)
+            console.log(`✅ Token contract already declared with class hash: ${tokenClassHash}`)
+        } catch (error) {
+            // Contract not declared, declare it now
+            console.log('📝 Declaring token contract...')
+            try {
+                const declareResponse = await account.declare({
+                    contract: tokenSierraCode,
+                    casm: tokenCasmCode
+                })
+                await provider.waitForTransaction(declareResponse.transaction_hash)
+                console.log(`✅ Token contract declared with class hash: ${declareResponse.class_hash}`)
+            } catch (declareError: any) {
+                console.log(`⚠️  Token declaration failed: ${declareError.message?.slice(0, 100)}...`)
+                console.log(`🔄 Continuing with computed class hash: ${tokenClassHash}`)
+            }
+        }
+
+        // Deploy mock tokens using the same class hash
+        for (const config of mockTokenConfigs) {
+            const tokenContract = await deployMockToken(provider, account, tokenClassHash, tokenSierraCode, config)
+            deployedTokens.push({
+                name: config.name,
+                symbol: config.symbol,
+                address: tokenContract.address,
+                contract: tokenContract,
+                isDefault: false,
+                decimals: config.decimals
+            })
+        }
+
+        // Add STRK token (pre-deployed on devnet)
+        const strkTokenConfig = {
             name: 'Starknet Token',
             symbol: 'STRK',
             address: '0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d',
             isDefault: true,
             decimals: 18
-        },
-        {
-            name: 'Ethereum',
-            symbol: 'ETH',
-            address: '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7',
-            isDefault: false,
-            decimals: 18
-        },
-        {
-            name: 'USD Coin',
-            symbol: 'USDC',
-            address: '0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8',
-            isDefault: false,
-            decimals: 6
-        },
-        {
-            name: 'Tether USD',
-            symbol: 'USDT',
-            address: '0x061c54ec0285bc41ca6823c9a6758cb3555cb1d2479f3758dadd0f6f6a94c6bd',
-            isDefault: false,
-            decimals: 6
-        },
-        {
-            name: 'Dai Stablecoin',
-            symbol: 'DAI',
-            address: '0x02de7e69dacb0702779ace0fe11e345cbd7125b267933aaad6fb7ac1d1739b0b',
-            isDefault: false,
-            decimals: 18
         }
-    ]
 
-    let sierraCode: any
-    let tokenContracts: any[] = []
-
-    try {
-        ;({ sierraCode } = await getCompiledCode('obscura_Obscura'))
-        
-        // Get all token contracts
-        for (const tokenConfig of tokenConfigs) {
-            try {
-                const tokenContract = await provider.getClassAt(tokenConfig.address)
-                tokenContracts.push({ 
-                    ...tokenConfig, 
-                    abi: tokenContract.abi 
-                })
-            } catch (error) {
-                console.log(`Warning: Could not load token at ${tokenConfig.address}, using fallback ABI`)
-                // Use a basic ERC20 ABI as fallback
-                tokenContracts.push({ 
-                    ...tokenConfig, 
-                    abi: [] // Will be populated with basic ERC20 ABI if needed
-                })
-            }
+        try {
+            const strkTokenClass = await provider.getClassAt(strkTokenConfig.address)
+            const strkContract = new Contract(strkTokenClass.abi, strkTokenConfig.address, provider)
+            deployedTokens.unshift({
+                ...strkTokenConfig,
+                contract: strkContract
+            })
+            console.log('Added STRK token from devnet')
+        } catch (error) {
+            console.log('Warning: Could not load STRK token, using fallback')
+            deployedTokens.unshift({
+                ...strkTokenConfig,
+                contract: new Contract([], strkTokenConfig.address, provider)
+            })
         }
+
     } catch (error: any) {
         console.log('Failed to read contract files')
         console.log(error)
@@ -100,43 +185,52 @@ export const deployTestContract = async (
     const contractCallData: CallData = new CallData(sierraCode.abi)
     const constructorCalldata: Calldata = contractCallData.compile('constructor', {
         levels,
-        maximum_deposit_amount
+        maximum_deposit_amount,
+        owner: accountAddress,
     })
 
+    // Compute Obscura contract class hash
+    const obscuraClassHash = hash.computeContractClassHash(sierraCode)
+    console.log(`🔍 Checking if Obscura contract is already declared: ${obscuraClassHash}`)
+
     try {
+        await provider.getClassByHash(obscuraClassHash)
+        console.log(`✅ Obscura contract already declared with class hash: ${obscuraClassHash}`)
+    } catch (error) {
+        // Contract not declared, declare it now
+        console.log('📝 Declaring Obscura contract...')
+        try {
+            const declareResponse = await account.declare({
+                contract: sierraCode,
+                casm: casmCode
+            })
+            await provider.waitForTransaction(declareResponse.transaction_hash)
+            console.log(`✅ Obscura contract declared with class hash: ${declareResponse.class_hash}`)
+        } catch (declareError: any) {
+            console.log(`⚠️  Obscura declaration failed: ${declareError.message?.slice(0, 100)}...`)
+            console.log(`🔄 Continuing with computed class hash: ${obscuraClassHash}`)
+        }
+    }
+
+    try {
+        console.log('🏗️  Deploying Obscura contract...')
         const deployResponse = await account.deployContract({
-            classHash,
+            classHash: obscuraClassHash,
             constructorCalldata
         })
 
         await provider.waitForTransaction(deployResponse.transaction_hash)
+        console.log(`✅ Obscura contract deployed at: ${deployResponse.address}`)
 
         const obscura = new Contract(sierraCode.abi, deployResponse.address, provider)
-        
-        // Create token info array with contract instances
-        const tokens: TokenInfo[] = tokenContracts.map(tokenData => ({
-            name: tokenData.name,
-            symbol: tokenData.symbol,
-            address: tokenData.address,
-            contract: new Contract(tokenData.abi, tokenData.address, provider),
-            isDefault: tokenData.isDefault,
-            decimals: tokenData.decimals
-        }))
-        
-        // Add default token (STRK) to whitelist
         obscura.connect(account)
-        const defaultToken = tokens.find(token => token.isDefault)
-        if (defaultToken) {
-            try {
-                await obscura.add_token(defaultToken.address)
-                console.log(`${defaultToken.symbol} token added as default token to whitelist`)
-            } catch (error) {
-                console.log(`${defaultToken.symbol} token may already be whitelisted or error occurred:`, error)
-            }
-        }
 
-        return { obscura, tokens }
+        console.log('⚙️  Obscura contract ready for testing')
+
+        console.log(`🎉 Deployment complete! Obscura: ${deployResponse.address}, Tokens: ${deployedTokens.length}`)
+        return { obscura, tokens: deployedTokens }
     } catch (error) {
-        console.log(error)
+        console.log('Deployment failed:', error)
+        throw error
     }
 }

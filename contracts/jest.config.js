@@ -1,5 +1,5 @@
 module.exports = {
     preset: 'ts-jest',
     testEnvironment: 'node',
-    testTimeout: 60000
+    testTimeout: 300000 // 5 minutes for deployment
 }

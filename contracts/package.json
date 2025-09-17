@@ -6,6 +6,7 @@
         "deploy": "ts-node scripts-ts/helpers/deploy-wrapper.ts",
         "deploy:clear": "cd deployments && node clear.mjs $* && cd .. && ts-node scripts-ts/helpers/deploy-wrapper.ts $*",
         "deploy:no-reset": "yarn workspace @obscura/contracts deploy --no-reset",
+        "deploy:tokens": "ts-node tests/deployTokens.ts",
         "test": "snforge test",
         "test-eslint": "node eslint-contract-name/eslint-plugin-contract-names.test.js",
         "compile": "scarb build",

@@ -2,20 +2,6 @@
 version = 1
 
 [[package]]
-name = "garaga"
-version = "0.18.0"
-source = "git+https://github.com/keep-starknet-strange/garaga.git?tag=v0.18.0#1582fded827165532bebccc8a4b312058e5b34ca"
-
-[[package]]
-name = "obscura"
-version = "0.1.0"
-dependencies = [
- "garaga",
- "openzeppelin",
- "snforge_std",
-]
-
-[[package]]
 name = "openzeppelin"
 version = "2.0.0"
 source = "registry+https://scarbs.xyz/"
@@ -154,11 +140,4 @@ version = "0.1.0"
 dependencies = [
  "openzeppelin",
  "snforge_std",
-]
-
-[[package]]
-name = "verifier"
-version = "0.1.0"
-dependencies = [
- "garaga",
 ]

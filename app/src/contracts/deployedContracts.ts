@@ -7,7 +7,7 @@ const deployedContracts = {
   devnet: {
     Obscura: {
       address:
-        "0x59bf6830b9786e85c3591a05bcbe9e13e7009eaebaf7134949e624e89dfb8c2",
+        "0x3d731421a01f4200baba63f277a5c3c58ad4d18fb046e9201ee88c6df803301",
       abi: [
         {
           type: "impl",

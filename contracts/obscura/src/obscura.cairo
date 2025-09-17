@@ -167,8 +167,8 @@ pub mod Obscura {
     /// - Only callable during contract deployment
     /// - Sets up the foundational privacy infrastructure
     #[constructor]
-    pub fn constructor(ref self: ContractState, levels: u32, maximum_deposit_amount: u256) {
-        self.ownable.initializer(get_caller_address());
+    pub fn constructor(ref self: ContractState, levels: u32, maximum_deposit_amount: u256, owner: ContractAddress) {
+        self.ownable.initializer(owner);
         self.new_merkle_tree(levels);
         self.configure_limits(maximum_deposit_amount);
     }

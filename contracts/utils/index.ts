@@ -173,10 +173,12 @@ export async function registerAndTransact({
     obscura,
     provider,
     account,
+    tokenAddress,
     ...rest
 }: {
     obscura: any
     account: any
+    tokenAddress: string
     [key: string]: any
 }): Promise<any> {
     const { args, extData } = await prepareTransaction({
@@ -185,7 +187,7 @@ export async function registerAndTransact({
         ...rest
     })
 
-    const tx = await obscura.register_and_transact(account, args, extData)
+    const tx = await obscura.register_and_transact(account, args, extData, tokenAddress)
 
     return tx
 }
