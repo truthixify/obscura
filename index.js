@@ -17,11 +17,17 @@ app.use(bodyParser.json());
 // Connect to MongoDB
 const mongoURI = process.env.MONGO_URI;
 mongoose
-  .connect(mongoURI, {
-    dbName: "obscura"
+  .connect(mongoURI, { dbName: "obscura" })
+  .then(() => {
+    console.log("✅ MongoDB connected");
+    app.listen(port, () => {
+      console.log(`🚀 Server running on http://localhost: ${port}`);
+    });
   })
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => console.error("MongoDB connection error:", err));
+  .catch((err) => {
+    console.error("MongoDB connection error:", err);
+    process.exit(1);
+  });
 
 // POST endpoint to add new account
 app.post("/api/account", async (req, res) => {
