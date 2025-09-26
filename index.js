@@ -17,7 +17,7 @@ app.use(bodyParser.json());
 // Connect to MongoDB
 const mongoURI = process.env.MONGO_URI;
 mongoose
-  .connect(mongoURI, { dbName: "obscura" })
+  .connect(mongoURI, { dbName: "obscura", bufferCommands: false })
   .then(() => {
     console.log("✅ MongoDB connected");
     app.listen(port, () => {
