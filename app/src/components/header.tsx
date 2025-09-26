@@ -6,22 +6,7 @@ import { useTargetNetwork } from '../hooks/scaffold-stark/useTargetNetwork'
 import { useAccount, useNetwork, useProvider } from '@starknet-react/core'
 import Logo from '../assets/obscura.png'
 
-interface HeaderProps {
-    currentPattern: number
-    controlStyles: {
-        bg: string
-        border: string
-        text: string
-        buttonBg: string
-        buttonText: string
-        buttonHover: string
-        secondaryBg: string
-        secondaryText: string
-        secondaryHover: string
-    }
-}
-
-export function Header({ controlStyles }: HeaderProps) {
+export function Header() {
     const [_, setIsDrawerOpen] = useState(false)
     const burgerMenuRef = useRef<HTMLDivElement>(null)
 
@@ -61,7 +46,7 @@ export function Header({ controlStyles }: HeaderProps) {
 
     return (
         <header
-            className={`absolute top-0 left-0 right-0 w-full py-4 px-4 flex justify-between items-center z-50 ${controlStyles.bg} backdrop-blur-[1px] border-b rounded-bl-lg rounded-br-lg ${controlStyles.border}`}
+            className="absolute top-0 left-0 right-0 w-full py-4 px-4 flex justify-between items-center z-50 backdrop-blur-[1px] border-b rounded-bl-lg rounded-br-lg"
         >
             {/* <div className="flex items-center space-between"> */}
             {/* <h1
@@ -70,7 +55,7 @@ export function Header({ controlStyles }: HeaderProps) {
                     Obscura
                 </h1> */}
             <img
-                className={`z-50 rounded-full ${controlStyles.bg} {controlStyles.border}`}
+                className="z-50 rounded-full"
                 src={Logo}
                 width={80}
                 height={20}
@@ -82,7 +67,7 @@ export function Header({ controlStyles }: HeaderProps) {
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <div>
-                                <CustomConnectButton controlStyles={controlStyles} />
+                                <CustomConnectButton />
                             </div>
                         </TooltipTrigger>
                         {status === 'connected' && !isDeployed ? (

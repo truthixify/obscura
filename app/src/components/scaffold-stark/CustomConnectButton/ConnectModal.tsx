@@ -22,21 +22,7 @@ const loader = ({ src }: { src: string }) => {
     return src
 }
 
-interface CustomModalProps {
-    controlStyles: {
-        bg: string
-        border: string
-        text: string
-        buttonBg: string
-        buttonText: string
-        buttonHover: string
-        secondaryBg: string
-        secondaryText: string
-        secondaryHover: string
-    }
-}
-
-const ConnectModal = ({ controlStyles }: CustomModalProps) => {
+const ConnectModal = () => {
     const { setKeypair } = useKeypairStore()
     const [showModal, setShowModal] = useState(false)
     const [isBurnerWallet, setIsBurnerWallet] = useState(false)
@@ -133,7 +119,7 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
             <Button
                 variant="outline"
                 onClick={openModal}
-                className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 ${controlStyles.buttonBg} ${controlStyles.buttonText} border ${controlStyles.border} ${controlStyles.buttonHover} transition-all duration-200`}
+                className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 transition-all duration-200`}
                 disabled={status === 'pending'}
             >
                 {status === 'pending' ? (
@@ -175,7 +161,7 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
                         </CardHeader>
                         <CardContent className="flex flex-col gap-2">
                             <button
-                                className={`w-full py-3 px-4 flex items-center gap-3 ${controlStyles.bg} ${controlStyles.text} border ${controlStyles.border} ${controlStyles.secondaryHover} rounded-lg`}
+                                className={`w-full py-3 px-4 flex items-center gap-3 rounded-lg`}
                                 onClick={() => setShowPrivateKeyModal(true)}
                             >
                                 <KeySquare className="h-6 w-6" />
@@ -185,7 +171,7 @@ const ConnectModal = ({ controlStyles }: CustomModalProps) => {
                                 // Wallet options
                                 connectors.map((connector, index) => (
                                     <div
-                                        className={`w-full ${controlStyles.bg} ${controlStyles.text} border ${controlStyles.border} ${controlStyles.secondaryHover} rounded-lg`}
+                                        className={`w-full rounded-lg`}
                                         key={connector.id || index}
                                     >
                                         <Wallet

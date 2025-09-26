@@ -41,7 +41,8 @@ const deployScript = async (): Promise<void> => {
         contract: 'Obscura',
         constructorArgs: {
             levels: 28,
-            maximum_deposit_amount: BigInt(10000 * 1e18)
+            maximum_deposit_amount: BigInt(10000 * 1e18),
+            owner: deployer.address
         }
     })
 }

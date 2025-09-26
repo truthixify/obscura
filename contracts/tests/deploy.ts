@@ -81,7 +81,7 @@ export const deployTestContract = async (
     const accountAddress = process.env.ACCOUNT_ADDRESS_DEVNET
     const account = new Account(provider, accountAddress, privateKey)
 
-    // Mock tokens to deploy for testing (reduced supply for faster deployment)
+    // Mock tokens to deploy for testing
     const mockTokenConfigs: MockTokenConfig[] = [
         {
             name: 'Ethereum',

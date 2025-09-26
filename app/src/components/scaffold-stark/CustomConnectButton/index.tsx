@@ -27,24 +27,10 @@ import { RpcProvider } from 'starknet'
 import { useUtxoStore } from '../../../stores/utxo-store'
 import { ReloadIcon } from '@radix-ui/react-icons'
 
-interface CustomConnectButtonProps {
-    controlStyles: {
-        bg: string
-        border: string
-        text: string
-        buttonBg: string
-        buttonText: string
-        buttonHover: string
-        secondaryBg: string
-        secondaryText: string
-        secondaryHover: string
-    }
-}
-
 /**
  * Custom Connect Button (watch balance + custom design)
  */
-export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps) => {
+export const CustomConnectButton = () => {
     useAutoConnect()
     const { connector } = useConnect()
     const { disconnect } = useDisconnect()
@@ -252,7 +238,7 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
     }, [keypair])
 
     if ((status === 'disconnected' || accountChainId === 0n) && !keypair)
-        return <ConnectModal controlStyles={controlStyles} />
+        return <ConnectModal />
 
     if (accountChainId !== targetNetwork.id && !keypair) {
         return <WrongNetworkDropdown />
@@ -263,7 +249,7 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
             <div className="flex gap-2">
                 {!isRegistered ? (
                     <Button
-                        className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 ${controlStyles.buttonBg} ${controlStyles.buttonText} border ${controlStyles.border} ${controlStyles.buttonHover} transition-all duration-200`}
+                        className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 transition-all duration-200`}
                         onClick={handleSetup}
                         // disabled={!owner}
                     >
@@ -271,14 +257,14 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
                     </Button>
                 ) : (
                     <Button
-                        className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 ${controlStyles.buttonBg} ${controlStyles.buttonText} border ${controlStyles.border} ${controlStyles.buttonHover} transition-all duration-200`}
+                        className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 transition-all duration-200`}
                     >
                         <span>Balance: {balance.toFixed(2)} $STRK</span>
                     </Button>
                 )}
                 {isRegistered && (
                     <Button
-                        className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 ${controlStyles.buttonBg} ${controlStyles.buttonText} border ${controlStyles.border} ${controlStyles.buttonHover} transition-all duration-200`}
+                        className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 transition-all duration-200`}
                         onClick={checkUserBalance}
                     >
                         {isLoadingBalance ? (
@@ -289,7 +275,7 @@ export const CustomConnectButton = ({ controlStyles }: CustomConnectButtonProps)
                     </Button>
                 )}
                 <Button
-                    className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 ${controlStyles.buttonBg} ${controlStyles.buttonText} border ${controlStyles.border} ${controlStyles.buttonHover} transition-all duration-200`}
+                    className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 transition-all duration-200`}
                     onClick={handleLogout}
                 >
                     <LogOut className="h-4 w-4" />

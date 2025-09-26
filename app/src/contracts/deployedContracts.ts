@@ -526,6 +526,10 @@ const deployedContracts = {
               name: "maximum_deposit_amount",
               type: "core::integer::u256",
             },
+            {
+              name: "owner",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
           ],
         },
         {
@@ -770,7 +774,7 @@ const deployedContracts = {
   sepolia: {
     Obscura: {
       address:
-        "0x61885a42757860cc90d19dc36788ba63f41133f56102b0a003e73eb892b6784",
+        "0x25c4f906625ea5ff25828daa7c0120c2e9295d443c8fc78fb1c154a2ae9a208",
       abi: [
         {
           type: "impl",
@@ -1289,6 +1293,10 @@ const deployedContracts = {
               name: "maximum_deposit_amount",
               type: "core::integer::u256",
             },
+            {
+              name: "owner",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
           ],
         },
         {
@@ -1527,7 +1535,7 @@ const deployedContracts = {
         },
       ],
       classHash:
-        "0x49217b0074bc7da12f236d0c38ef93e9bd4c2f9ba53a8bef93b1b7bd0117b30",
+        "0x26c7c594d14a6a08b48141b82d2f3edc095d8adfeee7db7e38cee543368a490",
     },
   },
 } as const;

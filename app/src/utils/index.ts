@@ -154,6 +154,7 @@ export async function prepareTransaction({
 export async function transaction({
     obscura,
     provider,
+    token_address,
     ...rest
 }: {
     obscura: any
@@ -165,7 +166,7 @@ export async function transaction({
         ...rest
     })
 
-    const receipt = await obscura.transact(args, extData)
+    const receipt = await obscura.transact(args, extData, token_address)
 
     return receipt
 }
@@ -174,6 +175,7 @@ export async function registerAndTransact({
     obscura,
     provider,
     account,
+    token_address,
     ...rest
 }: {
     obscura: any
@@ -186,7 +188,7 @@ export async function registerAndTransact({
         ...rest
     })
 
-    const receipt = await obscura.register_and_transact(account, args, extData)
+    const receipt = await obscura.register_and_transact(account, args, extData, token_address)
 
     return receipt
 }
