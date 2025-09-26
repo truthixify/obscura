@@ -170,7 +170,7 @@ pub mod Obscura {
     pub fn constructor(ref self: ContractState, levels: u32, maximum_deposit_amount: u256, owner: ContractAddress) {
         self.ownable.initializer(owner);
         self.new_merkle_tree(levels);
-        self.configure_limits(maximum_deposit_amount);
+        self.maximum_deposit_amount.write(maximum_deposit_amount);
     }
 
     /// External interface implementation for the Obscura contract.
@@ -444,7 +444,7 @@ pub mod Obscura {
         /// Emits a `TokenAdded` event with the token address and assigned index.
         fn add_token(ref self: ContractState, token_address: ContractAddress) {
             self.ownable.assert_only_owner();
-            assert(self.is_token_allowed(token_address), ERROR_TOKEN_ALREADY_WHITELISTED);
+            assert(!self.is_token_allowed(token_address), ERROR_TOKEN_ALREADY_WHITELISTED);
             assert(!token_address.is_zero(), ERROR_ZERO_ADDRESS);
 
             let token_count = self.token_count.read();
@@ -481,7 +481,7 @@ pub mod Obscura {
         /// Emits a `TokenRemoved` event with the token address and previous index.
         fn remove_token(ref self: ContractState, token_address: ContractAddress) {
             self.ownable.assert_only_owner();
-            assert(!self.is_token_allowed(token_address), ERROR_TOKEN_NOT_WHITELISTED);
+            assert(self.is_token_allowed(token_address), ERROR_TOKEN_NOT_WHITELISTED);
             assert(!token_address.is_zero(), ERROR_ZERO_ADDRESS);
 
             let token_count = self.token_count.read();

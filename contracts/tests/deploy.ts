@@ -107,11 +107,38 @@ export const deployTestContract = async (
     let casmCode: any
     let tokenSierraCode: any
     let tokenCasmCode: any
+    let verifierSierraCode: any
+    let verifierCasmCode: any
     let deployedTokens: TokenInfo[] = []
 
     try {
         ; ({ sierraCode, casmCode } = await getCompiledCode('obscura_Obscura'))
             ; ({ sierraCode: tokenSierraCode, casmCode: tokenCasmCode } = await getCompiledCode('token_Token'))
+            ; ({ sierraCode: verifierSierraCode, casmCode: verifierCasmCode } = await getCompiledCode('verifier_UltraStarknetHonkVerifier'))
+
+        // Declare verifier contract first
+        console.log('🔐 Declaring verifier contract...')
+        const verifierClassHash = hash.computeContractClassHash(verifierSierraCode)
+        console.log(`🔍 Checking if verifier contract is already declared: ${verifierClassHash}`)
+
+        try {
+            await provider.getClassByHash(verifierClassHash)
+            console.log(`✅ Verifier contract already declared with class hash: ${verifierClassHash}`)
+        } catch (error) {
+            // Contract not declared, declare it now
+            console.log('📝 Declaring verifier contract...')
+            try {
+                const declareResponse = await account.declare({
+                    contract: verifierSierraCode,
+                    casm: verifierCasmCode
+                })
+                await provider.waitForTransaction(declareResponse.transaction_hash)
+                console.log(`✅ Verifier contract declared with class hash: ${declareResponse.class_hash}`)
+            } catch (declareError: any) {
+                console.log(`⚠️  Verifier declaration failed: ${declareError.message?.slice(0, 100)}...`)
+                console.log(`🔄 Continuing with computed class hash: ${verifierClassHash}`)
+            }
+        }
 
         console.log('🚀 Deploying mock ERC20 tokens...')
 
@@ -186,7 +213,7 @@ export const deployTestContract = async (
     const constructorCalldata: Calldata = contractCallData.compile('constructor', {
         levels,
         maximum_deposit_amount,
-        owner: accountAddress,
+        owner: accountAddress
     })
 
     // Compute Obscura contract class hash

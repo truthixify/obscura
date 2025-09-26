@@ -153,6 +153,7 @@ export async function prepareTransaction({
 export async function transaction({
     obscura,
     provider,
+    tokenAddress,
     ...rest
 }: {
     obscura: any
@@ -164,7 +165,7 @@ export async function transaction({
         ...rest
     })
 
-    const tx = await obscura.transact(args, extData)
+    const tx = await obscura.transact(args, extData, tokenAddress)
 
     return tx
 }
