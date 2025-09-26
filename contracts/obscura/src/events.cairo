@@ -17,17 +17,19 @@ use starknet::ContractAddress;
 /// Event emitted when a new commitment is added to the Merkle tree.
 ///
 /// This event is emitted for each new commitment created during a privacy-preserving
-/// transaction. It provides the commitment hash, its index in the tree, and the
-/// encrypted output data for the recipient.
+/// transaction. It provides the commitment hash, its index in the tree, the token
+/// address associated with the commitment, and the encrypted output data for the recipient.
 ///
 /// # Privacy Considerations
 /// - The commitment hash reveals no information about the transaction amount
 /// - The encrypted output can only be decrypted by the intended recipient
 /// - The index provides ordering information without revealing transaction details
+/// - The token address enables filtering commitments by token type
 ///
 /// # Usage
 /// - External systems can track the growth of the Merkle tree
 /// - Recipients can scan for their encrypted outputs using their private key
+/// - Token-specific filtering allows tracking commitments for specific ERC20 tokens
 /// - Provides transparency while maintaining transaction privacy
 #[derive(Drop, starknet::Event)]
 pub struct NewCommitment {
@@ -37,6 +39,10 @@ pub struct NewCommitment {
     /// The index of the commitment in the Merkle tree.
     /// Provides ordering information for tree construction.
     pub index: u32,
+    /// The ERC20 token contract address associated with this commitment.
+    /// This is a key field for efficient event filtering by token type.
+    #[key]
+    pub token_address: ContractAddress,
     /// The encrypted output data for the transaction recipient.
     /// Contains private transaction details encrypted with the recipient's public key.
     pub encrypted_output: ByteArray,

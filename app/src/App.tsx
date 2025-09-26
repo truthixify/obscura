@@ -11,6 +11,7 @@ import Obscura from './components/obscura/index'
 import { feltToString } from './utils/utils'
 import { toast } from './hooks/use-toast'
 import { init as initGaraga } from 'garaga'
+import { ThemeProvider } from './contexts/ThemeContext'
 
 function App() {
     const [vk, setVk] = useState<Uint8Array | null>(null)
@@ -47,7 +48,11 @@ function App() {
         // loadVk()
     }, [])
 
-    return <Obscura />
+    return (
+        <ThemeProvider>
+            <Obscura />
+        </ThemeProvider>
+    )
 }
 
 export default App

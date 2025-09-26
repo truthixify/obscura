@@ -9,12 +9,14 @@ const MERKLE_TREE_HEIGHT = 28
 
 export async function buildMerkleTree({
     obscura,
-    provider
+    provider,
+    token_address
 }: {
     obscura: Contract
     provider: RpcProvider
+    token_address?: string
 }): Promise<MerkleTree> {
-    const parsedEvents = await parseNewCommitEvent(obscura, provider)
+    const parsedEvents = await parseNewCommitEvent(obscura, provider, undefined, undefined, token_address)
 
     const leaves = parsedEvents.map((e: any) => e.commitment.toString())
 
@@ -121,8 +123,9 @@ export async function prepareTransaction({
     outputs = [],
     fee = 0,
     recipient = stark.randomAddress(),
-    relayer = stark.randomAddress()
-}: PrepareTransactionParams): Promise<{ args: any; extData: any }> {
+    relayer = stark.randomAddress(),
+    token_address
+}: PrepareTransactionParams & { token_address?: string }): Promise<{ args: any; extData: any }> {
     if (inputs.length > 16 || outputs.length > 2) {
         throw new Error('Incorrect inputs/outputs count')
     }
@@ -141,7 +144,7 @@ export async function prepareTransaction({
     const { args, extData } = await getProof({
         inputs,
         outputs,
-        tree: await buildMerkleTree({ obscura, provider }),
+        tree: await buildMerkleTree({ obscura, provider, token_address }),
         extAmount,
         fee,
         recipient,
@@ -158,11 +161,13 @@ export async function transaction({
     ...rest
 }: {
     obscura: any
+    token_address: string
     [key: string]: any
 }): Promise<any> {
     const { args, extData } = await prepareTransaction({
         obscura,
         provider,
+        token_address,
         ...rest
     })
 
@@ -180,11 +185,13 @@ export async function registerAndTransact({
 }: {
     obscura: any
     account: any
+    token_address: string
     [key: string]: any
 }): Promise<any> {
     const { args, extData } = await prepareTransaction({
         obscura,
         provider,
+        token_address,
         ...rest
     })
 

@@ -5,23 +5,20 @@ import { Card, CardContent } from '../ui/card'
 import { Label } from '../ui/label'
 import { Copy, Download, X } from 'lucide-react'
 import { useToast } from '../../hooks/use-toast'
-import { useTheme } from 'next-themes'
-import { useBalanceStore } from '../../stores/balance-store'
+import { useTheme } from '../../contexts/ThemeContext'
 import { useKeypairStore } from '../../stores/keypair-store'
 import { useAccount } from '@starknet-react/core'
 import { downloadPrivateKeyFile } from '../../lib/download-private-key-file'
 import { useAccountStore } from '../../stores/account-store'
+import { MultiTokenBalance } from '../ui/multi-token-balance'
 
 const SettingsModal = ({ isOpen, onClose }) => {
     const { toast } = useToast()
-    const { theme } = useTheme()
-    const { balance } = useBalanceStore()
+    const { isDarkMode } = useTheme()
     const { keypair } = useKeypairStore()
     const { address } = useAccount()
     const [_, setIsCopied] = useState(false)
     const { owner } = useAccountStore()
-
-    const isDarkMode = theme === 'dark'
 
     const controlStyles = {
         bg: isDarkMode ? 'bg-black/30' : 'bg-white/30',
@@ -175,20 +172,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label
-                                htmlFor="balance"
-                                className={`font-medium ${controlStyles.text}`}
-                            >
-                                Shielded Pool Balance
-                            </Label>
-                            <Input
-                                id="balance"
-                                value={`${balance} STRK`}
-                                readOnly
-                                className={`backdrop-blur-sm ${controlStyles.inputBg} ${controlStyles.inputBorder} ${controlStyles.placeholder} ${controlStyles.text} cursor-not-allowed`}
-                            />
-                        </div>
+                        <MultiTokenBalance />
 
                         <div className="space-y-2">
                             <Label

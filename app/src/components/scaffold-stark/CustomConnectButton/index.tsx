@@ -26,6 +26,8 @@ import { parseNewCommitEvent } from '../../../utils/events_parsing'
 import { RpcProvider } from 'starknet'
 import { useUtxoStore } from '../../../stores/utxo-store'
 import { ReloadIcon } from '@radix-ui/react-icons'
+import { BalanceModal } from '../../ui/balance-modal'
+import { useShieldedBalances } from '../../../hooks/useShieldedBalances'
 
 /**
  * Custom Connect Button (watch balance + custom design)
@@ -58,6 +60,7 @@ export const CustomConnectButton = () => {
     const { provider } = useProvider()
     const { setIsLoadingBalance, setBalance } = useBalanceStore()
     const { setUtxos } = useUtxoStore()
+    const { refreshBalances: refreshShieldedBalances } = useShieldedBalances()
 
     const isDarkMode = theme == 'dark' ? true : false
 
@@ -170,6 +173,11 @@ export const CustomConnectButton = () => {
             return
         }
 
+        if (isRegistered) {
+            // Already registered, no need to show modal
+            return
+        }
+
         setShowModal(true)
         setIsModalOpen(true)
     }
@@ -181,62 +189,6 @@ export const CustomConnectButton = () => {
         disconnect()
     }
 
-    const checkUserBalance = async () => {
-        setIsLoadingBalance(true)
-
-        const parsedNewCommitEvents = await parseNewCommitEvent(obscura, provider as RpcProvider, {
-            block_number: 906832n
-        })
-
-        if (!parsedNewCommitEvents) return
-
-        let balance: bigint = 0n
-
-        const tryDecryptUtxo = (i: number): Utxo | undefined => {
-            try {
-                return Utxo.decrypt(
-                    keypair,
-                    parsedNewCommitEvents[i].encrypted_output,
-                    parsedNewCommitEvents[i].index
-                )
-            } catch {
-                try {
-                    return Utxo.decrypt(
-                        keypair,
-                        parsedNewCommitEvents[i + 1].encrypted_output,
-                        parsedNewCommitEvents[i + 1].index
-                    )
-                } catch {
-                    return undefined
-                }
-            }
-        }
-
-        const utxos: Utxo[] = []
-        for (let i = 0; i < parsedNewCommitEvents.length; i += 2) {
-            const utxo = tryDecryptUtxo(i)
-            if (!utxo) continue
-
-            const nullifier = utxo.getNullifier()
-            const isSpent = await obscura.is_spent(nullifier)
-
-            if (!isSpent) {
-                balance += BigInt(utxo.amount)
-                utxos.push(utxo)
-            }
-        }
-
-        setUtxos(utxos)
-        setBalance(Number(balance) / 1e18)
-        setIsLoadingBalance(false)
-    }
-
-    useEffect(() => {
-        if (!keypair) return
-
-        checkUserBalance()
-    }, [keypair])
-
     if ((status === 'disconnected' || accountChainId === 0n) && !keypair)
         return <ConnectModal />
 
@@ -247,31 +199,22 @@ export const CustomConnectButton = () => {
     return (
         <>
             <div className="flex gap-2">
-                {!isRegistered ? (
+                {!isRegistered && !keypair ? (
                     <Button
                         className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 transition-all duration-200`}
                         onClick={handleSetup}
-                        // disabled={!owner}
+                        disabled={isRegistering}
                     >
                         {isRegistering ? 'Setting up account...' : 'Set up account'}
                     </Button>
+                ) : isRegistered ? (
+                    <BalanceModal />
                 ) : (
                     <Button
                         className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 transition-all duration-200`}
+                        disabled={true}
                     >
-                        <span>Balance: {balance.toFixed(2)} $STRK</span>
-                    </Button>
-                )}
-                {isRegistered && (
-                    <Button
-                        className={`py-1 px-3 md:py-2 md:px-4 flex items-center gap-2 transition-all duration-200`}
-                        onClick={checkUserBalance}
-                    >
-                        {isLoadingBalance ? (
-                            <ReloadIcon className="h-4 w-4 animate-spin" />
-                        ) : (
-                            <ReloadIcon className="h-4 w-4" />
-                        )}
+                        Loading...
                     </Button>
                 )}
                 <Button

@@ -16,12 +16,12 @@ import {
 } from 'lucide-react'
 import { useToast } from '../../hooks/use-toast'
 import { Header } from '../header'
-import { useTheme } from 'next-themes'
+import { useTheme } from '../../contexts/ThemeContext'
 import { generateTransactionCall, transaction } from '../../utils/index'
 import Utxo from '../../utils/utxo'
 import { useScaffoldContract } from '../../hooks/scaffold-stark/useScaffoldContract'
 import { useAccount, useProvider, usePaymasterSendTransaction } from '@starknet-react/core'
-import { Account, FeeMode } from 'starknet'
+import { Account, FeeMode, Contract } from 'starknet'
 import { useBalanceStore } from '../../stores/balance-store'
 import { useKeypairStore } from '../../stores/keypair-store'
 import { generateKeypairFromSignature, signMessage } from '../../utils/utils'
@@ -31,6 +31,17 @@ import { Keypair } from '../../utils/keypair'
 import SettingsModal from './settings'
 import { useModalStore } from '../../stores/modal-store'
 import { useUtxoStore } from '../../stores/utxo-store'
+import { TokenSelector } from '../ui/token-selector'
+import { useTokenBalances } from '../../hooks/useTokenBalances'
+import { useShieldedBalances } from '../../hooks/useShieldedBalances'
+
+interface Token {
+    address: string
+    symbol: string
+    name: string
+    decimals: number
+    balance?: bigint
+}
 
 const Index = () => {
     const { data: obscura } = useScaffoldContract({
@@ -43,7 +54,12 @@ const Index = () => {
     const { address, account } = useAccount()
 
     const { toast } = useToast()
-    const { theme, setTheme } = useTheme()
+    const { isDarkMode, toggleTheme } = useTheme()
+
+    // Token management
+    const { tokens, loading: tokensLoading, refreshBalances } = useTokenBalances()
+    const { balances: shieldedBalances, getTokenBalance, getTokenUtxos, refreshBalances: refreshShieldedBalances } = useShieldedBalances()
+    const [selectedToken, setSelectedToken] = useState<Token | null>(null)
 
     // Utxo state
     const { utxos } = useUtxoStore()
@@ -87,7 +103,44 @@ const Index = () => {
 
     const predefinedAmounts = [10, 100, 1000, 10000]
 
-    const isDarkMode = theme == 'dark'
+    // Helper function to get token contract
+    const getTokenContract = (tokenAddress: string) => {
+        if (tokenAddress === strk?.address) {
+            return strk
+        }
+        
+        // Create a contract instance for other tokens
+        return new Contract(
+            [
+                {
+                    "type": "function",
+                    "name": "approve",
+                    "inputs": [
+                        {"name": "spender", "type": "core::starknet::contract_address::ContractAddress"},
+                        {"name": "amount", "type": "core::integer::u256"}
+                    ],
+                    "outputs": [{"type": "core::bool"}],
+                    "state_mutability": "external"
+                },
+                {
+                    "type": "function",
+                    "name": "balance_of",
+                    "inputs": [{"name": "account", "type": "core::starknet::contract_address::ContractAddress"}],
+                    "outputs": [{"type": "core::integer::u256"}],
+                    "state_mutability": "view"
+                },
+                {
+                    "type": "function",
+                    "name": "symbol",
+                    "inputs": [],
+                    "outputs": [{"type": "core::felt252"}],
+                    "state_mutability": "view"
+                }
+            ],
+            tokenAddress,
+            obscura?.providerOrAccount
+        )
+    }
 
     useEffect(() => {
         if (!address || !account) return
@@ -108,6 +161,20 @@ const Index = () => {
 
         loadKeypair()
     }, [address, account])
+
+    // Set default token (STRK) when tokens are loaded
+    useEffect(() => {
+        if (tokens.length > 0 && !selectedToken) {
+            // Find STRK token or use the first one
+            const strkToken = tokens.find(token => token.symbol === 'STRK') || tokens[0]
+            setSelectedToken(strkToken)
+        }
+    }, [tokens, selectedToken])
+
+    // Reset approval state when token changes
+    useEffect(() => {
+        setIsApproved(false)
+    }, [selectedToken])
 
     useEffect(() => {
         if (!address || !keypair) return
@@ -130,10 +197,10 @@ const Index = () => {
     }, [address, keypair])
 
     const handleFund = async () => {
-        if (!fundAmount || !fundAddress) {
+        if (!fundAmount || !fundAddress || !selectedToken) {
             toast({
                 title: 'Missing Information',
-                description: 'Please fill in all fields before funding.',
+                description: 'Please fill in all fields and select a token before funding.',
                 variant: 'destructive'
             })
             return
@@ -144,14 +211,15 @@ const Index = () => {
         try {
             toast({
                 title: 'Fund Initiated',
-                description: `Funding ${fundAmount} STRK to ${fundAddress.slice(0, 10)}...${fundAddress.slice(-5)}`
+                description: `Funding ${fundAmount} ${selectedToken.symbol} to ${fundAddress.slice(0, 10)}...${fundAddress.slice(-5)}`
             })
 
-            const newUtxo = new Utxo({ amount: BigInt(fundAmount * 1e18), keypair })
+            const decimals = selectedToken.decimals || 18
+            const newUtxo = new Utxo({ amount: BigInt(fundAmount * (10 ** decimals)), keypair })
             const tx = await transaction({
                 obscura,
                 provider,
-                token_address: strk?.address,
+                token_address: selectedToken.address,
                 outputs: [newUtxo],
                 account: {
                     owner: address,
@@ -165,7 +233,7 @@ const Index = () => {
                     description: (
                         <div>
                             <p>
-                                {fundAmount} STRK deposited to {fundAddress.slice(0, 10)}…
+                                {fundAmount} {selectedToken.symbol} deposited to {fundAddress.slice(0, 10)}…
                                 {fundAddress.slice(-5)}
                             </p>
                             <a
@@ -180,6 +248,8 @@ const Index = () => {
                     ),
                     variant: 'success'
                 })
+                // Refresh token balances after successful transaction
+                refreshBalances()
             }
         } catch (error) {
             console.log(error)
@@ -195,11 +265,11 @@ const Index = () => {
         }
     }
 
-    const handleApproveStrk = async () => {
-        if (!fundAmount || !fundAddress) {
+    const handleApproveToken = async () => {
+        if (!fundAmount || !fundAddress || !selectedToken) {
             toast({
                 title: 'Missing Information',
-                description: 'Please fill in all fields before funding.',
+                description: 'Please fill in all fields and select a token before approving.',
                 variant: 'destructive'
             })
             return
@@ -208,17 +278,18 @@ const Index = () => {
         setIsApproving(true)
 
         try {
-            const tx = await strk.approve(obscura.address, BigInt(fundAmount * 1e18))
+            const tokenContract = getTokenContract(selectedToken.address)
+            const decimals = selectedToken.decimals || 18
+            const tx = await tokenContract.approve(obscura.address, BigInt(fundAmount * (10 ** decimals)))
+            setIsApproved(true)
         } catch (error) {
             setIsApproved(false)
-            setIsApproving(false)
             toast({
                 title: 'Approval Failed',
-                description: error instanceof Error ? error.message : error,
+                description: error instanceof Error ? error.message : 'Something went wrong',
                 variant: 'destructive'
             })
         } finally {
-            setIsApproved(true)
             setIsApproving(false)
         }
     }
@@ -233,10 +304,10 @@ const Index = () => {
     // });
 
     const handleTransfer = async () => {
-        if (!transferAmount || !transferAddress) {
+        if (!transferAmount || !transferAddress || !selectedToken) {
             toast({
                 title: 'Missing Information',
-                description: 'Please fill in all fields before transferring.',
+                description: 'Please fill in all fields and select a token before transferring.',
                 variant: 'destructive'
             })
             return
@@ -246,15 +317,16 @@ const Index = () => {
         try {
             toast({
                 title: 'Transfer Initiated',
-                description: `Transferring ${transferAmount} STRK to ${transferAddress.slice(0, 10)}...${transferAddress.slice(-5)}`
+                description: `Transferring ${transferAmount} ${selectedToken.symbol} to ${transferAddress.slice(0, 10)}...${transferAddress.slice(-5)}`
             })
 
-            const requiredAmount = BigInt(transferAmount * 1e18)
+            const decimals = selectedToken.decimals || 18
+            const requiredAmount = BigInt(transferAmount * (10 ** decimals))
             const availableUtxos = utxos || []
 
             // Sort smallest UTXOs first
             const sortedUtxos = availableUtxos.sort((a, b) =>
-                Number(BigInt(a.amount) / BigInt(1e18) - BigInt(b.amount) / BigInt(1e18))
+                Number(BigInt(a.amount) / BigInt(10 ** decimals) - BigInt(b.amount) / BigInt(10 ** decimals))
             )
 
             const selectedUtxos: Utxo[] = []
@@ -306,37 +378,17 @@ const Index = () => {
             const tx = await transaction({
                 obscura,
                 provider,
-                token_address: strk?.address,
+                token_address: selectedToken.address,
                 inputs: selectedUtxos,
                 outputs
             })
-
-            // TODO: use paymaster to sign transaction and pay the fee
-            // const calls = await generateTransactionCall({
-            //     obscura,
-            //     provider,
-            //     inputs: selectedUtxos,
-            //     outputs
-            // })
-            // console.log(calls)
-            // setCalls(calls)
-            // const typedData = await buildTypedData(address, calls)
-            // console.log(typedData)
-            // const signature = await signMessage(account as Account, typedData)
-            // signature.
-            // console.log(signature)
-            // const exec = await executeSponsoredTransaction(address, typedData, signature)
-            // console.log(exec)
-            
-            // const tx = await paymasterSendTransaction(calls)
-            // console.log(tx)
 
             toast({
                 title: 'Transfer successful',
                 description: (
                     <div>
                         <p>
-                            {transferAmount} STRK transfered to {transferAddress.slice(0, 10)}…
+                            {transferAmount} {selectedToken.symbol} transfered to {transferAddress.slice(0, 10)}…
                             {transferAddress.slice(-5)}
                         </p>
                         <a
@@ -351,6 +403,8 @@ const Index = () => {
                 ),
                 variant: 'success'
             })
+            // Refresh token balances after successful transaction
+            refreshBalances()
         } catch (error) {
             setIsTransfering(false)
             console.error('Transfer failed:', error)
@@ -365,10 +419,10 @@ const Index = () => {
     }
 
     const handleWithdraw = async () => {
-        if (!withdrawAmount || !withdrawAddress) {
+        if (!withdrawAmount || !withdrawAddress || !selectedToken) {
             toast({
                 title: 'Missing Information',
-                description: 'Please fill in all fields before withdrawing.',
+                description: 'Please fill in all fields and select a token before withdrawing.',
                 variant: 'destructive'
             })
             return
@@ -379,15 +433,16 @@ const Index = () => {
         try {
             toast({
                 title: 'Withdrawal Initiated',
-                description: `Withdrawing ${withdrawAmount} STRK to ${withdrawAddress.slice(0, 10)}...${withdrawAddress.slice(-5)}`
+                description: `Withdrawing ${withdrawAmount} ${selectedToken.symbol} to ${withdrawAddress.slice(0, 10)}...${withdrawAddress.slice(-5)}`
             })
 
-            const requiredAmount = BigInt(withdrawAmount * 1e18)
+            const decimals = selectedToken.decimals || 18
+            const requiredAmount = BigInt(withdrawAmount * (10 ** decimals))
             const availableUtxos = utxos || []
 
             // Sort smallest UTXOs first
             const sortedUtxos = availableUtxos.sort((a, b) =>
-                Number(BigInt(a.amount) / BigInt(1e18) - BigInt(b.amount) / BigInt(1e18))
+                Number(BigInt(a.amount) / BigInt(10 ** decimals) - BigInt(b.amount) / BigInt(10 ** decimals))
             )
 
             const selectedUtxos: Utxo[] = []
@@ -422,7 +477,7 @@ const Index = () => {
             const tx = await transaction({
                 obscura,
                 provider,
-                token_address: strk?.address,
+                token_address: selectedToken.address,
                 inputs: selectedUtxos,
                 outputs,
                 recipient: withdrawAddress
@@ -433,7 +488,7 @@ const Index = () => {
                 description: (
                     <div>
                         <p>
-                            {withdrawAmount} STRK withdrawn to {withdrawAddress.slice(0, 10)}…
+                            {withdrawAmount} {selectedToken.symbol} withdrawn to {withdrawAddress.slice(0, 10)}…
                             {withdrawAddress.slice(-5)}
                         </p>
                         <a
@@ -451,6 +506,8 @@ const Index = () => {
 
             setWithdrawAmount(0)
             setWithdrawAddress('')
+            // Refresh token balances after successful transaction
+            refreshBalances()
         } catch (error) {
             setIsWithdrawing(false)
             console.error('Withdrawal failed:', error)
@@ -465,64 +522,84 @@ const Index = () => {
     }
 
     const handleMaxFund = async () => {
-        if (!address || !keypair) {
+        if (!address || !keypair || !selectedToken) {
             toast({
                 title: 'Account Not Connected',
-                description: 'Please connect your wallet or private key.',
+                description: 'Please connect your wallet or select a token.',
                 variant: 'destructive'
             })
-
             return
         }
 
-        const userBalance = await strk.balance_of(address)
-        if (userBalance <= 0n || !userBalance)
+        try {
+            const tokenContract = getTokenContract(selectedToken.address)
+            const userBalance = await tokenContract.balance_of(address)
+            const decimals = selectedToken.decimals || 18
+            
+            if (userBalance <= 0n || !userBalance) {
+                toast({
+                    title: 'Invalid Balance',
+                    description: 'Your balance is too low.',
+                    variant: 'destructive'
+                })
+            } else {
+                setFundAmount(Number(userBalance / BigInt(10 ** decimals)))
+            }
+        } catch (error) {
             toast({
-                title: 'Invalid Balance',
-                description: 'Your balance is too low.',
+                title: 'Error',
+                description: 'Failed to fetch balance.',
                 variant: 'destructive'
             })
-        else setFundAmount(Number(userBalance / BigInt(1e18)))
+        }
     }
 
     const handleMaxTransfer = async () => {
-        if (!address || !keypair) {
+        if (!address || !keypair || !selectedToken) {
             toast({
                 title: 'Account Not Connected',
-                description: 'Please connect your wallet or private key.',
+                description: 'Please connect your wallet or select a token.',
                 variant: 'destructive'
             })
-
             return
         }
 
-        if (balance <= 0n || !balance)
+        const tokenBalance = getTokenBalance(selectedToken.address)
+        const decimals = selectedToken.decimals || 18
+        
+        if (tokenBalance <= 0n) {
             toast({
                 title: 'Invalid Shielded Balance',
                 description: 'Your shielded balance is too low.',
                 variant: 'destructive'
             })
-        else setTransferAmount(balance)
+        } else {
+            setTransferAmount(Number(tokenBalance / BigInt(10 ** decimals)))
+        }
     }
 
     const handleMaxWithdrawal = async () => {
-        if (!address || !keypair) {
+        if (!address || !keypair || !selectedToken) {
             toast({
                 title: 'Account Not Connected',
-                description: 'Please connect your wallet or private key.',
+                description: 'Please connect your wallet or select a token.',
                 variant: 'destructive'
             })
-
             return
         }
 
-        if (balance <= 0n || !balance)
+        const tokenBalance = getTokenBalance(selectedToken.address)
+        const decimals = selectedToken.decimals || 18
+        
+        if (tokenBalance <= 0n) {
             toast({
                 title: 'Invalid Shielded Balance',
                 description: 'Your shielded balance is too low.',
                 variant: 'destructive'
             })
-        else setWithdrawAmount(balance)
+        } else {
+            setWithdrawAmount(Number(tokenBalance / BigInt(10 ** decimals)))
+        }
     }
 
     const setPredefinedAmount = (amount: number) => {
@@ -541,11 +618,11 @@ const Index = () => {
 
             <div className="absolute bottom-6 left-6 z-50">
                 <Button
-                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                    onClick={toggleTheme}
                     variant="outline"
                     className={`transition-all duration-200 mb-2 mr-2`}
                 >
-                    {theme === 'dark' ? (
+                    {isDarkMode ? (
                         <Sun className={`w-5 h-5`} />
                     ) : (
                         <Moon className={`w-5 h-5`} />
@@ -622,6 +699,25 @@ const Index = () => {
                                     }`}
                                 >
                                     <div className="space-y-2">
+                                        <Label
+                                            htmlFor="token-selector"
+                                            className={`font-medium ${
+                                                isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                                            }`}
+                                        >
+                                            Token
+                                        </Label>
+                                        {
+                                            obscura && address && (
+                                                <TokenSelector
+                                                    selectedToken={selectedToken}
+                                                    onTokenSelect={setSelectedToken}
+                                                />
+                                            )
+                                        }
+                                    </div>
+
+                                    <div className="space-y-2">
                                         <div className="flex justify-between items-center">
                                             <Label
                                                 htmlFor="fund-amount"
@@ -678,28 +774,28 @@ const Index = () => {
 
                                     {!isApproved ? (
                                         <Button
-                                            onClick={handleApproveStrk}
+                                            onClick={handleApproveToken}
                                             className={`w-full font-semibold py-3 transition-all duration-200 transform hover:scale-105 ${
                                                 isDarkMode
                                                     ? 'bg-white/20 hover:bg-white/30 text-white border border-white/20'
                                                     : 'bg-black/15 hover:bg-black/25 text-black border border-black/20'
                                             }`}
-                                            disabled={isApproving || isApproved || !isRegistered}
+                                            disabled={isApproving || isApproved || !isRegistered || !selectedToken}
                                         >
                                             <ArrowDownLeft className="w-4 h-4 mr-2" />
-                                            {isApproving ? 'Approving...' : 'Approve'}
+                                            {isApproving ? 'Approving...' : `Approve ${selectedToken?.symbol || 'Token'}`}
                                         </Button>
                                     ) : (
                                         <Button
                                             onClick={() =>
-                                                isApproved ? handleFund() : handleApproveStrk()
+                                                isApproved ? handleFund() : handleApproveToken()
                                             }
                                             className={`w-full font-semibold py-3 transition-all duration-200 transform hover:scale-105 ${
                                                 isDarkMode
                                                     ? 'bg-white/20 hover:bg-white/30 text-white border border-white/20'
                                                     : 'bg-black/15 hover:bg-black/25 text-black border border-black/20'
                                             }`}
-                                            disabled={isFunding || !isRegistered}
+                                            disabled={isFunding || !isRegistered || !selectedToken}
                                         >
                                             <ArrowDownLeft className="w-4 h-4 mr-2" />
                                             {isFunding ? 'Initiating Fund...' : 'Initiate Fund'}
@@ -717,9 +813,28 @@ const Index = () => {
                                     }`}
                                 >
                                     <div className="space-y-2">
+                                        <Label
+                                            htmlFor="transfer-token-selector"
+                                            className={`font-medium ${
+                                                isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                                            }`}
+                                        >
+                                            Token
+                                        </Label>
+                                        {
+                                            obscura && address && (
+                                                <TokenSelector
+                                                    selectedToken={selectedToken}
+                                                    onTokenSelect={setSelectedToken}
+                                                />
+                                            )
+                                        }
+                                    </div>
+
+                                    <div className="space-y-2">
                                         <div className="flex justify-between items-center">
                                             <Label
-                                                htmlFor="fund-amount"
+                                                htmlFor="transfer-amount"
                                                 className={`font-medium ${
                                                     isDarkMode ? 'text-gray-300' : 'text-gray-700'
                                                 }`}
@@ -780,7 +895,7 @@ const Index = () => {
                                                 ? 'bg-white/20 hover:bg-white/30 text-white border border-white/20'
                                                 : 'bg-black/15 hover:bg-black/25 text-black border border-black/20'
                                         }`}
-                                        disabled={isTransfering || !isRegistered}
+                                        disabled={isTransfering || !isRegistered || !selectedToken}
                                     >
                                         <Send className="w-4 h-4 mr-2" />
                                         {isTransfering ? 'Transfering...' : 'Initiate Transfer'}
@@ -796,6 +911,25 @@ const Index = () => {
                                             : 'bg-white/10 border-black/10'
                                     }`}
                                 >
+                                    <div className="space-y-2">
+                                        <Label
+                                            htmlFor="withdraw-token-selector"
+                                            className={`font-medium ${
+                                                isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                                            }`}
+                                        >
+                                            Token
+                                        </Label>
+                                        {
+                                            obscura && address && (
+                                                <TokenSelector
+                                                    selectedToken={selectedToken}
+                                                    onTokenSelect={setSelectedToken}
+                                                />
+                                            )
+                                        }
+                                    </div>
+
                                     <div className="space-y-3">
                                         <Label
                                             className={`font-medium ${
@@ -825,7 +959,7 @@ const Index = () => {
                                                                   : 'bg-white/20 border-black/20 text-black hover:bg-black/20 hover:border-black/30'
                                                         }`}
                                                     >
-                                                        {amount} STRK
+                                                        {amount} {selectedToken?.symbol || 'Token'}
                                                     </Button>
                                                 )
                                             })}
@@ -835,7 +969,7 @@ const Index = () => {
                                     <div className="space-y-2">
                                         <div className="flex justify-between items-center">
                                             <Label
-                                                htmlFor="fund-amount"
+                                                htmlFor="withdraw-amount"
                                                 className={`font-medium ${
                                                     isDarkMode ? 'text-gray-300' : 'text-gray-700'
                                                 }`}
@@ -896,7 +1030,7 @@ const Index = () => {
                                                 ? 'bg-white/20 hover:bg-white/30 text-white border border-white/20'
                                                 : 'bg-black/15 hover:bg-black/25 text-black border border-black/20'
                                         }`}
-                                        disabled={!isRegistered || isWithdrawing}
+                                        disabled={!isRegistered || isWithdrawing || !selectedToken}
                                     >
                                         <ArrowUpRight className="w-4 h-4 mr-2" />
 

@@ -324,6 +324,7 @@ pub mod Obscura {
                         NewCommitment {
                             commitment: leaf1,
                             index: self.merkle_tree.next_index.read() - 2,
+                            token_address: token_address,
                             encrypted_output: ext_data.encrypted_output1,
                         },
                     ),
@@ -334,6 +335,7 @@ pub mod Obscura {
                         NewCommitment {
                             commitment: leaf2,
                             index: self.merkle_tree.next_index.read() - 1,
+                            token_address: token_address,
                             encrypted_output: ext_data.encrypted_output2,
                         },
                     ),

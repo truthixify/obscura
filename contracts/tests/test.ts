@@ -177,7 +177,7 @@ describe('Obscura Privacy Protocol', () => {
             // Bob parses chain to detect incoming funds
             const lastBlock = await provider.getBlock('latest')
             const parsedNewCommitEvent = (
-                await parseNewCommitEvent(obscura, provider, { block_number: lastBlock.block_number })
+                await parseNewCommitEvent(obscura, provider, { block_number: lastBlock.block_number }, undefined, strkTokenAddress)
             ).slice(-2)
 
             let bobReceiveUtxo: Utxo
@@ -568,7 +568,7 @@ describe('Obscura Privacy Protocol', () => {
             // Parse Alice's deposit to get the actual UTXO created on-chain
             const depositBlock = await provider.getBlock('latest')
             const depositEvents = (
-                await parseNewCommitEvent(obscura, provider, { block_number: depositBlock.block_number })
+                await parseNewCommitEvent(obscura, provider, { block_number: depositBlock.block_number }, undefined, ethToken.address)
             ).slice(-2)
 
             let actualAliceUtxo: Utxo
@@ -613,7 +613,7 @@ describe('Obscura Privacy Protocol', () => {
             // Bob parses chain to detect incoming ETH funds
             const lastBlock = await provider.getBlock('latest')
             const parsedNewCommitEvent = (
-                await parseNewCommitEvent(obscura, provider, { block_number: lastBlock.block_number })
+                await parseNewCommitEvent(obscura, provider, { block_number: lastBlock.block_number }, undefined, ethToken.address)
             ).slice(-2)
 
             let bobReceiveUtxo: Utxo
@@ -689,5 +689,74 @@ describe('Obscura Privacy Protocol', () => {
 
             console.log('✅ Token isolation verified')
         })
+
+        // it('should filter commitment events by token address', async () => {
+        //     // Create deposits for different tokens
+        //     const ethToken = tokens.find((token: any) => token.symbol === 'ETH')
+        //     const usdcToken = tokens.find((token: any) => token.symbol === 'USDC')
+
+        //     const ethAmount = BigInt(1) * BigInt(10 ** 18) // 1 ETH
+        //     const usdcAmount = BigInt(100) * BigInt(10 ** 6) // 100 USDC
+
+        //     const ethUtxo = new Utxo({ amount: ethAmount })
+        //     const usdcUtxo = new Utxo({ amount: usdcAmount })
+
+        //     obscura.connect(alice)
+
+        //     // Deposit ETH
+        //     ethToken.contract.connect(alice)
+        //     await ethToken.contract.approve(obscura.address, ethAmount)
+        //     await transaction({
+        //         obscura,
+        //         outputs: [ethUtxo],
+        //         provider,
+        //         tokenAddress: ethToken.address
+        //     })
+
+        //     // Deposit USDC
+        //     usdcToken.contract.connect(alice)
+        //     await usdcToken.contract.approve(obscura.address, usdcAmount)
+        //     await transaction({
+        //         obscura,
+        //         outputs: [usdcUtxo],
+        //         provider,
+        //         tokenAddress: usdcToken.address
+        //     })
+
+        //     const currentBlock = await provider.getBlock('latest')
+
+        //     // Parse events filtered by ETH token
+        //     const ethEvents = await parseNewCommitEvent(
+        //         obscura,
+        //         provider,
+        //         { block_number: currentBlock.block_number - 10 },
+        //         { block_number: currentBlock.block_number },
+        //         ethToken.address
+        //     )
+
+        //     // Parse events filtered by USDC token
+        //     const usdcEvents = await parseNewCommitEvent(
+        //         obscura,
+        //         provider,
+        //         { block_number: currentBlock.block_number - 10 },
+        //         { block_number: currentBlock.block_number },
+        //         usdcToken.address
+        //     )
+
+        //     // Verify that events are properly filtered
+        //     expect(ethEvents.length).toBeGreaterThan(0)
+        //     expect(usdcEvents.length).toBeGreaterThan(0)
+
+        //     // Verify that each event has the correct token_address
+        //     for (const event of ethEvents) {
+        //         expect(addAddressPadding(num.toHex(event.token_address))).toBe(ethToken.address)
+        //     }
+
+        //     for (const event of usdcEvents) {
+        //         expect(addAddressPadding(num.toHex(event.token_address))).toBe(usdcToken.address)
+        //     }
+
+        //     console.log(`✅ Token filtering verified: ${ethEvents.length} ETH events, ${usdcEvents.length} USDC events`)
+        // })
     })
 })

@@ -78,13 +78,17 @@ export const parseNewCommitEvent = async (
     obscura: Contract,
     provider: RpcProvider,
     from_block?: any,
-    to_block?: any
+    to_block?: any,
+    token_address?: string
 ): Promise<any[]> => {
+    // If token_address is provided, add it as a key filter
+    const otherKeys = token_address ? [token_address] : []
+    
     const parsedEvents = await parseEvents(
         obscura,
         provider,
         'NewCommitment',
-        [],
+        otherKeys,
         from_block,
         to_block
     )
@@ -96,4 +100,14 @@ export const parseNewCommitEvent = async (
                 Number(b['obscura::events::NewCommitment'].index)
         )
         .map(event => event['obscura::events::NewCommitment'])
+}
+
+export const parseNewCommitEventByToken = async (
+    obscura: Contract,
+    provider: RpcProvider,
+    token_address: string,
+    from_block?: any,
+    to_block?: any
+): Promise<any[]> => {
+    return parseNewCommitEvent(obscura, provider, from_block, to_block, token_address)
 }

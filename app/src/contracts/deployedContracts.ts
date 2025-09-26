@@ -548,6 +548,11 @@ const deployedContracts = {
               kind: "data",
             },
             {
+              name: "token_address",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
               name: "encrypted_output",
               type: "core::byte_array::ByteArray",
               kind: "data",
@@ -774,7 +779,7 @@ const deployedContracts = {
   sepolia: {
     Obscura: {
       address:
-        "0x25c4f906625ea5ff25828daa7c0120c2e9295d443c8fc78fb1c154a2ae9a208",
+        "0x64d3af372cdd6887b23396c86dcc47ab2a7132b2089acd73ff66f0e5bba4c28",
       abi: [
         {
           type: "impl",
@@ -1315,6 +1320,11 @@ const deployedContracts = {
               kind: "data",
             },
             {
+              name: "token_address",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
               name: "encrypted_output",
               type: "core::byte_array::ByteArray",
               kind: "data",
@@ -1535,7 +1545,7 @@ const deployedContracts = {
         },
       ],
       classHash:
-        "0x26c7c594d14a6a08b48141b82d2f3edc095d8adfeee7db7e38cee543368a490",
+        "0x504914b16d0e857d037962a9f8764bfdc8d9646d0af9cb4a4fe94eab66a8ff",
     },
   },
 } as const;
